@@ -114,7 +114,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>SyncUp 🚀</h1>
+      <h1>SyncUp — Where Collaboration Begins.</h1>
 
       <button onClick={() => auth.signOut()}>
         Logout
