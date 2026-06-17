@@ -29,4 +29,14 @@ export default function App() {
       {!user ? <Auth /> : <Dashboard />}
     </div>
   );
+   <h1>SyncUp — Where Ideas Become Teams</h1>
+
+<p>
+  Find teammates, build projects, and bring ideas to life together.
+</p>
+
+<div>
+  <button>Get Started</button>
+  <button>Explore Projects</button>
+</div>
 }
