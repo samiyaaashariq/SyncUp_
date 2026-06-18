@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState. useEffect } from "react";
 import ChatBox from "./pages/ChatBox";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 
 function App() {
   const [showChat, setShowChat] = useState(false);
@@ -10,6 +12,7 @@ function App() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [applications, setApplications] = useState([]);
   const [authMode, setAuthMode] = useState("login");
+  const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([
     {
       title: "AI Study Planner",
@@ -27,6 +30,22 @@ function App() {
       tags: ["Utility", "Campus"],
     },
   ]);
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+  if (loading) {
+  return <h2>Loading...</h2>;
+}
   if (!isLoggedIn) {
   return (
     <div>
