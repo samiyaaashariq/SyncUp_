@@ -9,104 +9,163 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-export default function ChatBox() {
+export default function ChatBox({ project }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const CHAT_ID = "global-chat";
-
-  // 🔥 REALTIME LISTENER
+  // REALTIME CHAT
   useEffect(() => {
+    if (!project?.id) return;
+
     const q = query(
-      collection(db, "projects", CHAT_ID, "messages"),
+      collection(db, "projects", project.id, "messages"),
       orderBy("createdAt", "asc")
     );
 
     const unsub = onSnapshot(q, (snap) => {
       setMessages(
-        snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data()
         }))
       );
     });
 
     return () => unsub();
-  }, []);
+  }, [project]);
 
-  // 🚀 SEND MESSAGE
+  // SEND
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    try {
-      await addDoc(
-        collection(db, "projects", CHAT_ID, "messages"),
-        {
-          text: input,
-          user: auth.currentUser?.email || "anonymous",
-          createdAt: serverTimestamp()
-        }
-      );
+    await addDoc(
+      collection(db, "projects", project.id, "messages"),
+      {
+        text: input,
+        user: auth.currentUser?.email || "anonymous",
+        createdAt: serverTimestamp()
+      }
+    );
 
-      setInput("");
-    } catch (err) {
-      console.log("Error:", err);
-      alert("Message not sent. Check Firebase setup.");
-    }
+    setInput("");
   };
 
   return (
-    <div style={{ maxWidth: "500px", margin: "20px auto" }}>
-      <h2>💬 SyncUp Chat</h2>
+    <div style={styles.container}>
+      
+      {/* 🔥 CHAT HEADER (FIXED COLOR) */}
+      <div style={styles.header}>
+        💬 <span style={styles.title}>
+          SyncUp Chat
+        </span>
+        <div style={styles.subtitle}>
+          {project.title}
+        </div>
+      </div>
 
       {/* MESSAGES */}
-      <div
-        style={{
-          border: "1px solid #ddd",
-          height: "300px",
-          overflowY: "auto",
-          padding: "10px",
-          marginBottom: "10px"
-        }}
-      >
-        {messages.length === 0 ? (
-          <p>No messages yet</p>
-        ) : (
-          messages.map((msg) => (
+      <div style={styles.chat}>
+        {messages.map((m) => {
+          const me =
+            m.user === auth.currentUser?.email;
+
+          return (
             <div
-              key={msg.id}
+              key={m.id}
               style={{
-                textAlign:
-                  msg.user === auth.currentUser?.email
-                    ? "right"
-                    : "left",
-                margin: "5px 0"
+                textAlign: me ? "right" : "left",
+                margin: "6px"
               }}
             >
-              <b>{msg.user}</b>
-              <div>{msg.text}</div>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "8px 10px",
+                  borderRadius: "10px",
+                  background: me ? "#4f46e5" : "#f1f5f9",
+                  color: me ? "#fff" : "#111"
+                }}
+              >
+                <small>{m.user}</small>
+                <div>{m.text}</div>
+              </div>
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
 
       {/* INPUT */}
-      <div style={{ display: "flex" }}>
+      <div style={styles.inputBox}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type message..."
-          style={{ flex: 1, padding: "8px" }}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          style={styles.input}
+          onKeyDown={(e) =>
+            e.key === "Enter" && sendMessage()
+          }
         />
 
-        <button
-          onClick={sendMessage}
-          style={{ marginLeft: "10px" }}
-        >
+        <button onClick={sendMessage} style={styles.button}>
           Send
         </button>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    height: "420px",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden"
+  },
+
+  header: {
+    padding: "10px",
+    borderBottom: "1px solid #ddd",
+    background: "#f8fafc"
+  },
+
+  title: {
+    color: "#4f46e5",
+    fontWeight: "bold",
+    fontSize: "16px"
+  },
+
+  subtitle: {
+    fontSize: "12px",
+    color: "#666"
+  },
+
+  chat: {
+    flex: 1,
+    padding: "10px",
+    overflowY: "auto"
+  },
+
+  inputBox: {
+    display: "flex",
+    padding: "10px",
+    borderTop: "1px solid #ddd"
+  },
+
+  input: {
+    flex: 1,
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc"
+  },
+
+  button: {
+    marginLeft: "10px",
+    padding: "8px 14px",
+    background: "#4f46e5",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px"
+  }
+};
