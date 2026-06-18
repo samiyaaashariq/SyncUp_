@@ -61,35 +61,47 @@ export default function Dashboard() {
 
   // ---------------- CREATE PROJECT ----------------
   const createProject = async () => {
-    if (!title || !desc) return alert("Fill all fields");
-    if (!user?.email) return alert("User not logged in");
+  if (!user?.email) {
+    alert("User not logged in");
+    return;
+  }
 
+  if (!title.trim() || !desc.trim()) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
     setLoading(true);
 
-    try {
-      await addDoc(collection(db, "projects"), {
-        title,
-        desc,
-        skillsNeeded: skillsNeeded
-          ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
-          : [],
-        createdBy: user.email,
-        members: [user.email],
-        applications: [],
-        createdAt: new Date()
-      });
+    const docRef = await addDoc(collection(db, "projects"), {
+      title: title.trim(),
+      desc: desc.trim(),
+      skillsNeeded: skillsNeeded
+        ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
+        : [],
+      createdBy: user.email,
+      members: [user.email],
+      applications: [],
+      createdAt: new Date()
+    });
 
-      setTitle("");
-      setDesc("");
-      setSkillsNeeded("");
-    } catch (err) {
-      console.log(err);
-      alert("Failed to create project");
-    }
+    console.log("✅ Project created with ID:", docRef.id);
 
+    // clear form
+    setTitle("");
+    setDesc("");
+    setSkillsNeeded("");
+
+    alert("Project created successfully 🚀");
+
+  } catch (error) {
+    console.error("❌ Create Project Error:", error);
+    alert(error.message);
+  } finally {
     setLoading(false);
-  };
-
+  }
+};
   // ---------------- APPLY ----------------
   const applyToProject = async (project) => {
     if (!user?.email) return alert("Login required");
