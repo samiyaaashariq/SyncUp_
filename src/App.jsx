@@ -59,7 +59,7 @@ function App() {
           Open Chat
         </button>
       </div>
-      <Signup />
+      
 
       {/* PROJECTS SECTION */}
       <div id="projects" style={styles.section}>
