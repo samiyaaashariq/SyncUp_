@@ -4,24 +4,27 @@ import ChatBox from "./pages/ChatBox";
 function App() {
   const [showChat, setShowChat] = useState(false);
 
-  const projects = [
+  const [projects, setProjects] = useState([
     {
-      title: "AI Study Buddy",
-      desc: "Helps students plan studies smarter using AI.",
+      title: "AI Study Planner",
+      desc: "AI-powered daily study schedule generator for exam preparation.",
+      tags: ["AI", "Productivity"],
     },
     {
-      title: "Campus Connect",
-      desc: "Connects students working on similar ideas.",
+      title: "Hackathon Team Finder",
+      desc: "Match students based on skills for hackathons and competitions.",
+      tags: ["Web", "Collaboration"],
     },
     {
-      title: "Dev Portfolio Builder",
-      desc: "Create and deploy portfolios easily.",
+      title: "Campus Lost & Found",
+      desc: "Report and find lost items inside college campus easily.",
+      tags: ["Utility", "Campus"],
     },
-  ];
+  ]);
 
   return (
     <div style={styles.container}>
-      {/* HERO */}
+      {/* HERO SECTION */}
       <h1 style={styles.title}>SyncUp 🚀</h1>
 
       <p style={styles.subtitle}>
@@ -30,73 +33,64 @@ function App() {
 
       {/* BUTTONS */}
       <div style={styles.buttonRow}>
-  
-  {/* Explore → scroll to projects */}
-  <button
-    style={styles.secondaryBtn}
-    onClick={() =>
-      document.getElementById("projects").scrollIntoView({ behavior: "smooth" })
-    }
-  >
-    Explore Projects
-  </button>
-
-  {/* Join → opens project form */}
-  <button
-    style={styles.primaryBtn}
-    onClick={() => setShowChat(false)}
-  >
-    Join a Project
-  </button>
-
-</div>
-      {/* PROJECTS */}
-      <div id="projects" style={styles.section}>
-  <h2>Featured Projects</h2>
-
-  {/* Add Project Form */}
-  <div style={styles.form}>
-    <input id="title" placeholder="Project Title" style={styles.input} />
-    <input id="desc" placeholder="Project Description" style={styles.input} />
-
-    <button
-      style={styles.primaryBtn}
-      onClick={() => {
-        const title = document.getElementById("title").value;
-        const desc = document.getElementById("desc").value;
-
-        if (!title || !desc) return;
-
-        setProjects([...projects, { title, desc }]);
-
-        document.getElementById("title").value = "";
-        document.getElementById("desc").value = "";
-      }}
-    >
-      Add Project
-    </button>
-  </div>
-
-  {/* Project List */}
-  <div style={styles.grid}>
-    {projects.map((p, i) => (
-      <div key={i} style={styles.card}>
-        <h3>{p.title}</h3>
-        <p>{p.desc}</p>
+        <button
+          style={styles.primaryBtn}
+          onClick={() => {
+            document.getElementById("projects").scrollIntoView({
+              behavior: "smooth",
+            });
+            setShowChat(true);
+          }}
+        >
+          Join a Project
+        </button>
 
         <button
           style={styles.secondaryBtn}
-          onClick={() => setShowChat(true)}
+          onClick={() =>
+            document.getElementById("projects").scrollIntoView({
+              behavior: "smooth",
+            })
+          }
         >
-          Open Chat
+          Explore Projects
         </button>
       </div>
-    ))}
-  </div>
-</div>
+
+      {/* PROJECTS SECTION */}
+      <div id="projects" style={styles.section}>
+        <h2 style={styles.sectionTitle}>Featured Projects</h2>
+
+        <div style={styles.grid}>
+          {projects.map((p, i) => (
+            <div key={i} style={styles.card}>
+              <h3 style={styles.cardTitle}>{p.title}</h3>
+
+              <p style={styles.cardDesc}>{p.desc}</p>
+
+              {/* TAGS */}
+              <div style={styles.tagRow}>
+                {p.tags.map((tag, idx) => (
+                  <span key={idx} style={styles.tag}>
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+
+              <button
+                style={styles.cardButton}
+                onClick={() => setShowChat(true)}
+              >
+                Apply to Join
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* CHAT POPUP */}
       {showChat && (
-        <div style={styles.chatOverlay}>
+        <div style={styles.overlay}>
           <div style={styles.chatBox}>
             <button
               style={styles.closeBtn}
@@ -161,6 +155,10 @@ const styles = {
     cursor: "pointer",
   },
 
+  section: {
+    marginTop: "40px",
+  },
+
   sectionTitle: {
     fontSize: "28px",
     marginBottom: "20px",
@@ -174,14 +172,53 @@ const styles = {
   },
 
   card: {
-    width: "220px",
+    width: "250px",
     padding: "20px",
-    borderRadius: "12px",
+    borderRadius: "14px",
     backgroundColor: "#0f172a",
     border: "1px solid #334155",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+    textAlign: "left",
   },
 
-  chatOverlay: {
+  cardTitle: {
+    fontSize: "18px",
+    marginBottom: "10px",
+  },
+
+  cardDesc: {
+    fontSize: "14px",
+    color: "#cbd5e1",
+    marginBottom: "12px",
+  },
+
+  tagRow: {
+    display: "flex",
+    gap: "6px",
+    flexWrap: "wrap",
+    marginBottom: "12px",
+  },
+
+  tag: {
+    fontSize: "11px",
+    padding: "4px 8px",
+    borderRadius: "12px",
+    backgroundColor: "#1e293b",
+    color: "#fff",
+  },
+
+  cardButton: {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "8px",
+    border: "none",
+    backgroundColor: "#22c55e",
+    color: "#000",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+
+  overlay: {
     position: "fixed",
     top: 0,
     left: 0,
@@ -214,23 +251,6 @@ const styles = {
     height: "30px",
     cursor: "pointer",
   },
-  section: {
-  marginTop: "40px",
-},
-
-form: {
-  marginBottom: "20px",
-  display: "flex",
-  gap: "10px",
-  justifyContent: "center",
-  flexWrap: "wrap",
-},
-
-input: {
-  padding: "10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-},
 };
 
 export default App;
