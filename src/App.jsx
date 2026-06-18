@@ -13,6 +13,22 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [authMode, setAuthMode] = useState("login");
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+
+      setLoading(false);
+    });
+
+  return () => unsubscribe();
+  }, []);
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
   const [projects, setProjects] = useState([
     {
       title: "AI Study Planner",
@@ -30,22 +46,7 @@ function App() {
       tags: ["Utility", "Campus"],
     },
   ]);
-  useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-
-    setLoading(false);
-  });
-
-  return () => unsubscribe();
-}, []);
-  if (loading) {
-  return <h2>Loading...</h2>;
-}
+ 
   if (!isLoggedIn) {
   return (
     <div>
