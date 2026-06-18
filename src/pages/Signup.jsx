@@ -17,7 +17,10 @@ function Signup({ onSignupSuccess }) {
 
       alert("Account Created Successfully 🚀");
       console.log(userCredential.user);
-    } catch (error) {
+      if (onSignupSuccess) {
+        onSignupSuccess();
+      }
+    }catch (error) {
       alert(error.message);
     }
   };
