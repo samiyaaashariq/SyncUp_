@@ -13,6 +13,24 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [authMode, setAuthMode] = useState("login");
   const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([
+    {
+      title: "AI Study Planner",
+      desc: "AI-powered daily study schedule generator for exam preparation.",
+      tags: ["AI", "Productivity"],
+    },
+    {
+      title: "Hackathon Team Finder",
+      desc: "Match students based on skills for hackathons and competitions.",
+      tags: ["Web", "Collaboration"],
+    },
+    {
+      title: "CampusVerse",
+      desc: "Your campus in one place—events, clubs, hackathons, opportunities, and student communities.",
+      tags: ["Campus", "Social"],
+      
+    },
+    ]);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -29,23 +47,7 @@ function App() {
   if (loading) {
     return <h2>Loading...</h2>;
   }
-  const [projects, setProjects] = useState([
-    {
-      title: "AI Study Planner",
-      desc: "AI-powered daily study schedule generator for exam preparation.",
-      tags: ["AI", "Productivity"],
-    },
-    {
-      title: "Hackathon Team Finder",
-      desc: "Match students based on skills for hackathons and competitions.",
-      tags: ["Web", "Collaboration"],
-    },
-    {
-      title: "Campus Lost & Found",
-      desc: "Report and find lost items inside college campus easily.",
-      tags: ["Utility", "Campus"],
-    },
-  ]);
+  
  
   if (!isLoggedIn) {
   return (
