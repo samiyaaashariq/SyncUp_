@@ -14,6 +14,7 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [page, setPage] = useState("home");
 
   // REALTIME PROJECTS
   useEffect(() => {
@@ -36,7 +37,8 @@ export default function Dashboard() {
     await addDoc(collection(db, "projects"), {
       title,
       desc,
-      createdBy: auth.currentUser?.email || "anonymous"
+      createdBy: auth.currentUser?.email || "anonymous",
+      createdAt: new Date()
     });
 
     setTitle("");
@@ -44,61 +46,153 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>🚀 SyncUp</h1>
+    <div style={styles.container}>
+      
+      {/* HEADER */}
+      <h1 style={styles.logo}>🚀 SyncUp</h1>
+
+      {/* NAV */}
+      <div style={styles.nav}>
+        <button onClick={() => setPage("home")}>Projects</button>
+        <button onClick={() => setPage("create")}>Create</button>
+      </div>
 
       {/* CREATE */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <input
-          placeholder="Description"
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-        />
-        <button onClick={createProject}>
-          Create
-        </button>
-      </div>
+      {page === "create" && (
+        <div style={styles.card}>
+          <h3>Create Project</h3>
 
-      <div style={{ display: "flex", gap: "20px" }}>
-        {/* PROJECT LIST */}
-        <div style={{ width: "250px" }}>
-          <h3>Projects</h3>
+          <input
+            placeholder="Project Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={styles.input}
+          />
 
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => setSelectedProject(p)}
-              style={{
-                padding: "10px",
-                border: "1px solid #ddd",
-                marginBottom: "10px",
-                cursor: "pointer",
-                background:
-                  selectedProject?.id === p.id
-                    ? "#eef2ff"
-                    : "#fff"
-              }}
-            >
-              <b>{p.title}</b>
-              <p style={{ fontSize: "12px" }}>{p.desc}</p>
-            </div>
-          ))}
+          <textarea
+            placeholder="Description"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            style={styles.textarea}
+          />
+
+          <button onClick={createProject} style={styles.primaryBtn}>
+            Publish Project
+          </button>
         </div>
+      )}
 
-        {/* CHAT AREA */}
-        <div style={{ flex: 1 }}>
-          {selectedProject ? (
-            <ChatBox projectId={selectedProject.id} />
-          ) : (
-            <p>Select a project to open chat</p>
-          )}
+      {/* PROJECT LIST */}
+      {page === "home" && (
+        <div style={styles.layout}>
+          
+          {/* LEFT */}
+          <div style={styles.left}>
+            <h3>Projects</h3>
+
+            {projects.map((p) => (
+              <div
+                key={p.id}
+                style={{
+                  ...styles.cardSmall,
+                  border:
+                    selectedProject?.id === p.id
+                      ? "2px solid #4f46e5"
+                      : "1px solid #ddd"
+                }}
+                onClick={() => setSelectedProject(p)}
+              >
+                <b>{p.title}</b>
+                <p style={{ fontSize: "12px", color: "#666" }}>
+                  {p.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* RIGHT */}
+          <div style={styles.right}>
+            {selectedProject ? (
+              <ChatBox projectId={selectedProject.id} />
+            ) : (
+              <div style={{ color: "#666" }}>
+                Select a project to start chatting 💬
+              </div>
+            )}
+          </div>
+
         </div>
-      </div>
+      )}
     </div>
   );
 }
+
+// STYLES (STARTUP CLEAN UI)
+const styles = {
+  container: {
+    padding: "20px",
+    fontFamily: "Arial",
+    background: "#f9fafb",
+    minHeight: "100vh"
+  },
+
+  logo: {
+    color: "#4f46e5"
+  },
+
+  nav: {
+    marginBottom: "20px",
+    display: "flex",
+    gap: "10px"
+  },
+
+  layout: {
+    display: "flex",
+    gap: "20px"
+  },
+
+  left: {
+    width: "280px"
+  },
+
+  right: {
+    flex: 1
+  },
+
+  card: {
+    padding: "15px",
+    background: "#fff",
+    borderRadius: "10px",
+    border: "1px solid #ddd",
+    maxWidth: "400px"
+  },
+
+  cardSmall: {
+    padding: "10px",
+    marginBottom: "10px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    background: "#fff"
+  },
+
+  input: {
+    width: "100%",
+    padding: "8px",
+    marginBottom: "10px"
+  },
+
+  textarea: {
+    width: "100%",
+    padding: "8px",
+    height: "80px",
+    marginBottom: "10px"
+  },
+
+  primaryBtn: {
+    background: "#4f46e5",
+    color: "#fff",
+    padding: "10px",
+    border: "none",
+    borderRadius: "8px"
+  }
+};
