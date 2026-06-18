@@ -12,8 +12,10 @@ import {
 export default function ChatBox({ projectId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
   const bottomRef = useRef(null);
 
+  // 🔥 REAL-TIME MESSAGES
   useEffect(() => {
     if (!projectId) return;
 
@@ -22,77 +24,132 @@ export default function ChatBox({ projectId }) {
       orderBy("createdAt", "asc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsub = onSnapshot(q, (snap) => {
       setMessages(
-        snapshot.docs.map((doc) => ({
+        snap.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
         }))
       );
     });
 
-    return () => unsubscribe();
+    return () => unsub();
   }, [projectId]);
 
+  // 🔥 AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 🔥 TYPING INDICATOR (local simulation)
+  useEffect(() => {
+    if (!input) {
+      setTyping(false);
+      return;
+    }
+
+    setTyping(true);
+
+    const t = setTimeout(() => setTyping(false), 800);
+    return () => clearTimeout(t);
+  }, [input]);
+
+  // 🚀 SEND MESSAGE
   const sendMessage = async () => {
     if (!input.trim() || !projectId) return;
 
-    await addDoc(
-      collection(db, "projects", projectId, "messages"),
-      {
-        text: input,
-        user: auth.currentUser?.email || "anonymous",
-        createdAt: serverTimestamp()
-      }
-    );
+    try {
+      await addDoc(
+        collection(db, "projects", projectId, "messages"),
+        {
+          text: input.trim(),
+          user: auth.currentUser?.email || "anonymous",
+          createdAt: serverTimestamp()
+        }
+      );
 
-    setInput("");
+      setInput("");
+    } catch (err) {
+      console.log("Send error:", err);
+    }
+  };
+
+  // 👤 GET INITIALS
+  const getInitials = (email) => {
+    if (!email) return "?";
+    return email.slice(0, 2).toUpperCase();
   };
 
   return (
     <div style={styles.container}>
       {/* HEADER */}
       <div style={styles.header}>
-        <h3>💬 SyncUp Chat</h3>
+        <h3>💬 SyncUp Chat Pro</h3>
         <p style={styles.sub}>
-          {projectId ? "Live Project Chat Active" : "Select a project to start chatting"}
+          {projectId ? "Live Collaboration Space" : "Select a project to start"}
         </p>
       </div>
 
       {/* CHAT AREA */}
       <div style={styles.chatArea}>
         {!projectId ? (
-          <div style={styles.empty}>
-            👈 Click “Open Chat” on any project
-          </div>
+          <div style={styles.empty}>👈 Select a project to begin chatting</div>
         ) : messages.length === 0 ? (
-          <div style={styles.empty}>No messages yet 🚀</div>
+          <div style={styles.empty}>No messages yet — start conversation 🚀</div>
         ) : (
-          messages.map((msg) => {
+          messages.map((msg, i) => {
             const isMe = msg.user === auth.currentUser?.email;
+            const showTime = msg.createdAt?.seconds;
 
             return (
               <div
                 key={msg.id}
                 style={{
-                  ...styles.msg,
-                  alignSelf: isMe ? "flex-end" : "flex-start",
-                  background: isMe
-                    ? "linear-gradient(135deg,#4ade80,#22c55e)"
-                    : "#2a2a2a",
-                  color: "#fff"
+                  ...styles.msgRow,
+                  justifyContent: isMe ? "flex-end" : "flex-start"
                 }}
               >
-                <div style={styles.user}>{msg.user}</div>
-                <div>{msg.text}</div>
+                {/* Avatar */}
+                {!isMe && (
+                  <div style={styles.avatar}>
+                    {getInitials(msg.user)}
+                  </div>
+                )}
+
+                {/* Message */}
+                <div
+                  style={{
+                    ...styles.msg,
+                    background: isMe
+                      ? "linear-gradient(135deg,#22c55e,#16a34a)"
+                      : "#2a2a2a"
+                  }}
+                >
+                  <div style={styles.user}>
+                    {isMe ? "You" : msg.user}
+                  </div>
+
+                  <div>{msg.text}</div>
+
+                  {showTime && (
+                    <div style={styles.time}>
+                      {new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })
         )}
+
+        {/* TYPING INDICATOR */}
+        {typing && projectId && (
+          <div style={styles.typing}>Typing...</div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
@@ -101,7 +158,7 @@ export default function ChatBox({ projectId }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type message..."
+          placeholder="Write a message..."
           style={styles.input}
           disabled={!projectId}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -122,17 +179,17 @@ export default function ChatBox({ projectId }) {
   );
 }
 
+/* 🎨 STYLES */
 const styles = {
   container: {
-    borderRadius: "12px",
+    borderRadius: "14px",
     overflow: "hidden",
-    border: "1px solid #333",
+    border: "1px solid #222",
     display: "flex",
     flexDirection: "column",
-    height: "380px",
-    background: "#0f0f0f",
-    color: "#fff",
-    boxShadow: "0 0 20px rgba(0,0,0,0.3)"
+    height: "420px",
+    background: "#0b0b0b",
+    color: "#fff"
   },
 
   header: {
@@ -143,7 +200,7 @@ const styles = {
 
   sub: {
     fontSize: "12px",
-    color: "#aaa"
+    color: "#888"
   },
 
   chatArea: {
@@ -152,8 +209,13 @@ const styles = {
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
-    background: "#0f0f0f"
+    gap: "10px"
+  },
+
+  msgRow: {
+    display: "flex",
+    alignItems: "flex-end",
+    gap: "8px"
   },
 
   msg: {
@@ -169,10 +231,33 @@ const styles = {
     marginBottom: "2px"
   },
 
+  time: {
+    fontSize: "9px",
+    opacity: 0.5,
+    marginTop: "4px"
+  },
+
+  avatar: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "50%",
+    background: "#444",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "10px"
+  },
+
   empty: {
     color: "#777",
     textAlign: "center",
     marginTop: "20px"
+  },
+
+  typing: {
+    fontSize: "12px",
+    color: "#888",
+    marginLeft: "10px"
   },
 
   inputBox: {
@@ -184,8 +269,8 @@ const styles = {
 
   input: {
     flex: 1,
-    padding: "8px",
-    borderRadius: "6px",
+    padding: "9px",
+    borderRadius: "8px",
     border: "1px solid #333",
     background: "#000",
     color: "#fff"
@@ -193,10 +278,10 @@ const styles = {
 
   button: {
     marginLeft: "10px",
-    padding: "8px 14px",
+    padding: "9px 14px",
     border: "none",
-    borderRadius: "6px",
-    background: "linear-gradient(135deg,#3b82f6,#6366f1)",
+    borderRadius: "8px",
+    background: "linear-gradient(135deg,#6366f1,#3b82f6)",
     color: "#fff",
     cursor: "pointer"
   }
