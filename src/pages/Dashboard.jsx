@@ -63,34 +63,25 @@ export default function Dashboard() {
   const createProject = async () => {
   try {
     const docRef = await addDoc(collection(db, "projects"), {
-      title: "TEST PROJECT",
-      desc: "testing write",
-      skillsNeeded: ["react"],
-      createdBy: "test",
-      members: [],
+      title,
+      desc,
+      skillsNeeded: skillsNeeded
+        ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
+        : [],
+      createdBy: auth.currentUser?.email || "unknown",
+      members: [auth.currentUser?.email || "unknown"],
       applications: [],
       createdAt: new Date()
     });
 
-    alert("SUCCESS: " + docRef.id);
-  } catch (e) {
-    alert("ERROR: " + e.message);
-    console.log(e);
-  }
-};
+    console.log("Created:", docRef.id);
 
-    // clear form
     setTitle("");
     setDesc("");
     setSkillsNeeded("");
-
-    alert("Project created successfully 🚀");
-
-  } catch (error) {
-    console.error("❌ Create Project Error:", error);
-    alert(error.message);
-  } finally {
-    setLoading(false);
+  } catch (e) {
+    console.log(e);
+    alert(e.message);
   }
 };
   // ---------------- APPLY ----------------
