@@ -216,6 +216,7 @@ function App() {
 )}
 
 {/* CREATE PROJECT POPUP */}
+     
 {showCreateProject && (
   <div style={styles.overlay}>
     <div style={styles.chatBox}>
@@ -273,6 +274,7 @@ function App() {
     </div>
   </div>
 )}
+     console.log("DB INSTANCE:", db);
     </div>
   );
 }
