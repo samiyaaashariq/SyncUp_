@@ -9,71 +9,58 @@ import {
 import ChatBox from "./ChatBox";
 
 export default function Dashboard() {
-  // ---------------- STATES ----------------
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [skillsNeeded, setSkillsNeeded] = useState("");
   const [projects, setProjects] = useState([]);
 
   const [selectedProject, setSelectedProject] = useState(null);
-
-  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState("projects");
+  const [loading, setLoading] = useState(false);
 
-  // ---------------- REALTIME PROJECTS ----------------
+  // 🔥 REALTIME PROJECTS
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "projects"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setProjects(data);
+    const unsub = onSnapshot(collection(db, "projects"), (snap) => {
+      setProjects(
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      );
     });
 
     return () => unsub();
   }, []);
 
-  // ---------------- CREATE PROJECT ----------------
+  // 🔥 CREATE PROJECT
   const createProject = async () => {
     if (!title || !desc) return alert("Fill all fields");
 
     setLoading(true);
 
-    try {
-      await addDoc(collection(db, "projects"), {
-        title,
-        desc,
-        skillsNeeded: skillsNeeded
-          ? skillsNeeded.split(",").map((s) => s.trim().toLowerCase())
-          : [],
-        createdBy: auth.currentUser?.email || "anonymous",
-        members: [auth.currentUser?.email || "anonymous"],
-        applications: [],
-        createdAt: new Date()
-      });
+    await addDoc(collection(db, "projects"), {
+      title,
+      desc,
+      skillsNeeded: skillsNeeded
+        ? skillsNeeded.split(",").map((s) => s.trim())
+        : [],
+      createdBy: auth.currentUser?.email || "anonymous",
+      members: [],
+      createdAt: new Date()
+    });
 
-      setTitle("");
-      setDesc("");
-      setSkillsNeeded("");
-    } catch (err) {
-      console.log("Create project error:", err);
-    }
-
+    setTitle("");
+    setDesc("");
+    setSkillsNeeded("");
     setLoading(false);
   };
 
-  // ---------------- UI ----------------
   return (
-    <div style={styles.container}>
-      {/* HEADER */}
-      <h1 style={styles.heading}>🚀 SyncUp</h1>
-      <p style={styles.subheading}>
-        Where collaboration begins
-      </p>
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1>🚀 SyncUp</h1>
 
       {/* NAV */}
-      <div style={styles.nav}>
+      <div style={{ marginBottom: "10px" }}>
         <button onClick={() => setPage("projects")}>
           Projects
         </button>
@@ -83,47 +70,43 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* ---------------- CREATE PAGE ---------------- */}
+      {/* CREATE */}
       {page === "create" && (
-        <div style={styles.card}>
-          <h2>Create Project</h2>
+        <div>
+          <h3>Create Project</h3>
 
           <input
-            placeholder="Project Title"
+            placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            style={styles.input}
           />
+          <br /><br />
 
           <textarea
             placeholder="Description"
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            style={styles.textarea}
           />
+          <br /><br />
 
           <input
-            placeholder="Skills (react, node, ai)"
+            placeholder="Skills (comma separated)"
             value={skillsNeeded}
             onChange={(e) => setSkillsNeeded(e.target.value)}
-            style={styles.input}
           />
+          <br /><br />
 
-          <button
-            onClick={createProject}
-            disabled={loading}
-            style={styles.primaryBtn}
-          >
-            {loading ? "Creating..." : "Create Project"}
+          <button onClick={createProject} disabled={loading}>
+            {loading ? "Creating..." : "Create"}
           </button>
         </div>
       )}
 
-      {/* ---------------- PROJECTS + CHAT ---------------- */}
+      {/* PROJECTS */}
       {page === "projects" && (
-        <div style={styles.layout}>
-          {/* LEFT PROJECT LIST */}
-          <div style={styles.sidebar}>
+        <div style={{ display: "flex", gap: "20px" }}>
+          {/* LEFT */}
+          <div style={{ width: "250px" }}>
             <h3>Projects</h3>
 
             {projects.map((p) => (
@@ -134,141 +117,43 @@ export default function Dashboard() {
                   setPage("chat");
                 }}
                 style={{
-                  ...styles.projectCard,
+                  border: "1px solid #ddd",
+                  padding: "10px",
+                  marginBottom: "10px",
+                  cursor: "pointer",
                   background:
                     selectedProject?.id === p.id
-                      ? "#e0e7ff"
+                      ? "#eef2ff"
                       : "#fff"
                 }}
               >
-                <h4>{p.title}</h4>
-                <small>{p.createdBy}</small>
+                <b>{p.title}</b>
+                <p style={{ fontSize: "12px" }}>{p.desc}</p>
               </div>
             ))}
           </div>
 
-          {/* RIGHT INFO */}
-          <div style={styles.infoBox}>
-            <h2>Welcome to SyncUp</h2>
-            <p>Select a project to start collaboration chat.</p>
+          {/* RIGHT */}
+          <div>
+            <h3>Welcome to SyncUp</h3>
+            <p>Select a project to start chat</p>
           </div>
         </div>
       )}
 
-      {/* ---------------- CHAT PAGE ---------------- */}
+      {/* CHAT */}
       {page === "chat" && selectedProject && (
-        <div style={styles.chatPage}>
-          <div style={styles.chatHeader}>
-            <button
-              onClick={() => setPage("projects")}
-              style={styles.backBtn}
-            >
-              ← Back
-            </button>
+        <div>
+          <button onClick={() => setPage("projects")}>
+            ← Back
+          </button>
 
-            <h3>{selectedProject.title}</h3>
-          </div>
+          <h3>{selectedProject.title}</h3>
 
+          {/* 🔥 THIS IS THE FIX */}
           <ChatBox projectId={selectedProject.id} />
         </div>
       )}
     </div>
   );
 }
-
-// ---------------- STYLES ----------------
-const styles = {
-  container: {
-    padding: "20px",
-    fontFamily: "Arial"
-  },
-
-  heading: {
-    marginBottom: "0"
-  },
-
-  subheading: {
-    marginTop: "5px",
-    color: "#666"
-  },
-
-  nav: {
-    margin: "15px 0",
-    display: "flex",
-    gap: "10px"
-  },
-
-  card: {
-    padding: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    maxWidth: "400px"
-  },
-
-  input: {
-    width: "100%",
-    padding: "8px",
-    margin: "5px 0",
-    borderRadius: "6px",
-    border: "1px solid #ccc"
-  },
-
-  textarea: {
-    width: "100%",
-    padding: "8px",
-    margin: "5px 0",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    height: "80px"
-  },
-
-  primaryBtn: {
-    background: "#4f46e5",
-    color: "#fff",
-    padding: "10px",
-    border: "none",
-    borderRadius: "6px",
-    marginTop: "10px"
-  },
-
-  layout: {
-    display: "flex",
-    gap: "20px"
-  },
-
-  sidebar: {
-    width: "250px",
-    borderRight: "1px solid #ddd",
-    paddingRight: "10px"
-  },
-
-  projectCard: {
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    marginBottom: "10px",
-    cursor: "pointer"
-  },
-
-  infoBox: {
-    flex: 1,
-    padding: "20px",
-    color: "#666"
-  },
-
-  chatPage: {
-    marginTop: "20px"
-  },
-
-  chatHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "10px"
-  },
-
-  backBtn: {
-    padding: "5px 10px",
-    cursor: "pointer"
-  }
-};
