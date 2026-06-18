@@ -56,8 +56,21 @@ export default function Dashboard() {
 
   // ---------------- INIT ----------------
   useEffect(() => {
-    loadProfile();
-  }, []);
+  loadProfile(); // keep this
+
+  const q = collection(db, "projects");
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setProjects(data);
+  });
+
+  return () => unsubscribe();
+}, []);
 
   // ---------------- CREATE PROJECT ----------------
   const createProject = async () => {
