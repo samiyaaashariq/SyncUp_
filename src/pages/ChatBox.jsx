@@ -9,18 +9,18 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-export default function ChatBox({ projectId }) {
+export default function ChatBox({ projects = [], projectId }) {
+  const [activeProject, setActiveProject] = useState(projectId || null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
   const bottomRef = useRef(null);
 
-  // 🔥 REAL-TIME MESSAGES
+  // 🔥 REAL-TIME CHAT
   useEffect(() => {
-    if (!projectId) return;
+    if (!activeProject) return;
 
     const q = query(
-      collection(db, "projects", projectId, "messages"),
+      collection(db, "projects", activeProject, "messages"),
       orderBy("createdAt", "asc")
     );
 
@@ -34,255 +34,241 @@ export default function ChatBox({ projectId }) {
     });
 
     return () => unsub();
-  }, [projectId]);
+  }, [activeProject]);
 
   // 🔥 AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔥 TYPING INDICATOR (local simulation)
-  useEffect(() => {
-    if (!input) {
-      setTyping(false);
-      return;
-    }
-
-    setTyping(true);
-
-    const t = setTimeout(() => setTyping(false), 800);
-    return () => clearTimeout(t);
-  }, [input]);
-
   // 🚀 SEND MESSAGE
   const sendMessage = async () => {
-    if (!input.trim() || !projectId) return;
+    if (!input.trim() || !activeProject) return;
 
-    try {
-      await addDoc(
-        collection(db, "projects", projectId, "messages"),
-        {
-          text: input.trim(),
-          user: auth.currentUser?.email || "anonymous",
-          createdAt: serverTimestamp()
-        }
-      );
+    await addDoc(
+      collection(db, "projects", activeProject, "messages"),
+      {
+        text: input,
+        user: auth.currentUser?.email || "anonymous",
+        createdAt: serverTimestamp()
+      }
+    );
 
-      setInput("");
-    } catch (err) {
-      console.log("Send error:", err);
-    }
-  };
-
-  // 👤 GET INITIALS
-  const getInitials = (email) => {
-    if (!email) return "?";
-    return email.slice(0, 2).toUpperCase();
+    setInput("");
   };
 
   return (
-    <div style={styles.container}>
-      {/* HEADER */}
-      <div style={styles.header}>
-        <h3>💬 SyncUp Chat Pro</h3>
-        <p style={styles.sub}>
-          {projectId ? "Live Collaboration Space" : "Select a project to start"}
-        </p>
+    <div style={styles.wrapper}>
+      {/* LEFT SIDEBAR */}
+      <div style={styles.sidebar}>
+        <h3 style={styles.brand}>SyncUp Chat</h3>
+
+        <div style={styles.projectList}>
+          {projects.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => setActiveProject(p.id)}
+              style={{
+                ...styles.projectItem,
+                background:
+                  activeProject === p.id ? "#2563eb" : "transparent",
+                color: activeProject === p.id ? "#fff" : "#333"
+              }}
+            >
+              {p.title}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* CHAT AREA */}
       <div style={styles.chatArea}>
-        {!projectId ? (
-          <div style={styles.empty}>👈 Select a project to begin chatting</div>
-        ) : messages.length === 0 ? (
-          <div style={styles.empty}>No messages yet — start conversation 🚀</div>
-        ) : (
-          messages.map((msg, i) => {
-            const isMe = msg.user === auth.currentUser?.email;
-            const showTime = msg.createdAt?.seconds;
+        {/* HEADER */}
+        <div style={styles.header}>
+          <h3>SyncUp Chat</h3>
+          <p style={styles.sub}>
+            {activeProject
+              ? "Live collaboration space"
+              : "Select a project from left"}
+          </p>
+        </div>
 
-            return (
-              <div
-                key={msg.id}
-                style={{
-                  ...styles.msgRow,
-                  justifyContent: isMe ? "flex-end" : "flex-start"
-                }}
-              >
-                {/* Avatar */}
-                {!isMe && (
-                  <div style={styles.avatar}>
-                    {getInitials(msg.user)}
-                  </div>
-                )}
+        {/* MESSAGES */}
+        <div style={styles.messages}>
+          {!activeProject ? (
+            <div style={styles.empty}>
+              👈 Select a project to start chatting
+            </div>
+          ) : messages.length === 0 ? (
+            <div style={styles.empty}>
+              No messages yet — start conversation 🚀
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const isMe =
+                msg.user === auth.currentUser?.email;
 
-                {/* Message */}
+              return (
                 <div
+                  key={msg.id}
                   style={{
                     ...styles.msg,
+                    alignSelf: isMe
+                      ? "flex-end"
+                      : "flex-start",
                     background: isMe
-                      ? "linear-gradient(135deg,#22c55e,#16a34a)"
-                      : "#2a2a2a"
+                      ? "#2563eb"
+                      : "#f1f5f9",
+                    color: isMe ? "#fff" : "#111"
                   }}
                 >
                   <div style={styles.user}>
                     {isMe ? "You" : msg.user}
                   </div>
-
                   <div>{msg.text}</div>
-
-                  {showTime && (
-                    <div style={styles.time}>
-                      {new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })}
-                    </div>
-                  )}
                 </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
 
-        {/* TYPING INDICATOR */}
-        {typing && projectId && (
-          <div style={styles.typing}>Typing...</div>
-        )}
+          <div ref={bottomRef} />
+        </div>
 
-        <div ref={bottomRef} />
-      </div>
+        {/* INPUT */}
+        <div style={styles.inputBox}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={
+              activeProject
+                ? "Write a message..."
+                : "Select a project first"
+            }
+            style={styles.input}
+            disabled={!activeProject}
+            onKeyDown={(e) =>
+              e.key === "Enter" && sendMessage()
+            }
+          />
 
-      {/* INPUT */}
-      <div style={styles.inputBox}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Write a message..."
-          style={styles.input}
-          disabled={!projectId}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-
-        <button
-          onClick={sendMessage}
-          disabled={!projectId}
-          style={{
-            ...styles.button,
-            opacity: projectId ? 1 : 0.5
-          }}
-        >
-          Send
-        </button>
+          <button
+            onClick={sendMessage}
+            disabled={!activeProject}
+            style={{
+              ...styles.button,
+              opacity: activeProject ? 1 : 0.5
+            }}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-/* 🎨 STYLES */
+/* 🎨 STARTUP STYLE UI */
 const styles = {
-  container: {
-    borderRadius: "14px",
+  wrapper: {
+    display: "flex",
+    height: "420px",
+    borderRadius: "12px",
     overflow: "hidden",
-    border: "1px solid #222",
+    border: "1px solid #e5e7eb",
+    fontFamily: "Arial"
+  },
+
+  sidebar: {
+    width: "220px",
+    background: "#f8fafc",
+    borderRight: "1px solid #e5e7eb",
+    padding: "10px"
+  },
+
+  brand: {
+    marginBottom: "10px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#111"
+  },
+
+  projectList: {
     display: "flex",
     flexDirection: "column",
-    height: "420px",
-    background: "#0b0b0b",
-    color: "#fff"
+    gap: "6px"
+  },
+
+  projectItem: {
+    padding: "8px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "14px"
+  },
+
+  chatArea: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    background: "#fff"
   },
 
   header: {
-    padding: "12px",
-    background: "#111",
-    borderBottom: "1px solid #222"
+    padding: "10px",
+    borderBottom: "1px solid #e5e7eb"
   },
 
   sub: {
     fontSize: "12px",
-    color: "#888"
+    color: "#666"
   },
 
-  chatArea: {
+  messages: {
     flex: 1,
     padding: "10px",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
-    gap: "10px"
-  },
-
-  msgRow: {
-    display: "flex",
-    alignItems: "flex-end",
     gap: "8px"
   },
 
   msg: {
     padding: "8px 10px",
     borderRadius: "10px",
-    maxWidth: "70%",
+    maxWidth: "60%",
     fontSize: "14px"
   },
 
   user: {
     fontSize: "10px",
     opacity: 0.6,
-    marginBottom: "2px"
-  },
-
-  time: {
-    fontSize: "9px",
-    opacity: 0.5,
-    marginTop: "4px"
-  },
-
-  avatar: {
-    width: "28px",
-    height: "28px",
-    borderRadius: "50%",
-    background: "#444",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "10px"
+    marginBottom: "3px"
   },
 
   empty: {
-    color: "#777",
     textAlign: "center",
-    marginTop: "20px"
-  },
-
-  typing: {
-    fontSize: "12px",
     color: "#888",
-    marginLeft: "10px"
+    marginTop: "30px"
   },
 
   inputBox: {
     display: "flex",
     padding: "10px",
-    borderTop: "1px solid #222",
-    background: "#111"
+    borderTop: "1px solid #e5e7eb"
   },
 
   input: {
     flex: 1,
-    padding: "9px",
-    borderRadius: "8px",
-    border: "1px solid #333",
-    background: "#000",
-    color: "#fff"
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc"
   },
 
   button: {
     marginLeft: "10px",
-    padding: "9px 14px",
-    border: "none",
-    borderRadius: "8px",
-    background: "linear-gradient(135deg,#6366f1,#3b82f6)",
+    padding: "8px 14px",
+    background: "#2563eb",
     color: "#fff",
-    cursor: "pointer"
+    border: "none",
+    borderRadius: "6px"
   }
 };
