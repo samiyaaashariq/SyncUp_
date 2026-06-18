@@ -21,6 +21,16 @@ export default function Dashboard() {
   const [activeChat, setActiveChat] = useState(null);
   const [page, setPage] = useState("projects");
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // ---------------- AUTH SAFE LOAD ----------------
+  useEffect(() => {
+    const unsubscribeAuth = auth.onAuthStateChanged((u) => {
+      setUser(u);
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
 
   // ---------------- PROFILE LOAD ----------------
   const loadProfile = () => {
@@ -28,11 +38,11 @@ export default function Dashboard() {
     if (data) setProfile(JSON.parse(data));
   };
 
-  // ---------------- REALTIME PROJECTS ----------------
-  const fetchProjects = () => {
+  // ---------------- REALTIME PROJECTS (FIXED) ----------------
+  useEffect(() => {
     const q = collection(db, "projects");
 
-    onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
@@ -40,61 +50,81 @@ export default function Dashboard() {
 
       setProjects(data);
     });
-  };
+
+    return () => unsubscribe(); // 🔥 IMPORTANT FIX
+  }, []);
+
+  // ---------------- INIT ----------------
+  useEffect(() => {
+    loadProfile();
+  }, []);
 
   // ---------------- CREATE PROJECT ----------------
   const createProject = async () => {
     if (!title || !desc) return alert("Fill all fields");
+    if (!user?.email) return alert("User not logged in");
 
     setLoading(true);
 
-    await addDoc(collection(db, "projects"), {
-      title,
-      desc,
-      skillsNeeded: skillsNeeded
-        ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
-        : [],
-      createdBy: auth.currentUser.email,
-      members: [auth.currentUser.email],
-      applications: [],
-      createdAt: new Date()
-    });
+    try {
+      await addDoc(collection(db, "projects"), {
+        title,
+        desc,
+        skillsNeeded: skillsNeeded
+          ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
+          : [],
+        createdBy: user.email,
+        members: [user.email],
+        applications: [],
+        createdAt: new Date()
+      });
 
-    setTitle("");
-    setDesc("");
-    setSkillsNeeded("");
+      setTitle("");
+      setDesc("");
+      setSkillsNeeded("");
+    } catch (err) {
+      console.log(err);
+      alert("Failed to create project");
+    }
 
     setLoading(false);
   };
 
   // ---------------- APPLY ----------------
   const applyToProject = async (project) => {
-    const userEmail = auth.currentUser.email;
+    if (!user?.email) return alert("Login required");
 
     const ref = doc(db, "projects", project.id);
 
-    await updateDoc(ref, {
-      applications: arrayUnion(userEmail)
-    });
+    try {
+      await updateDoc(ref, {
+        applications: arrayUnion(user.email)
+      });
 
-    // Notification (safe simple version)
-    await addDoc(collection(db, "notifications"), {
-      text: `${userEmail} applied to ${project.title}`,
-      owner: project.createdBy,
-      read: false,
-      time: new Date()
-    });
+      await addDoc(collection(db, "notifications"), {
+        text: `${user.email} applied to ${project.title}`,
+        owner: project.createdBy,
+        read: false,
+        time: new Date()
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // ---------------- JOIN ----------------
   const joinProject = async (project) => {
-    const userEmail = auth.currentUser.email;
+    if (!user?.email) return alert("Login required");
 
     const ref = doc(db, "projects", project.id);
 
-    await updateDoc(ref, {
-      members: arrayUnion(userEmail)
-    });
+    try {
+      await updateDoc(ref, {
+        members: arrayUnion(user.email)
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // ---------------- MATCH SCORE ----------------
@@ -105,12 +135,6 @@ export default function Dashboard() {
       profile.skills.includes(skill)
     ).length;
   };
-
-  // ---------------- INIT ----------------
-  useEffect(() => {
-    fetchProjects();
-    loadProfile();
-  }, []);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -171,6 +195,10 @@ export default function Dashboard() {
         <>
           <h2>Recommended ⭐</h2>
 
+          {projects.length === 0 && (
+            <p>No projects yet. Create one 🚀</p>
+          )}
+
           {projects
             .sort((a, b) => matchScore(b) - matchScore(a))
             .map((p) => (
@@ -195,7 +223,6 @@ export default function Dashboard() {
 
                 <hr />
 
-                {/* ACTIONS */}
                 <button onClick={() => applyToProject(p)}>
                   Apply 🚀
                 </button>
@@ -204,7 +231,6 @@ export default function Dashboard() {
                   Join 🤝
                 </button>
 
-                {/* CHAT */}
                 <button onClick={() => setActiveChat(p.id)}>
                   Open Chat 💬
                 </button>
