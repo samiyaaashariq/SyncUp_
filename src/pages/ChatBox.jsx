@@ -10,37 +10,41 @@ export default function ChatBox({ projectId }) {
   const sendMessage = () => {
     if (!input.trim()) return;
 
-    const newMessage = { text: input, sender: "user" };
-
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [
+      ...prev,
+      { text: input, sender: "user" },
+    ]);
 
     setInput("");
 
-    // simple bot reply (temporary logic)
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { text: "Got it 👍 (bot reply coming soon)", sender: "bot" },
+        { text: "Got it 👍 (bot reply)", sender: "bot" },
       ]);
-    }, 500);
+    }, 400);
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h3>SyncUp Chat</h3>
-        <p style={styles.subtext}>Project ID: {projectId || "General"}</p>
+        <p style={styles.subtext}>
+          Project: {projectId ? projectId : "General"}
+        </p>
       </div>
 
       <div style={styles.chatArea}>
         {messages.map((msg, index) => (
           <div
             key={index}
-            style={
-              msg.sender === "user"
-                ? styles.userMsg
-                : styles.botMsg
-            }
+            style={{
+              ...styles.message,
+              alignSelf:
+                msg.sender === "user" ? "flex-end" : "flex-start",
+              backgroundColor:
+                msg.sender === "user" ? "#dcf8c6" : "#eee",
+            }}
           >
             {msg.text}
           </div>
@@ -67,14 +71,16 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    height: "100%",
-    fontFamily: "Arial",
+    height: "300px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    overflow: "hidden",
   },
 
   header: {
     padding: "10px",
-    borderBottom: "1px solid #ddd",
     backgroundColor: "#f5f5f5",
+    borderBottom: "1px solid #ddd",
   },
 
   subtext: {
@@ -86,26 +92,16 @@ const styles = {
     flex: 1,
     padding: "10px",
     overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
     backgroundColor: "#fff",
   },
 
-  userMsg: {
-    textAlign: "right",
-    margin: "5px",
+  message: {
     padding: "8px",
-    backgroundColor: "#dcf8c6",
     borderRadius: "8px",
-    display: "inline-block",
-    alignSelf: "flex-end",
-  },
-
-  botMsg: {
-    textAlign: "left",
-    margin: "5px",
-    padding: "8px",
-    backgroundColor: "#eee",
-    borderRadius: "8px",
-    display: "inline-block",
+    maxWidth: "70%",
   },
 
   inputBox: {
@@ -128,6 +124,5 @@ const styles = {
     backgroundColor: "#000",
     color: "#fff",
     borderRadius: "5px",
-    cursor: "pointer",
   },
 };
