@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ChatBox from "./pages/ChatBox";
+import Signup from "./pages/Signup";
 
 function App() {
   const [showChat, setShowChat] = useState(false);
