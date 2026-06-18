@@ -14,7 +14,7 @@ export default function ChatBox({ projectId }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
 
-  // REAL-TIME MESSAGES
+  // 🔥 REALTIME CHAT
   useEffect(() => {
     if (!projectId) return;
 
@@ -25,9 +25,9 @@ export default function ChatBox({ projectId }) {
 
     const unsub = onSnapshot(q, (snap) => {
       setMessages(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data()
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
         }))
       );
     });
@@ -35,11 +35,12 @@ export default function ChatBox({ projectId }) {
     return () => unsub();
   }, [projectId]);
 
+  // 🔥 AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // SEND MESSAGE
+  // 🚀 SEND MESSAGE
   const sendMessage = async () => {
     if (!input.trim() || !projectId) return;
 
@@ -56,108 +57,39 @@ export default function ChatBox({ projectId }) {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3>SyncUp Chat</h3>
-      </div>
-
-      <div style={styles.chat}>
-        {messages.map((msg) => {
-          const isMe =
-            msg.user === auth.currentUser?.email;
-
-          return (
-            <div
-              key={msg.id}
-              style={{
-                ...styles.msg,
-                alignSelf: isMe ? "flex-end" : "flex-start",
-                background: isMe ? "#4f46e5" : "#f1f5f9",
-                color: isMe ? "#fff" : "#111"
-              }}
-            >
-              <div style={styles.user}>{msg.user}</div>
-              <div>{msg.text}</div>
-            </div>
-          );
-        })}
-
+    <div style={{ border: "1px solid #ddd", padding: "10px" }}>
+      <div style={{ height: "300px", overflowY: "auto" }}>
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            style={{
+              textAlign:
+                msg.user === auth.currentUser?.email
+                  ? "right"
+                  : "left",
+              margin: "5px"
+            }}
+          >
+            <b>{msg.user}</b>
+            <div>{msg.text}</div>
+          </div>
+        ))}
         <div ref={bottomRef} />
       </div>
 
-      <div style={styles.inputBox}>
+      <div style={{ display: "flex", marginTop: "10px" }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Write message..."
-          style={styles.input}
+          placeholder="Type message..."
+          style={{ flex: 1 }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
-        <button onClick={sendMessage} style={styles.button}>
+        <button onClick={sendMessage}>
           Send
         </button>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    height: "400px",
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden"
-  },
-
-  header: {
-    padding: "10px",
-    borderBottom: "1px solid #ddd",
-    background: "#f8fafc"
-  },
-
-  chat: {
-    flex: 1,
-    padding: "10px",
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px"
-  },
-
-  msg: {
-    padding: "8px 10px",
-    borderRadius: "10px",
-    maxWidth: "65%"
-  },
-
-  user: {
-    fontSize: "10px",
-    opacity: 0.6,
-    marginBottom: "3px"
-  },
-
-  inputBox: {
-    display: "flex",
-    padding: "10px",
-    borderTop: "1px solid #ddd"
-  },
-
-  input: {
-    flex: 1,
-    padding: "8px",
-    border: "1px solid #ccc",
-    borderRadius: "6px"
-  },
-
-  button: {
-    marginLeft: "10px",
-    padding: "8px 14px",
-    background: "#4f46e5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px"
-  }
-};
