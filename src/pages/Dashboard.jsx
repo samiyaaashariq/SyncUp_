@@ -3,7 +3,11 @@ import { db, auth } from "../firebase";
 import {
   collection,
   addDoc,
-  onSnapshot
+  onSnapshot,
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
 } from "firebase/firestore";
 
 import ChatBox from "./ChatBox";
@@ -22,6 +26,8 @@ export default function Dashboard() {
       setProjects(
         snap.docs.map((d) => ({
           id: d.id,
+          members: [],
+          applicants: [],
           ...d.data()
         }))
       );
@@ -37,7 +43,9 @@ export default function Dashboard() {
     await addDoc(collection(db, "projects"), {
       title,
       desc,
-      createdBy: auth.currentUser?.email || "anonymous",
+      createdBy: auth.currentUser?.email,
+      members: [auth.currentUser?.email],
+      applicants: [],
       createdAt: new Date()
     });
 
@@ -45,10 +53,28 @@ export default function Dashboard() {
     setDesc("");
   };
 
+  // APPLY TO JOIN
+  const applyToProject = async (projectId) => {
+    const user = auth.currentUser?.email;
+    if (!user) return;
+
+    await updateDoc(doc(db, "projects", projectId), {
+      applicants: arrayUnion(user)
+    });
+
+    alert("Request sent 🚀");
+  };
+
+  // ACCEPT MEMBER
+  const acceptMember = async (projectId, email) => {
+    await updateDoc(doc(db, "projects", projectId), {
+      members: arrayUnion(email),
+      applicants: arrayRemove(email)
+    });
+  };
+
   return (
     <div style={styles.container}>
-      
-      {/* HEADER */}
       <h1 style={styles.logo}>🚀 SyncUp</h1>
 
       {/* NAV */}
@@ -63,7 +89,7 @@ export default function Dashboard() {
           <h3>Create Project</h3>
 
           <input
-            placeholder="Project Title"
+            placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             style={styles.input}
@@ -77,7 +103,7 @@ export default function Dashboard() {
           />
 
           <button onClick={createProject} style={styles.primaryBtn}>
-            Publish Project
+            Publish
           </button>
         </div>
       )}
@@ -85,7 +111,6 @@ export default function Dashboard() {
       {/* PROJECT LIST */}
       {page === "home" && (
         <div style={styles.layout}>
-          
           {/* LEFT */}
           <div style={styles.left}>
             <h3>Projects</h3>
@@ -93,19 +118,35 @@ export default function Dashboard() {
             {projects.map((p) => (
               <div
                 key={p.id}
-                style={{
-                  ...styles.cardSmall,
-                  border:
-                    selectedProject?.id === p.id
-                      ? "2px solid #4f46e5"
-                      : "1px solid #ddd"
-                }}
+                style={styles.cardSmall}
                 onClick={() => setSelectedProject(p)}
               >
                 <b>{p.title}</b>
-                <p style={{ fontSize: "12px", color: "#666" }}>
-                  {p.desc}
-                </p>
+                <p>{p.desc}</p>
+
+                <button onClick={() => applyToProject(p.id)}>
+                  Apply 🚀
+                </button>
+
+                {/* OWNER PANEL */}
+                {p.createdBy === auth.currentUser?.email && (
+                  <div>
+                    <h5>Applicants</h5>
+
+                    {p.applicants?.map((email) => (
+                      <div key={email}>
+                        {email}
+                        <button
+                          onClick={() =>
+                            acceptMember(p.id, email)
+                          }
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -113,86 +154,47 @@ export default function Dashboard() {
           {/* RIGHT */}
           <div style={styles.right}>
             {selectedProject ? (
-              <ChatBox projectId={selectedProject.id} />
+              <ChatBox project={selectedProject} />
             ) : (
-              <div style={{ color: "#666" }}>
-                Select a project to start chatting 💬
-              </div>
+              <p>Select a project</p>
             )}
           </div>
-
         </div>
       )}
     </div>
   );
 }
 
-// STYLES (STARTUP CLEAN UI)
 const styles = {
-  container: {
-    padding: "20px",
-    fontFamily: "Arial",
-    background: "#f9fafb",
-    minHeight: "100vh"
-  },
-
-  logo: {
-    color: "#4f46e5"
-  },
-
-  nav: {
-    marginBottom: "20px",
-    display: "flex",
-    gap: "10px"
-  },
-
-  layout: {
-    display: "flex",
-    gap: "20px"
-  },
-
-  left: {
-    width: "280px"
-  },
-
-  right: {
-    flex: 1
-  },
+  container: { padding: 20, fontFamily: "Arial" },
+  logo: { color: "#4f46e5" },
+  nav: { display: "flex", gap: 10, marginBottom: 10 },
+  layout: { display: "flex", gap: 20 },
+  left: { width: 300 },
+  right: { flex: 1 },
 
   card: {
-    padding: "15px",
+    padding: 15,
     background: "#fff",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-    maxWidth: "400px"
+    border: "1px solid #ddd"
   },
 
   cardSmall: {
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    background: "#fff"
+    padding: 10,
+    marginBottom: 10,
+    border: "1px solid #ddd",
+    cursor: "pointer"
   },
 
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px"
-  },
-
-  textarea: {
-    width: "100%",
-    padding: "8px",
-    height: "80px",
-    marginBottom: "10px"
-  },
+  input: { width: "100%", padding: 8 },
+  textarea: { width: "100%", padding: 8, height: 80 },
 
   primaryBtn: {
     background: "#4f46e5",
     color: "#fff",
-    padding: "10px",
-    border: "none",
-    borderRadius: "8px"
-  }
+    padding: 10,
+    border: "none"
+  },
+
+  right: { padding: 10 }
 };
