@@ -9,22 +9,20 @@ import {
 import ChatBox from "./ChatBox";
 
 export default function Dashboard() {
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [skillsNeeded, setSkillsNeeded] = useState("");
-  const [projects, setProjects] = useState([]);
-
-  const [selectedProject, setSelectedProject] = useState(null);
   const [page, setPage] = useState("projects");
-  const [loading, setLoading] = useState(false);
 
-  // 🔥 REALTIME PROJECTS
+  // REALTIME PROJECTS
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(
-        snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data()
         }))
       );
     });
@@ -32,47 +30,36 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  // 🔥 CREATE PROJECT
+  // CREATE PROJECT
   const createProject = async () => {
     if (!title || !desc) return alert("Fill all fields");
-
-    setLoading(true);
 
     await addDoc(collection(db, "projects"), {
       title,
       desc,
-      skillsNeeded: skillsNeeded
-        ? skillsNeeded.split(",").map((s) => s.trim())
-        : [],
-      createdBy: auth.currentUser?.email || "anonymous",
-      members: [],
-      createdAt: new Date()
+      createdBy: auth.currentUser?.email || "anonymous"
     });
 
     setTitle("");
     setDesc("");
-    setSkillsNeeded("");
-    setLoading(false);
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+    <div style={{ padding: "20px" }}>
       <h1>🚀 SyncUp</h1>
 
       {/* NAV */}
-      <div style={{ marginBottom: "10px" }}>
-        <button onClick={() => setPage("projects")}>
-          Projects
-        </button>
+      <button onClick={() => setPage("projects")}>
+        Projects
+      </button>
 
-        <button onClick={() => setPage("create")}>
-          Create
-        </button>
-      </div>
+      <button onClick={() => setPage("create")}>
+        Create
+      </button>
 
       {/* CREATE */}
       {page === "create" && (
-        <div>
+        <div style={{ marginTop: "20px" }}>
           <h3>Create Project</h3>
 
           <input
@@ -89,23 +76,15 @@ export default function Dashboard() {
           />
           <br /><br />
 
-          <input
-            placeholder="Skills (comma separated)"
-            value={skillsNeeded}
-            onChange={(e) => setSkillsNeeded(e.target.value)}
-          />
-          <br /><br />
-
-          <button onClick={createProject} disabled={loading}>
-            {loading ? "Creating..." : "Create"}
+          <button onClick={createProject}>
+            Create
           </button>
         </div>
       )}
 
-      {/* PROJECTS */}
+      {/* PROJECT LIST */}
       {page === "projects" && (
         <div style={{ display: "flex", gap: "20px" }}>
-          {/* LEFT */}
           <div style={{ width: "250px" }}>
             <h3>Projects</h3>
 
@@ -117,25 +96,22 @@ export default function Dashboard() {
                   setPage("chat");
                 }}
                 style={{
-                  border: "1px solid #ddd",
                   padding: "10px",
+                  border: "1px solid #ddd",
                   marginBottom: "10px",
                   cursor: "pointer",
                   background:
                     selectedProject?.id === p.id
-                      ? "#eef2ff"
+                      ? "#e0e7ff"
                       : "#fff"
                 }}
               >
                 <b>{p.title}</b>
-                <p style={{ fontSize: "12px" }}>{p.desc}</p>
               </div>
             ))}
           </div>
 
-          {/* RIGHT */}
           <div>
-            <h3>Welcome to SyncUp</h3>
             <p>Select a project to start chat</p>
           </div>
         </div>
@@ -148,10 +124,7 @@ export default function Dashboard() {
             ← Back
           </button>
 
-          <h3>{selectedProject.title}</h3>
-
-          {/* 🔥 THIS IS THE FIX */}
-          <ChatBox projectId={selectedProject.id} />
+          <ChatBox project={selectedProject} />
         </div>
       )}
     </div>
