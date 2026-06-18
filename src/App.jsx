@@ -3,6 +3,10 @@ import ChatBox from "./pages/ChatBox";
 
 function App() {
   const [showChat, setShowChat] = useState(false);
+  const [showApply, setShowApply] = useState(false);
+
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [applications, setApplications] = useState([]);
 
   const [projects, setProjects] = useState([
     {
@@ -35,18 +39,6 @@ function App() {
       <div style={styles.buttonRow}>
         <button
           style={styles.primaryBtn}
-          onClick={() => {
-            document.getElementById("projects").scrollIntoView({
-              behavior: "smooth",
-            });
-            setShowChat(true);
-          }}
-        >
-          Join a Project
-        </button>
-
-        <button
-          style={styles.secondaryBtn}
           onClick={() =>
             document.getElementById("projects").scrollIntoView({
               behavior: "smooth",
@@ -54,6 +46,13 @@ function App() {
           }
         >
           Explore Projects
+        </button>
+
+        <button
+          style={styles.secondaryBtn}
+          onClick={() => setShowChat(true)}
+        >
+          Open Chat
         </button>
       </div>
 
@@ -77,9 +76,13 @@ function App() {
                 ))}
               </div>
 
+              {/* APPLY BUTTON */}
               <button
                 style={styles.cardButton}
-                onClick={() => setShowChat(true)}
+                onClick={() => {
+                  setSelectedProject(p);
+                  setShowApply(true);
+                }}
               >
                 Apply to Join
               </button>
@@ -88,7 +91,7 @@ function App() {
         </div>
       </div>
 
-      {/* CHAT POPUP */}
+      {/* CHAT POPUP (SEPARATE SYSTEM) */}
       {showChat && (
         <div style={styles.overlay}>
           <div style={styles.chatBox}>
@@ -100,6 +103,43 @@ function App() {
             </button>
 
             <ChatBox />
+          </div>
+        </div>
+      )}
+
+      {/* APPLY SYSTEM POPUP */}
+      {showApply && (
+        <div style={styles.overlay}>
+          <div style={styles.chatBox}>
+            <button
+              style={styles.closeBtn}
+              onClick={() => setShowApply(false)}
+            >
+              ✖
+            </button>
+
+            <h3>Apply to Join Project</h3>
+            <p style={{ color: "#666" }}>
+              {selectedProject?.title}
+            </p>
+
+            <input style={styles.input} placeholder="Your Name" />
+            <input style={styles.input} placeholder="Your Skill (e.g. React, AI)" />
+
+            <button
+              style={styles.cardButton}
+              onClick={() => {
+                setApplications([
+                  ...applications,
+                  selectedProject?.title,
+                ]);
+
+                alert("Application Submitted 🚀");
+                setShowApply(false);
+              }}
+            >
+              Submit Application
+            </button>
           </div>
         </div>
       )}
@@ -236,7 +276,8 @@ const styles = {
     backgroundColor: "#fff",
     borderRadius: "10px",
     position: "relative",
-    overflow: "hidden",
+    overflow: "auto",
+    padding: "20px",
   },
 
   closeBtn: {
@@ -250,6 +291,14 @@ const styles = {
     width: "30px",
     height: "30px",
     cursor: "pointer",
+  },
+
+  input: {
+    width: "90%",
+    padding: "10px",
+    margin: "8px 0",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
   },
 };
 
