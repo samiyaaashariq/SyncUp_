@@ -14,7 +14,6 @@ export default function Dashboard() {
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [page, setPage] = useState("projects");
 
   // REALTIME PROJECTS
   useEffect(() => {
@@ -45,88 +44,61 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
       <h1>🚀 SyncUp</h1>
 
-      {/* NAV */}
-      <button onClick={() => setPage("projects")}>
-        Projects
-      </button>
-
-      <button onClick={() => setPage("create")}>
-        Create
-      </button>
-
       {/* CREATE */}
-      {page === "create" && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Create Project</h3>
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          placeholder="Description"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
+        <button onClick={createProject}>
+          Create
+        </button>
+      </div>
 
-          <input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <br /><br />
+      <div style={{ display: "flex", gap: "20px" }}>
+        {/* PROJECT LIST */}
+        <div style={{ width: "250px" }}>
+          <h3>Projects</h3>
 
-          <textarea
-            placeholder="Description"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-          />
-          <br /><br />
-
-          <button onClick={createProject}>
-            Create
-          </button>
+          {projects.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedProject(p)}
+              style={{
+                padding: "10px",
+                border: "1px solid #ddd",
+                marginBottom: "10px",
+                cursor: "pointer",
+                background:
+                  selectedProject?.id === p.id
+                    ? "#eef2ff"
+                    : "#fff"
+              }}
+            >
+              <b>{p.title}</b>
+              <p style={{ fontSize: "12px" }}>{p.desc}</p>
+            </div>
+          ))}
         </div>
-      )}
 
-      {/* PROJECT LIST */}
-      {page === "projects" && (
-        <div style={{ display: "flex", gap: "20px" }}>
-          <div style={{ width: "250px" }}>
-            <h3>Projects</h3>
-
-            {projects.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => {
-                  setSelectedProject(p);
-                  setPage("chat");
-                }}
-                style={{
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  marginBottom: "10px",
-                  cursor: "pointer",
-                  background:
-                    selectedProject?.id === p.id
-                      ? "#e0e7ff"
-                      : "#fff"
-                }}
-              >
-                <b>{p.title}</b>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <p>Select a project to start chat</p>
-          </div>
+        {/* CHAT AREA */}
+        <div style={{ flex: 1 }}>
+          {selectedProject ? (
+            <ChatBox projectId={selectedProject.id} />
+          ) : (
+            <p>Select a project to open chat</p>
+          )}
         </div>
-      )}
-
-      {/* CHAT */}
-      {page === "chat" && selectedProject && (
-        <div>
-          <button onClick={() => setPage("projects")}>
-            ← Back
-          </button>
-
-          <ChatBox project={selectedProject} />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
