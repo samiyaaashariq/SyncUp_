@@ -13,6 +13,11 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [authMode, setAuthMode] = useState("login");
   const [loading, setLoading] = useState(true);
+  const [showCreateProject, setShowCreateProject] = useState(false);
+
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newTags, setNewTags] = useState("");
   const [projects, setProjects] = useState([
     {
       title: "AI Study Planner",
@@ -105,6 +110,12 @@ function App() {
         >
           Open Chat
         </button>
+        <button
+          style={styles.primaryBtn}
+          onClick={() => setShowCreateProject(true)}
+        >
+          + Create Project
+        </button>
       </div>
       
 
@@ -195,6 +206,73 @@ function App() {
           </div>
         </div>
       )}
+      {/* APPLY SYSTEM POPUP */}
+{showApply && (
+  <div style={styles.overlay}>
+    <div style={styles.chatBox}>
+      ...
+    </div>
+  </div>
+)}
+
+{/* CREATE PROJECT POPUP */}
+{showCreateProject && (
+  <div style={styles.overlay}>
+    <div style={styles.chatBox}>
+      <button
+        style={styles.closeBtn}
+        onClick={() => setShowCreateProject(false)}
+      >
+        ✖
+      </button>
+
+      <h3>Create New Project</h3>
+
+      <input
+        style={styles.input}
+        placeholder="Project Title"
+        value={newTitle}
+        onChange={(e) => setNewTitle(e.target.value)}
+      />
+
+      <input
+        style={styles.input}
+        placeholder="Project Description"
+        value={newDesc}
+        onChange={(e) => setNewDesc(e.target.value)}
+      />
+
+      <input
+        style={styles.input}
+        placeholder="Tags (comma separated)"
+        value={newTags}
+        onChange={(e) => setNewTags(e.target.value)}
+      />
+
+      <button
+        style={styles.cardButton}
+        onClick={() => {
+          const project = {
+            title: newTitle,
+            desc: newDesc,
+            tags: newTags.split(",").map(tag => tag.trim()),
+          };
+
+          setProjects([...projects, project]);
+
+          setNewTitle("");
+          setNewDesc("");
+          setNewTags("");
+
+          alert("Project Created 🚀");
+          setShowCreateProject(false);
+        }}
+      >
+        Create Project
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
