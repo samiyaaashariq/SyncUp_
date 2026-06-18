@@ -61,32 +61,23 @@ export default function Dashboard() {
 
   // ---------------- CREATE PROJECT ----------------
   const createProject = async () => {
-  if (!user?.email) {
-    alert("User not logged in");
-    return;
-  }
-
-  if (!title.trim() || !desc.trim()) {
-    alert("Please fill all fields");
-    return;
-  }
-
   try {
-    setLoading(true);
-
     const docRef = await addDoc(collection(db, "projects"), {
-      title: title.trim(),
-      desc: desc.trim(),
-      skillsNeeded: skillsNeeded
-        ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
-        : [],
-      createdBy: user.email,
-      members: [user.email],
+      title: "TEST PROJECT",
+      desc: "testing write",
+      skillsNeeded: ["react"],
+      createdBy: "test",
+      members: [],
       applications: [],
       createdAt: new Date()
     });
 
-    console.log("✅ Project created with ID:", docRef.id);
+    alert("SUCCESS: " + docRef.id);
+  } catch (e) {
+    alert("ERROR: " + e.message);
+    console.log(e);
+  }
+};
 
     // clear form
     setTitle("");
