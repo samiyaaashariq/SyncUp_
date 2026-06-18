@@ -1,84 +1,116 @@
 import React from "react";
 
 function App() {
+  const projects = [
+    {
+      title: "AI Study Buddy",
+      desc: "An AI tool to help students plan and study smarter.",
+    },
+    {
+      title: "Campus Connect",
+      desc: "A platform to connect students within the same college.",
+    },
+    {
+      title: "Dev Portfolio Builder",
+      desc: "Generate and host developer portfolios easily.",
+    },
+  ];
+
   return (
     <div style={styles.container}>
-      <h1 style={styles.heading}>SyncUp</h1>
+      {/* HERO SECTION */}
+      <h1 style={styles.title}>SyncUp 🚀</h1>
 
-      <p style={styles.subtext}>
-        Find teammates, build projects, and bring ideas to life together.
+      <p style={styles.subtitle}>
+        Find teammates, build real-world projects, and grow together through collaboration.
       </p>
 
-      {/* Buttons Section */}
-      <div style={styles.buttonContainer}>
-        <button style={styles.primaryButton}>Join Project</button>
-        <button style={styles.secondaryButton}>Explore Projects</button>
+      {/* BUTTONS */}
+      <div style={styles.buttonRow}>
+        <button style={styles.primaryBtn}>Join a Project</button>
+        <button style={styles.secondaryBtn}>Explore Projects</button>
       </div>
 
-      {/* Info Card */}
-      <div style={styles.card}>
-        <h2>Build Together 🚀</h2>
-        <p>
-          A platform where students collaborate, build real-world projects,
-          and grow together through teamwork and innovation.
-        </p>
+      {/* PROJECT SECTION */}
+      <h2 style={styles.sectionTitle}>Featured Projects</h2>
+
+      <div style={styles.grid}>
+        {projects.map((project, index) => (
+          <div key={index} style={styles.card}>
+            <h3>{project.title}</h3>
+            <p>{project.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
+/* STYLES */
 const styles = {
   container: {
     fontFamily: "Arial, sans-serif",
     textAlign: "center",
-    padding: "60px",
+    padding: "50px",
+    backgroundColor: "#f9f9f9",
+    minHeight: "100vh",
   },
 
-  heading: {
-    fontSize: "50px",
+  title: {
+    fontSize: "52px",
     marginBottom: "10px",
   },
 
-  subtext: {
+  subtitle: {
     fontSize: "18px",
     color: "#555",
     marginBottom: "25px",
   },
 
-  buttonContainer: {
+  buttonRow: {
     display: "flex",
     justifyContent: "center",
     gap: "15px",
-    marginBottom: "30px",
+    marginBottom: "40px",
   },
 
-  primaryButton: {
-    padding: "10px 20px",
-    fontSize: "16px",
+  primaryBtn: {
+    padding: "12px 20px",
     backgroundColor: "#000",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
 
-  secondaryButton: {
-    padding: "10px 20px",
-    fontSize: "16px",
+  secondaryBtn: {
+    padding: "12px 20px",
     backgroundColor: "#fff",
     color: "#000",
     border: "1px solid #000",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
 
+  sectionTitle: {
+    fontSize: "28px",
+    marginBottom: "20px",
+    marginTop: "20px",
+  },
+
+  grid: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "20px",
+    flexWrap: "wrap",
+  },
+
   card: {
-    maxWidth: "520px",
-    margin: "0 auto",
+    width: "220px",
     padding: "20px",
-    border: "1px solid #ddd",
     borderRadius: "12px",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
   },
 };
 
