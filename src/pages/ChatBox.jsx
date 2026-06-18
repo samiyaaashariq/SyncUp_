@@ -12,21 +12,18 @@ import {
 export default function ChatBox({ projectId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const [status, setStatus] = useState("loading");
   const bottomRef = useRef(null);
 
-  // 🔥 REAL-TIME CHAT LISTENER
+  // 🔥 REAL-TIME LISTENER
   useEffect(() => {
     if (!projectId) {
-      setError("Invalid project selected");
-      setLoading(false);
+      setStatus("no-project");
+      setMessages([]);
       return;
     }
 
-    setError("");
-    setLoading(true);
+    setStatus("active");
 
     const q = query(
       collection(db, "projects", projectId, "messages"),
@@ -42,12 +39,10 @@ export default function ChatBox({ projectId }) {
         }));
 
         setMessages(data);
-        setLoading(false);
       },
-      (err) => {
-        console.log(err);
-        setError("Failed to load messages");
-        setLoading(false);
+      (error) => {
+        console.log(error);
+        setStatus("error");
       }
     );
 
@@ -64,7 +59,12 @@ export default function ChatBox({ projectId }) {
     if (!input.trim()) return;
 
     if (!projectId) {
-      setError("No project selected");
+      alert("Please select a project first to start chatting.");
+      return;
+    }
+
+    if (!auth.currentUser) {
+      alert("User not logged in.");
       return;
     }
 
@@ -73,16 +73,15 @@ export default function ChatBox({ projectId }) {
         collection(db, "projects", projectId, "messages"),
         {
           text: input.trim(),
-          user: auth.currentUser?.email || "anonymous",
+          user: auth.currentUser.email,
           createdAt: serverTimestamp()
         }
       );
 
       setInput("");
-      setError("");
     } catch (err) {
       console.log(err);
-      setError("Message failed to send");
+      alert("Message failed to send.");
     }
   };
 
@@ -92,23 +91,30 @@ export default function ChatBox({ projectId }) {
       <div style={styles.header}>
         <h3>SyncUp Chat 💬</h3>
         <p style={styles.subtext}>
-          {projectId ? `Project: ${projectId}` : "No project selected"}
+          {projectId
+            ? `Project ID: ${projectId}`
+            : "⚠ Select a project to start chatting"}
         </p>
       </div>
 
-      {/* ERROR */}
-      {error && <div style={styles.error}>{error}</div>}
+      {/* STATUS */}
+      {status === "error" && (
+        <div style={styles.error}>Chat failed to load</div>
+      )}
 
       {/* CHAT AREA */}
       <div style={styles.chatArea}>
-        {loading ? (
-          <p style={{ color: "#888" }}>Loading chat...</p>
+        {status === "no-project" ? (
+          <p style={{ color: "#888" }}>
+            No project selected. Click “Open Chat” on a project.
+          </p>
         ) : messages.length === 0 ? (
-          <p style={{ color: "#aaa" }}>No messages yet. Start the chat 🚀</p>
+          <p style={{ color: "#aaa" }}>
+            No messages yet. Start the conversation 🚀
+          </p>
         ) : (
           messages.map((msg) => {
-            const isMe =
-              msg.user === auth.currentUser?.email;
+            const isMe = msg.user === auth.currentUser?.email;
 
             return (
               <div
@@ -119,9 +125,7 @@ export default function ChatBox({ projectId }) {
                   backgroundColor: isMe ? "#dcf8c6" : "#eee"
                 }}
               >
-                <div style={styles.user}>
-                  {msg.user || "unknown"}
-                </div>
+                <div style={styles.user}>{msg.user}</div>
                 <div>{msg.text}</div>
               </div>
             );
@@ -130,19 +134,30 @@ export default function ChatBox({ projectId }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* INPUT AREA */}
+      {/* INPUT */}
       <div style={styles.inputBox}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
+          placeholder={
+            projectId ? "Type a message..." : "Select a project first"
+          }
           style={styles.input}
+          disabled={!projectId}
           onKeyDown={(e) => {
             if (e.key === "Enter") sendMessage();
           }}
         />
 
-        <button onClick={sendMessage} style={styles.button}>
+        <button
+          onClick={sendMessage}
+          style={{
+            ...styles.button,
+            opacity: projectId ? 1 : 0.5,
+            cursor: projectId ? "pointer" : "not-allowed"
+          }}
+          disabled={!projectId}
+        >
           Send
         </button>
       </div>
@@ -150,7 +165,7 @@ export default function ChatBox({ projectId }) {
   );
 }
 
-// 🎨 STYLES (clean + modern)
+// 🎨 STYLES
 const styles = {
   container: {
     border: "1px solid #ddd",
@@ -158,8 +173,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     height: "350px",
-    overflow: "hidden",
-    fontFamily: "Arial"
+    fontFamily: "Arial",
+    overflow: "hidden"
   },
 
   header: {
@@ -223,7 +238,6 @@ const styles = {
     background: "#000",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-    cursor: "pointer"
+    borderRadius: "6px"
   }
 };
