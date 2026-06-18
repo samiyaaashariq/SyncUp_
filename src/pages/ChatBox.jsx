@@ -12,106 +12,65 @@ import {
 export default function ChatBox({ projectId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [status, setStatus] = useState("loading");
   const bottomRef = useRef(null);
 
-  // 🔥 REAL-TIME LISTENER
   useEffect(() => {
-    if (!projectId) {
-      setStatus("no-project");
-      setMessages([]);
-      return;
-    }
-
-    setStatus("active");
+    if (!projectId) return;
 
     const q = query(
       collection(db, "projects", projectId, "messages"),
       orderBy("createdAt", "asc")
     );
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setMessages(
+        snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
-        }));
-
-        setMessages(data);
-      },
-      (error) => {
-        console.log(error);
-        setStatus("error");
-      }
-    );
+        }))
+      );
+    });
 
     return () => unsubscribe();
   }, [projectId]);
 
-  // 🔥 AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🚀 SEND MESSAGE
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !projectId) return;
 
-    if (!projectId) {
-      alert("Please select a project first to start chatting.");
-      return;
-    }
+    await addDoc(
+      collection(db, "projects", projectId, "messages"),
+      {
+        text: input,
+        user: auth.currentUser?.email || "anonymous",
+        createdAt: serverTimestamp()
+      }
+    );
 
-    if (!auth.currentUser) {
-      alert("User not logged in.");
-      return;
-    }
-
-    try {
-      await addDoc(
-        collection(db, "projects", projectId, "messages"),
-        {
-          text: input.trim(),
-          user: auth.currentUser.email,
-          createdAt: serverTimestamp()
-        }
-      );
-
-      setInput("");
-    } catch (err) {
-      console.log(err);
-      alert("Message failed to send.");
-    }
+    setInput("");
   };
 
   return (
     <div style={styles.container}>
       {/* HEADER */}
       <div style={styles.header}>
-        <h3>SyncUp Chat 💬</h3>
-        <p style={styles.subtext}>
-          {projectId
-            ? `Project ID: ${projectId}`
-            : "⚠ Select a project to start chatting"}
+        <h3>💬 SyncUp Chat</h3>
+        <p style={styles.sub}>
+          {projectId ? "Live Project Chat Active" : "Select a project to start chatting"}
         </p>
       </div>
 
-      {/* STATUS */}
-      {status === "error" && (
-        <div style={styles.error}>Chat failed to load</div>
-      )}
-
       {/* CHAT AREA */}
       <div style={styles.chatArea}>
-        {status === "no-project" ? (
-          <p style={{ color: "#888" }}>
-            No project selected. Click “Open Chat” on a project.
-          </p>
+        {!projectId ? (
+          <div style={styles.empty}>
+            👈 Click “Open Chat” on any project
+          </div>
         ) : messages.length === 0 ? (
-          <p style={{ color: "#aaa" }}>
-            No messages yet. Start the conversation 🚀
-          </p>
+          <div style={styles.empty}>No messages yet 🚀</div>
         ) : (
           messages.map((msg) => {
             const isMe = msg.user === auth.currentUser?.email;
@@ -122,7 +81,10 @@ export default function ChatBox({ projectId }) {
                 style={{
                   ...styles.msg,
                   alignSelf: isMe ? "flex-end" : "flex-start",
-                  backgroundColor: isMe ? "#dcf8c6" : "#eee"
+                  background: isMe
+                    ? "linear-gradient(135deg,#4ade80,#22c55e)"
+                    : "#2a2a2a",
+                  color: "#fff"
                 }}
               >
                 <div style={styles.user}>{msg.user}</div>
@@ -139,24 +101,19 @@ export default function ChatBox({ projectId }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            projectId ? "Type a message..." : "Select a project first"
-          }
+          placeholder="Type message..."
           style={styles.input}
           disabled={!projectId}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") sendMessage();
-          }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
         <button
           onClick={sendMessage}
+          disabled={!projectId}
           style={{
             ...styles.button,
-            opacity: projectId ? 1 : 0.5,
-            cursor: projectId ? "pointer" : "not-allowed"
+            opacity: projectId ? 1 : 0.5
           }}
-          disabled={!projectId}
         >
           Send
         </button>
@@ -165,34 +122,28 @@ export default function ChatBox({ projectId }) {
   );
 }
 
-// 🎨 STYLES
 const styles = {
   container: {
-    border: "1px solid #ddd",
-    borderRadius: "10px",
+    borderRadius: "12px",
+    overflow: "hidden",
+    border: "1px solid #333",
     display: "flex",
     flexDirection: "column",
-    height: "350px",
-    fontFamily: "Arial",
-    overflow: "hidden"
+    height: "380px",
+    background: "#0f0f0f",
+    color: "#fff",
+    boxShadow: "0 0 20px rgba(0,0,0,0.3)"
   },
 
   header: {
-    padding: "10px",
-    borderBottom: "1px solid #ddd",
-    background: "#f5f5f5"
+    padding: "12px",
+    background: "#111",
+    borderBottom: "1px solid #222"
   },
 
-  subtext: {
+  sub: {
     fontSize: "12px",
-    color: "#666"
-  },
-
-  error: {
-    padding: "5px 10px",
-    background: "#ffe5e5",
-    color: "#d00",
-    fontSize: "12px"
+    color: "#aaa"
   },
 
   chatArea: {
@@ -202,11 +153,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "8px",
-    background: "#fff"
+    background: "#0f0f0f"
   },
 
   msg: {
-    padding: "8px",
+    padding: "8px 10px",
     borderRadius: "10px",
     maxWidth: "70%",
     fontSize: "14px"
@@ -215,29 +166,38 @@ const styles = {
   user: {
     fontSize: "10px",
     opacity: 0.6,
-    marginBottom: "3px"
+    marginBottom: "2px"
+  },
+
+  empty: {
+    color: "#777",
+    textAlign: "center",
+    marginTop: "20px"
   },
 
   inputBox: {
     display: "flex",
     padding: "10px",
-    borderTop: "1px solid #ddd"
+    borderTop: "1px solid #222",
+    background: "#111"
   },
 
   input: {
     flex: 1,
     padding: "8px",
-    border: "1px solid #ccc",
     borderRadius: "6px",
-    outline: "none"
+    border: "1px solid #333",
+    background: "#000",
+    color: "#fff"
   },
 
   button: {
     marginLeft: "10px",
     padding: "8px 14px",
-    background: "#000",
-    color: "#fff",
     border: "none",
-    borderRadius: "6px"
+    borderRadius: "6px",
+    background: "linear-gradient(135deg,#3b82f6,#6366f1)",
+    color: "#fff",
+    cursor: "pointer"
   }
 };
