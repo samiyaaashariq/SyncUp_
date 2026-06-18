@@ -9,19 +9,16 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-export default function ChatBox({ projectId }) {
+export default function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  // 🔥 CHECK PROJECT ID
-  useEffect(() => {
-    if (!projectId) {
-      setMessages([]);
-      return;
-    }
+  const CHAT_ID = "global-chat";
 
+  // 🔥 REALTIME LISTENER
+  useEffect(() => {
     const q = query(
-      collection(db, "projects", projectId, "messages"),
+      collection(db, "projects", CHAT_ID, "messages"),
       orderBy("createdAt", "asc")
     );
 
@@ -35,20 +32,15 @@ export default function ChatBox({ projectId }) {
     });
 
     return () => unsub();
-  }, [projectId]);
+  }, []);
 
-  // 🚀 SEND MESSAGE (FIXED HARD)
+  // 🚀 SEND MESSAGE
   const sendMessage = async () => {
-    if (!projectId) {
-      alert("No project selected");
-      return;
-    }
-
     if (!input.trim()) return;
 
     try {
       await addDoc(
-        collection(db, "projects", projectId, "messages"),
+        collection(db, "projects", CHAT_ID, "messages"),
         {
           text: input,
           user: auth.currentUser?.email || "anonymous",
@@ -58,29 +50,26 @@ export default function ChatBox({ projectId }) {
 
       setInput("");
     } catch (err) {
-      console.log("SEND ERROR:", err);
-      alert("Message failed. Check Firestore rules.");
+      console.log("Error:", err);
+      alert("Message not sent. Check Firebase setup.");
     }
   };
 
   return (
-    <div style={{ border: "1px solid #ddd", padding: "10px" }}>
-      
-      {/* HEADER (ALWAYS VISIBLE) */}
-      <h3>SyncUp Chat</h3>
+    <div style={{ maxWidth: "500px", margin: "20px auto" }}>
+      <h2>💬 SyncUp Chat</h2>
 
       {/* MESSAGES */}
       <div
         style={{
+          border: "1px solid #ddd",
           height: "300px",
           overflowY: "auto",
-          border: "1px solid #eee",
-          padding: "10px"
+          padding: "10px",
+          marginBottom: "10px"
         }}
       >
-        {!projectId ? (
-          <p>Select a project first</p>
-        ) : messages.length === 0 ? (
+        {messages.length === 0 ? (
           <p>No messages yet</p>
         ) : (
           messages.map((msg) => (
@@ -91,7 +80,7 @@ export default function ChatBox({ projectId }) {
                   msg.user === auth.currentUser?.email
                     ? "right"
                     : "left",
-                marginBottom: "8px"
+                margin: "5px 0"
               }}
             >
               <b>{msg.user}</b>
@@ -102,25 +91,17 @@ export default function ChatBox({ projectId }) {
       </div>
 
       {/* INPUT */}
-      <div style={{ display: "flex", marginTop: "10px" }}>
+      <div style={{ display: "flex" }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            projectId
-              ? "Type message..."
-              : "Select a project first"
-          }
+          placeholder="Type message..."
           style={{ flex: 1, padding: "8px" }}
-          disabled={!projectId}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") sendMessage();
-          }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
         <button
           onClick={sendMessage}
-          disabled={!projectId}
           style={{ marginLeft: "10px" }}
         >
           Send
