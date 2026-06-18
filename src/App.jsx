@@ -1,24 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
+import ChatBox from "./pages/ChatBox";
 
 function App() {
+  const [showChat, setShowChat] = useState(false);
+
   const projects = [
     {
       title: "AI Study Buddy",
-      desc: "An AI tool to help students plan and study smarter.",
+      desc: "Helps students plan studies smarter using AI.",
     },
     {
       title: "Campus Connect",
-      desc: "A platform to connect students within the same college.",
+      desc: "Connects students working on similar ideas.",
     },
     {
       title: "Dev Portfolio Builder",
-      desc: "Generate and host developer portfolios easily.",
+      desc: "Create and deploy portfolios easily.",
     },
   ];
 
   return (
     <div style={styles.container}>
-      {/* HERO SECTION */}
+      {/* HERO */}
       <h1 style={styles.title}>SyncUp 🚀</h1>
 
       <p style={styles.subtitle}>
@@ -27,21 +30,42 @@ function App() {
 
       {/* BUTTONS */}
       <div style={styles.buttonRow}>
-        <button style={styles.primaryBtn}>Join a Project</button>
-        <button style={styles.secondaryBtn}>Explore Projects</button>
+        <button style={styles.primaryBtn} onClick={() => setShowChat(true)}>
+          Join a Project
+        </button>
+
+        <button style={styles.secondaryBtn} onClick={() => setShowChat(true)}>
+          Explore Projects
+        </button>
       </div>
 
-      {/* PROJECT SECTION */}
+      {/* PROJECTS */}
       <h2 style={styles.sectionTitle}>Featured Projects</h2>
 
       <div style={styles.grid}>
-        {projects.map((project, index) => (
-          <div key={index} style={styles.card}>
-            <h3>{project.title}</h3>
-            <p>{project.desc}</p>
+        {projects.map((p, i) => (
+          <div key={i} style={styles.card}>
+            <h3>{p.title}</h3>
+            <p>{p.desc}</p>
           </div>
         ))}
       </div>
+
+      {/* CHAT POPUP */}
+      {showChat && (
+        <div style={styles.chatOverlay}>
+          <div style={styles.chatBox}>
+            <button
+              style={styles.closeBtn}
+              onClick={() => setShowChat(false)}
+            >
+              ✖
+            </button>
+
+            <ChatBox />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -52,8 +76,9 @@ const styles = {
     fontFamily: "Arial, sans-serif",
     textAlign: "center",
     padding: "50px",
-    backgroundColor: "#f9f9f9",
     minHeight: "100vh",
+    background: "linear-gradient(135deg, #0f172a, #1e293b)",
+    color: "white",
   },
 
   title: {
@@ -63,7 +88,7 @@ const styles = {
 
   subtitle: {
     fontSize: "18px",
-    color: "#555",
+    color: "#cbd5e1",
     marginBottom: "25px",
   },
 
@@ -76,18 +101,19 @@ const styles = {
 
   primaryBtn: {
     padding: "12px 20px",
-    backgroundColor: "#000",
-    color: "#fff",
+    backgroundColor: "#22c55e",
+    color: "#000",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "bold",
   },
 
   secondaryBtn: {
     padding: "12px 20px",
-    backgroundColor: "#fff",
-    color: "#000",
-    border: "1px solid #000",
+    backgroundColor: "transparent",
+    color: "#fff",
+    border: "1px solid #fff",
     borderRadius: "8px",
     cursor: "pointer",
   },
@@ -95,7 +121,6 @@ const styles = {
   sectionTitle: {
     fontSize: "28px",
     marginBottom: "20px",
-    marginTop: "20px",
   },
 
   grid: {
@@ -109,8 +134,42 @@ const styles = {
     width: "220px",
     padding: "20px",
     borderRadius: "12px",
+    backgroundColor: "#0f172a",
+    border: "1px solid #334155",
+  },
+
+  chatOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  chatBox: {
+    width: "350px",
+    height: "500px",
     backgroundColor: "#fff",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+    borderRadius: "10px",
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  closeBtn: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    border: "none",
+    background: "red",
+    color: "#fff",
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    cursor: "pointer",
   },
 };
 
