@@ -5,7 +5,7 @@ import Signup from "./pages/Signup";
 function App() {
   const [showChat, setShowChat] = useState(false);
   const [showApply, setShowApply] = useState(false);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [applications, setApplications] = useState([]);
 
@@ -26,6 +26,9 @@ function App() {
       tags: ["Utility", "Campus"],
     },
   ]);
+  if (!isLoggedIn) {
+  return <Signup onSignupSuccess={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div style={styles.container}>
@@ -56,6 +59,7 @@ function App() {
           Open Chat
         </button>
       </div>
+      <Signup />
 
       {/* PROJECTS SECTION */}
       <div id="projects" style={styles.section}>
