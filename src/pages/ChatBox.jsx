@@ -66,3 +66,4 @@ export default function ChatBox({ projectId }) {
     </div>
   );
 }
+export default ChatBox;
