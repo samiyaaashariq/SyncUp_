@@ -274,7 +274,6 @@ function App() {
     </div>
   </div>
 )}
-     console.log("DB INSTANCE:", db);
     </div>
   );
 }
