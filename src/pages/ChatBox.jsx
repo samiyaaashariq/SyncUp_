@@ -34,14 +34,26 @@ export default function ChatBox({ projectId }) {
   }, [projectId]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !projectId) return;
+    const sendMessage = async () => {
+  try {
+    console.log("Project ID:", projectId);
 
-    await addDoc(
-      collection(db, "projects", projectId, "messages"),
-      {
-        text: input,
-        user: auth.currentUser?.email || "anonymous",
-        createdAt: serverTimestamp()
+    const ref = collection(db, "projects", projectId, "messages");
+
+    await addDoc(ref, {
+      text: input,
+      user: auth.currentUser?.email || "test-user",
+      createdAt: serverTimestamp()
+    });
+
+    console.log("Message sent");
+
+    setInput("");
+  } catch (err) {
+    console.log("ERROR SENDING MESSAGE:", err);
+    alert(err.message);
+  }
+};
       }
     );
 
