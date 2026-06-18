@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ChatBox from "./pages/ChatBox";
 import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 
 function App() {
   const [showChat, setShowChat] = useState(false);
@@ -8,7 +9,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [applications, setApplications] = useState([]);
-
+  const [authMode, setAuthMode] = useState("login");
   const [projects, setProjects] = useState([
     {
       title: "AI Study Planner",
@@ -27,8 +28,32 @@ function App() {
     },
   ]);
   if (!isLoggedIn) {
-  return <Signup onSignupSuccess={() => setIsLoggedIn(true)} />;
-  }
+  return (
+    <div>
+      {authMode === "login" ? (
+        <>
+          <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+          <p>
+            New user?{" "}
+            <button onClick={() => setAuthMode("signup")}>
+              Create Account
+            </button>
+          </p>
+        </>
+      ) : (
+        <>
+          <Signup onSignupSuccess={() => setIsLoggedIn(true)} />
+          <p>
+            Already have an account?{" "}
+            <button onClick={() => setAuthMode("login")}>
+              Login
+            </button>
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
 
   return (
     <div style={styles.container}>
