@@ -6,49 +6,60 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(undefined); // IMPORTANT (undefined = loading state)
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
+    try {
+      const unsub = onAuthStateChanged(
+        auth,
+        (u) => {
+          setUser(u);
+        },
+        (err) => {
+          console.log(err);
+          setError("Auth error");
+          setUser(null);
+        }
+      );
 
-    return () => unsubscribe();
+      return () => unsub();
+    } catch (e) {
+      console.log(e);
+      setError("Firebase init failed");
+      setUser(null);
+    }
   }, []);
 
-  // LOADING STATE (PREVENT BLANK SCREEN)
-  if (loading) {
+  // 🔵 LOADING STATE (CRITICAL - prevents blank page)
+  if (user === undefined) {
     return (
-      <div style={styles.loading}>
+      <div style={styles.center}>
         Loading SyncUp...
       </div>
     );
   }
 
-  // MAIN ROUTING
-  return (
-    <div style={styles.app}>
-      {user ? <Dashboard /> : <Login />}
-    </div>
-  );
+  // 🔴 ERROR STATE (safety fallback)
+  if (error) {
+    return (
+      <div style={styles.center}>
+        Something went wrong. Please refresh.
+      </div>
+    );
+  }
+
+  // 🟢 MAIN ROUTING
+  return user ? <Dashboard /> : <Login />;
 }
 
-// SIMPLE SAFE STYLES
 const styles = {
-  app: {
-    minHeight: "100vh",
-    background: "#f9fafb"
-  },
-
-  loading: {
+  center: {
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     fontFamily: "Arial",
-    color: "#4f46e5",
-    fontSize: "16px"
+    color: "#4f46e5"
   }
 };
