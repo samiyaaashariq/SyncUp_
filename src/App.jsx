@@ -30,27 +30,70 @@ function App() {
 
       {/* BUTTONS */}
       <div style={styles.buttonRow}>
-        <button style={styles.primaryBtn} onClick={() => setShowChat(true)}>
-          Join a Project
-        </button>
+  
+  {/* Explore → scroll to projects */}
+  <button
+    style={styles.secondaryBtn}
+    onClick={() =>
+      document.getElementById("projects").scrollIntoView({ behavior: "smooth" })
+    }
+  >
+    Explore Projects
+  </button>
 
-        <button style={styles.secondaryBtn} onClick={() => setShowChat(true)}>
-          Explore Projects
-        </button>
-      </div>
+  {/* Join → opens project form */}
+  <button
+    style={styles.primaryBtn}
+    onClick={() => setShowChat(false)}
+  >
+    Join a Project
+  </button>
 
+</div>
       {/* PROJECTS */}
-      <h2 style={styles.sectionTitle}>Featured Projects</h2>
+      <div id="projects" style={styles.section}>
+  <h2>Featured Projects</h2>
 
-      <div style={styles.grid}>
-        {projects.map((p, i) => (
-          <div key={i} style={styles.card}>
-            <h3>{p.title}</h3>
-            <p>{p.desc}</p>
-          </div>
-        ))}
+  {/* Add Project Form */}
+  <div style={styles.form}>
+    <input id="title" placeholder="Project Title" style={styles.input} />
+    <input id="desc" placeholder="Project Description" style={styles.input} />
+
+    <button
+      style={styles.primaryBtn}
+      onClick={() => {
+        const title = document.getElementById("title").value;
+        const desc = document.getElementById("desc").value;
+
+        if (!title || !desc) return;
+
+        setProjects([...projects, { title, desc }]);
+
+        document.getElementById("title").value = "";
+        document.getElementById("desc").value = "";
+      }}
+    >
+      Add Project
+    </button>
+  </div>
+
+  {/* Project List */}
+  <div style={styles.grid}>
+    {projects.map((p, i) => (
+      <div key={i} style={styles.card}>
+        <h3>{p.title}</h3>
+        <p>{p.desc}</p>
+
+        <button
+          style={styles.secondaryBtn}
+          onClick={() => setShowChat(true)}
+        >
+          Open Chat
+        </button>
       </div>
-
+    ))}
+  </div>
+</div>
       {/* CHAT POPUP */}
       {showChat && (
         <div style={styles.chatOverlay}>
@@ -171,6 +214,23 @@ const styles = {
     height: "30px",
     cursor: "pointer",
   },
+  section: {
+  marginTop: "40px",
+},
+
+form: {
+  marginBottom: "20px",
+  display: "flex",
+  gap: "10px",
+  justifyContent: "center",
+  flexWrap: "wrap",
+},
+
+input: {
+  padding: "10px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+},
 };
 
 export default App;
