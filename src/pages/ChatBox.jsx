@@ -1,65 +1,98 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { db, auth } from "../firebase";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from "firebase/firestore";
 
 export default function ChatBox({ projectId }) {
-  const [messages, setMessages] = useState([
-    { text: "Welcome to SyncUp Chat 🚀", sender: "bot" },
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const sendMessage = () => {
+  // 🔥 REAL-TIME LISTENER
+  useEffect(() => {
+    if (!projectId) return;
+
+    const q = query(
+      collection(db, "projects", projectId, "messages"),
+      orderBy("createdAt", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setMessages(data);
+    });
+
+    return () => unsubscribe();
+  }, [projectId]);
+
+  // 🚀 SEND MESSAGE
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { text: input, sender: "user" },
-    ]);
+    try {
+      await addDoc(
+        collection(db, "projects", projectId, "messages"),
+        {
+          text: input,
+          user: auth.currentUser?.email || "anonymous",
+          createdAt: serverTimestamp()
+        }
+      );
 
-    setInput("");
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { text: "Got it 👍 (bot reply)", sender: "bot" },
-      ]);
-    }, 400);
+      setInput("");
+    } catch (err) {
+      console.log("Message send error:", err);
+    }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h3>SyncUp Chat</h3>
-        <p style={styles.subtext}>
-          Project: {projectId ? projectId : "General"}
-        </p>
+        <h3>SyncUp Chat 💬</h3>
       </div>
 
       <div style={styles.chatArea}>
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div
-            key={index}
+            key={msg.id}
             style={{
-              ...styles.message,
+              ...styles.msg,
               alignSelf:
-                msg.sender === "user" ? "flex-end" : "flex-start",
+                msg.user === auth.currentUser?.email
+                  ? "flex-end"
+                  : "flex-start",
               backgroundColor:
-                msg.sender === "user" ? "#dcf8c6" : "#eee",
+                msg.user === auth.currentUser?.email
+                  ? "#dcf8c6"
+                  : "#eee"
             }}
           >
-            {msg.text}
+            <small style={{ fontSize: "10px", opacity: 0.6 }}>
+              {msg.user}
+            </small>
+            <div>{msg.text}</div>
           </div>
         ))}
       </div>
 
       <div style={styles.inputBox}>
         <input
-          style={styles.input}
           value={input}
-          placeholder="Type a message..."
           onChange={(e) => setInput(e.target.value)}
+          placeholder="Type message..."
+          style={styles.input}
         />
 
-        <button style={styles.button} onClick={sendMessage}>
+        <button onClick={sendMessage} style={styles.button}>
           Send
         </button>
       </div>
@@ -69,23 +102,17 @@ export default function ChatBox({ projectId }) {
 
 const styles = {
   container: {
-    display: "flex",
-    flexDirection: "column",
-    height: "300px",
     border: "1px solid #ddd",
     borderRadius: "8px",
-    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    height: "300px"
   },
 
   header: {
     padding: "10px",
-    backgroundColor: "#f5f5f5",
     borderBottom: "1px solid #ddd",
-  },
-
-  subtext: {
-    fontSize: "12px",
-    color: "#666",
+    background: "#f5f5f5"
   },
 
   chatArea: {
@@ -94,35 +121,34 @@ const styles = {
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
-    gap: "5px",
-    backgroundColor: "#fff",
+    gap: "6px"
   },
 
-  message: {
+  msg: {
     padding: "8px",
     borderRadius: "8px",
-    maxWidth: "70%",
+    maxWidth: "70%"
   },
 
   inputBox: {
     display: "flex",
     padding: "10px",
-    borderTop: "1px solid #ddd",
+    borderTop: "1px solid #ddd"
   },
 
   input: {
     flex: 1,
     padding: "8px",
-    borderRadius: "5px",
     border: "1px solid #ccc",
+    borderRadius: "5px"
   },
 
   button: {
     marginLeft: "10px",
     padding: "8px 12px",
-    border: "none",
-    backgroundColor: "#000",
+    background: "#000",
     color: "#fff",
-    borderRadius: "5px",
-  },
+    border: "none",
+    borderRadius: "5px"
+  }
 };
