@@ -3,10 +3,7 @@ import { db, auth } from "../firebase";
 import {
   collection,
   addDoc,
-  onSnapshot,
-  doc,
-  updateDoc,
-  arrayUnion
+  onSnapshot
 } from "firebase/firestore";
 
 import ChatBox from "./ChatBox";
@@ -17,32 +14,15 @@ export default function Dashboard() {
   const [desc, setDesc] = useState("");
   const [skillsNeeded, setSkillsNeeded] = useState("");
   const [projects, setProjects] = useState([]);
-  const [profile, setProfile] = useState(null);
-  const [activeChat, setActiveChat] = useState(null);
-  const [page, setPage] = useState("projects");
+
+  const [selectedProject, setSelectedProject] = useState(null);
+
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("projects");
 
-  // ---------------- AUTH SAFE LOAD ----------------
+  // ---------------- REALTIME PROJECTS ----------------
   useEffect(() => {
-    const unsubscribeAuth = auth.onAuthStateChanged((u) => {
-      setUser(u);
-    });
-
-    return () => unsubscribeAuth();
-  }, []);
-
-  // ---------------- PROFILE LOAD ----------------
-  const loadProfile = () => {
-    const data = localStorage.getItem("syncup_profile");
-    if (data) setProfile(JSON.parse(data));
-  };
-
-  // ---------------- REALTIME PROJECTS (FIXED) ----------------
-  useEffect(() => {
-    const q = collection(db, "projects");
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsub = onSnapshot(collection(db, "projects"), (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
@@ -51,108 +31,49 @@ export default function Dashboard() {
       setProjects(data);
     });
 
-    return () => unsubscribe(); // 🔥 IMPORTANT FIX
+    return () => unsub();
   }, []);
-
-  // ---------------- INIT ----------------
-  useEffect(() => {
-  loadProfile(); // keep this
-
-  const q = collection(db, "projects");
-
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    setProjects(data);
-  });
-
-  return () => unsubscribe();
-}, []);
 
   // ---------------- CREATE PROJECT ----------------
   const createProject = async () => {
-  try {
-    const docRef = await addDoc(collection(db, "projects"), {
-      title,
-      desc,
-      skillsNeeded: skillsNeeded
-        ? skillsNeeded.split(",").map(s => s.trim().toLowerCase())
-        : [],
-      createdBy: auth.currentUser?.email || "unknown",
-      members: [auth.currentUser?.email || "unknown"],
-      applications: [],
-      createdAt: new Date()
-    });
+    if (!title || !desc) return alert("Fill all fields");
 
-    console.log("Created:", docRef.id);
-
-    setTitle("");
-    setDesc("");
-    setSkillsNeeded("");
-  } catch (e) {
-    console.log(e);
-    alert(e.message);
-  }
-};
-  // ---------------- APPLY ----------------
-  const applyToProject = async (project) => {
-    if (!user?.email) return alert("Login required");
-
-    const ref = doc(db, "projects", project.id);
+    setLoading(true);
 
     try {
-      await updateDoc(ref, {
-        applications: arrayUnion(user.email)
+      await addDoc(collection(db, "projects"), {
+        title,
+        desc,
+        skillsNeeded: skillsNeeded
+          ? skillsNeeded.split(",").map((s) => s.trim().toLowerCase())
+          : [],
+        createdBy: auth.currentUser?.email || "anonymous",
+        members: [auth.currentUser?.email || "anonymous"],
+        applications: [],
+        createdAt: new Date()
       });
 
-      await addDoc(collection(db, "notifications"), {
-        text: `${user.email} applied to ${project.title}`,
-        owner: project.createdBy,
-        read: false,
-        time: new Date()
-      });
+      setTitle("");
+      setDesc("");
+      setSkillsNeeded("");
     } catch (err) {
-      console.log(err);
+      console.log("Create project error:", err);
     }
+
+    setLoading(false);
   };
 
-  // ---------------- JOIN ----------------
-  const joinProject = async (project) => {
-    if (!user?.email) return alert("Login required");
-
-    const ref = doc(db, "projects", project.id);
-
-    try {
-      await updateDoc(ref, {
-        members: arrayUnion(user.email)
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // ---------------- MATCH SCORE ----------------
-  const matchScore = (project) => {
-    if (!profile?.skills || !project.skillsNeeded) return 0;
-
-    return project.skillsNeeded.filter(skill =>
-      profile.skills.includes(skill)
-    ).length;
-  };
-
+  // ---------------- UI ----------------
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>SyncUp — Where Collaboration Begins.</h1>
-
-      <button onClick={() => auth.signOut()}>
-        Logout
-      </button>
+    <div style={styles.container}>
+      {/* HEADER */}
+      <h1 style={styles.heading}>🚀 SyncUp</h1>
+      <p style={styles.subheading}>
+        Where collaboration begins
+      </p>
 
       {/* NAV */}
-      <div style={{ margin: "10px 0" }}>
+      <div style={styles.nav}>
         <button onClick={() => setPage("projects")}>
           Projects
         </button>
@@ -164,91 +85,190 @@ export default function Dashboard() {
 
       {/* ---------------- CREATE PAGE ---------------- */}
       {page === "create" && (
-        <div>
+        <div style={styles.card}>
           <h2>Create Project</h2>
 
           <input
-            placeholder="Title"
+            placeholder="Project Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            style={styles.input}
           />
-
-          <br /><br />
 
           <textarea
             placeholder="Description"
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
+            style={styles.textarea}
           />
-
-          <br /><br />
 
           <input
-            placeholder="Skills needed (react, node, ai)"
+            placeholder="Skills (react, node, ai)"
             value={skillsNeeded}
             onChange={(e) => setSkillsNeeded(e.target.value)}
+            style={styles.input}
           />
 
-          <br /><br />
-
-          <button onClick={createProject} disabled={loading}>
-            {loading ? "Posting..." : "Create Project"}
+          <button
+            onClick={createProject}
+            disabled={loading}
+            style={styles.primaryBtn}
+          >
+            {loading ? "Creating..." : "Create Project"}
           </button>
         </div>
       )}
 
-      {/* ---------------- PROJECT PAGE ---------------- */}
+      {/* ---------------- PROJECTS + CHAT ---------------- */}
       {page === "projects" && (
-        <>
-          <h2>Recommended ⭐</h2>
+        <div style={styles.layout}>
+          {/* LEFT PROJECT LIST */}
+          <div style={styles.sidebar}>
+            <h3>Projects</h3>
 
-          {projects.length === 0 && (
-            <p>No projects yet. Create one 🚀</p>
-          )}
-
-          {projects
-            .sort((a, b) => matchScore(b) - matchScore(a))
-            .map((p) => (
+            {projects.map((p) => (
               <div
                 key={p.id}
+                onClick={() => {
+                  setSelectedProject(p);
+                  setPage("chat");
+                }}
                 style={{
-                  border: "1px solid #ddd",
-                  margin: "10px 0",
-                  padding: "10px"
+                  ...styles.projectCard,
+                  background:
+                    selectedProject?.id === p.id
+                      ? "#e0e7ff"
+                      : "#fff"
                 }}
               >
-                <h3>{p.title}</h3>
-                <p>{p.desc}</p>
-
-                <p>Match Score: ⭐ {matchScore(p)}</p>
-
-                <p>
-                  Skills: {p.skillsNeeded?.join(", ")}
-                </p>
-
-                <small>By: {p.createdBy}</small>
-
-                <hr />
-
-                <button onClick={() => applyToProject(p)}>
-                  Apply 🚀
-                </button>
-
-                <button onClick={() => joinProject(p)}>
-                  Join 🤝
-                </button>
-
-                <button onClick={() => setActiveChat(p.id)}>
-                  Open Chat 💬
-                </button>
-
-                {activeChat === p.id && (
-                  <ChatBox projectId={p.id} />
-                )}
+                <h4>{p.title}</h4>
+                <small>{p.createdBy}</small>
               </div>
             ))}
-        </>
+          </div>
+
+          {/* RIGHT INFO */}
+          <div style={styles.infoBox}>
+            <h2>Welcome to SyncUp</h2>
+            <p>Select a project to start collaboration chat.</p>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- CHAT PAGE ---------------- */}
+      {page === "chat" && selectedProject && (
+        <div style={styles.chatPage}>
+          <div style={styles.chatHeader}>
+            <button
+              onClick={() => setPage("projects")}
+              style={styles.backBtn}
+            >
+              ← Back
+            </button>
+
+            <h3>{selectedProject.title}</h3>
+          </div>
+
+          <ChatBox projectId={selectedProject.id} />
+        </div>
       )}
     </div>
   );
 }
+
+// ---------------- STYLES ----------------
+const styles = {
+  container: {
+    padding: "20px",
+    fontFamily: "Arial"
+  },
+
+  heading: {
+    marginBottom: "0"
+  },
+
+  subheading: {
+    marginTop: "5px",
+    color: "#666"
+  },
+
+  nav: {
+    margin: "15px 0",
+    display: "flex",
+    gap: "10px"
+  },
+
+  card: {
+    padding: "15px",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    maxWidth: "400px"
+  },
+
+  input: {
+    width: "100%",
+    padding: "8px",
+    margin: "5px 0",
+    borderRadius: "6px",
+    border: "1px solid #ccc"
+  },
+
+  textarea: {
+    width: "100%",
+    padding: "8px",
+    margin: "5px 0",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    height: "80px"
+  },
+
+  primaryBtn: {
+    background: "#4f46e5",
+    color: "#fff",
+    padding: "10px",
+    border: "none",
+    borderRadius: "6px",
+    marginTop: "10px"
+  },
+
+  layout: {
+    display: "flex",
+    gap: "20px"
+  },
+
+  sidebar: {
+    width: "250px",
+    borderRight: "1px solid #ddd",
+    paddingRight: "10px"
+  },
+
+  projectCard: {
+    padding: "10px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    marginBottom: "10px",
+    cursor: "pointer"
+  },
+
+  infoBox: {
+    flex: 1,
+    padding: "20px",
+    color: "#666"
+  },
+
+  chatPage: {
+    marginTop: "20px"
+  },
+
+  chatHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "10px"
+  },
+
+  backBtn: {
+    padding: "5px 10px",
+    cursor: "pointer"
+  }
+};
