@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
 import {
   collection,
@@ -12,11 +12,13 @@ import {
 export default function ChatBox({ projectId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const bottomRef = useRef(null);
 
-  // 🔥 REALTIME CHAT
+  // 🔥 CHECK PROJECT ID
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) {
+      setMessages([]);
+      return;
+    }
 
     const q = query(
       collection(db, "projects", projectId, "messages"),
@@ -35,58 +37,92 @@ export default function ChatBox({ projectId }) {
     return () => unsub();
   }, [projectId]);
 
-  // 🔥 AUTO SCROLL
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // 🚀 SEND MESSAGE
+  // 🚀 SEND MESSAGE (FIXED HARD)
   const sendMessage = async () => {
-    if (!input.trim() || !projectId) return;
+    if (!projectId) {
+      alert("No project selected");
+      return;
+    }
 
-    await addDoc(
-      collection(db, "projects", projectId, "messages"),
-      {
-        text: input,
-        user: auth.currentUser?.email || "anonymous",
-        createdAt: serverTimestamp()
-      }
-    );
+    if (!input.trim()) return;
 
-    setInput("");
+    try {
+      await addDoc(
+        collection(db, "projects", projectId, "messages"),
+        {
+          text: input,
+          user: auth.currentUser?.email || "anonymous",
+          createdAt: serverTimestamp()
+        }
+      );
+
+      setInput("");
+    } catch (err) {
+      console.log("SEND ERROR:", err);
+      alert("Message failed. Check Firestore rules.");
+    }
   };
 
   return (
     <div style={{ border: "1px solid #ddd", padding: "10px" }}>
-      <div style={{ height: "300px", overflowY: "auto" }}>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              textAlign:
-                msg.user === auth.currentUser?.email
-                  ? "right"
-                  : "left",
-              margin: "5px"
-            }}
-          >
-            <b>{msg.user}</b>
-            <div>{msg.text}</div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
+      
+      {/* HEADER (ALWAYS VISIBLE) */}
+      <h3>SyncUp Chat</h3>
+
+      {/* MESSAGES */}
+      <div
+        style={{
+          height: "300px",
+          overflowY: "auto",
+          border: "1px solid #eee",
+          padding: "10px"
+        }}
+      >
+        {!projectId ? (
+          <p>Select a project first</p>
+        ) : messages.length === 0 ? (
+          <p>No messages yet</p>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                textAlign:
+                  msg.user === auth.currentUser?.email
+                    ? "right"
+                    : "left",
+                marginBottom: "8px"
+              }}
+            >
+              <b>{msg.user}</b>
+              <div>{msg.text}</div>
+            </div>
+          ))
+        )}
       </div>
 
+      {/* INPUT */}
       <div style={{ display: "flex", marginTop: "10px" }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type message..."
-          style={{ flex: 1 }}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder={
+            projectId
+              ? "Type message..."
+              : "Select a project first"
+          }
+          style={{ flex: 1, padding: "8px" }}
+          disabled={!projectId}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") sendMessage();
+          }}
         />
 
-        <button onClick={sendMessage}>
+        <button
+          onClick={sendMessage}
+          disabled={!projectId}
+          style={{ marginLeft: "10px" }}
+        >
           Send
         </button>
       </div>
