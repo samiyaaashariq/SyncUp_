@@ -9,10 +9,16 @@ import Notification from "./pages/Notification";
 import ChatBox from "./pages/ChatBox";
 import Auth from "./pages/Auth";
 
-// TEMP USER (replace later with Firebase auth)
-const user = true;
+function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem("user"));
+  } catch (e) {
+    return null;
+  }
+}
 
 function ProtectedRoute({ children }) {
+  const user = getUser();
   return user ? children : <Navigate to="/login" />;
 }
 
@@ -21,18 +27,18 @@ export default function App() {
     <Router>
       <Routes>
 
-        {/* Public */}
+        {/* AUTH */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected */}
+        {/* MAIN APP */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><ChatBox /></ProtectedRoute>} />
 
-        {/* Optional */}
+        {/* OPTIONAL */}
         <Route path="/auth" element={<Auth />} />
 
         {/* fallback */}
