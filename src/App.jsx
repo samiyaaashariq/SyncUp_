@@ -21,18 +21,18 @@ export default function App() {
     <Router>
       <Routes>
 
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected Routes */}
+        {/* Protected */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><ChatBox /></ProtectedRoute>} />
 
-        {/* Auth helper */}
+        {/* Optional */}
         <Route path="/auth" element={<Auth />} />
 
         {/* fallback */}
