@@ -1,249 +1,120 @@
-import { useEffect, useState } from "react";
-import { db, auth } from "../firebase";
+import React, { useEffect, useState } from "react";
+import { db, auth } from "./firebase";
 import {
   collection,
+  getDocs,
   addDoc,
-  onSnapshot,
-  doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove
+  serverTimestamp,
 } from "firebase/firestore";
 
-import ChatBox from "./ChatBox";
-
-export default function Dashboard() {
+export default function App() {
   const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [recommended, setRecommended] = useState([]);
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [page, setPage] = useState("home");
 
-  // REALTIME PROJECTS
+  const currentUser = auth.currentUser;
+
+  // 🔄 FETCH PROJECTS
+  const fetchProjects = async () => {
+    try {
+      const snap = await getDocs(collection(db, "projects"));
+
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setProjects(data);
+
+      // ✅ FIXED RECOMMENDED LOGIC
+      const filtered = data.filter((p) => {
+        return p.createdBy !== currentUser?.uid;
+      });
+
+      setRecommended(filtered);
+    } catch (error) {
+      console.log("Error fetching projects:", error);
+    }
+  };
+
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "projects"), (snap) => {
-      setProjects(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data()
-        }))
-      );
-    });
+    fetchProjects();
+  }, [currentUser]);
 
-    return () => unsub();
-  }, []);
-
-  // CREATE PROJECT (with default tags for CampusVerse)
+  // ➕ CREATE PROJECT
   const createProject = async () => {
-    if (!title || !desc) return alert("Fill all fields");
+    if (!title || !desc) return;
 
-    await addDoc(collection(db, "projects"), {
-      title,
-      desc,
-      category: "General",
-      tags: ["Campus", "Project"],
-      createdBy: auth.currentUser?.email,
-      members: [auth.currentUser?.email],
-      applicants: [],
-      createdAt: new Date()
-    });
+    try {
+      await addDoc(collection(db, "projects"), {
+        title,
+        desc,
+        createdBy: currentUser?.uid || "anonymous",
+        createdAt: serverTimestamp(),
+      });
 
-    setTitle("");
-    setDesc("");
+      setTitle("");
+      setDesc("");
+      fetchProjects(); // refresh
+    } catch (error) {
+      console.log("Error creating project:", error);
+    }
   };
-
-  // APPLY TO PROJECT
-  const applyToProject = async (projectId) => {
-    const user = auth.currentUser?.email;
-    if (!user) return;
-
-    await updateDoc(doc(db, "projects", projectId), {
-      applicants: arrayUnion(user)
-    });
-
-    alert("Request sent 🚀");
-  };
-
-  // ACCEPT MEMBER
-  const acceptMember = async (projectId, email) => {
-    await updateDoc(doc(db, "projects", projectId), {
-      members: arrayUnion(email),
-      applicants: arrayRemove(email)
-    });
-  };
-
-  // 🌐 CAMPUSVERSE RECOMMENDED LOGIC
-  const recommendedProjects = projects.filter((p) => {
-    return (
-      p.category === "AI" ||
-      p.tags?.includes("AI") ||
-      p.tags?.includes("Web Dev") ||
-      p.tags?.includes("Campus")
-    );
-  });
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.logo}>🚀 SyncUp</h1>
-
-      {/* NAV */}
-      <div style={styles.nav}>
-        <button onClick={() => setPage("home")}>Projects</button>
-        <button onClick={() => setPage("create")}>Create</button>
-      </div>
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1>🚀 SyncUp Dashboard</h1>
 
       {/* CREATE PROJECT */}
-      {page === "create" && (
-        <div style={styles.card}>
-          <h3>Create Project</h3>
+      <div style={{ marginBottom: "20px" }}>
+        <h2>Create Project</h2>
 
-          <input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={styles.input}
-          />
+        <input
+          placeholder="Project Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <br />
+        <textarea
+          placeholder="Project Description"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
+        <br />
 
-          <textarea
-            placeholder="Description"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            style={styles.textarea}
-          />
+        <button onClick={createProject}>Create</button>
+      </div>
 
-          <button onClick={createProject} style={styles.primaryBtn}>
-            Publish
-          </button>
-        </div>
-      )}
-
-      {/* PROJECT LIST */}
-      {page === "home" && (
-        <div style={styles.layout}>
-          
-          {/* LEFT SIDE */}
-          <div style={styles.left}>
-
-            {/* 🌐 CAMPUSVERSE SECTION */}
-            <h3>🌐 CampusVerse Recommended</h3>
-
-            <div style={styles.scrollRow}>
-              {recommendedProjects.map((p) => (
-                <div key={p.id} style={styles.cardSmall}>
-                  <b>{p.title}</b>
-                  <p>{p.desc}</p>
-
-                  <div style={styles.tags}>
-                    {p.tags?.map((t) => (
-                      <span key={t} style={styles.tag}>#{t}</span>
-                    ))}
-                  </div>
-
-                  <button onClick={() => setSelectedProject(p)}>
-                    Explore
-                  </button>
-                </div>
-              ))}
+      {/* MY PROJECTS */}
+      <div>
+        <h2>📁 My Projects</h2>
+        {projects
+          .filter((p) => p.createdBy === currentUser?.uid)
+          .map((p) => (
+            <div key={p.id} style={{ border: "1px solid gray", margin: 5, padding: 10 }}>
+              <h3>{p.title}</h3>
+              <p>{p.desc}</p>
             </div>
+          ))}
+      </div>
 
-            {/* ALL PROJECTS */}
-            <h3 style={{ marginTop: 20 }}>📌 All Projects</h3>
+      {/* RECOMMENDED PROJECTS */}
+      <div style={{ marginTop: "30px" }}>
+        <h2>⭐ Recommended Projects</h2>
 
-            {projects.map((p) => (
-              <div
-                key={p.id}
-                style={styles.cardSmall}
-                onClick={() => setSelectedProject(p)}
-              >
-                <b>{p.title}</b>
-                <p>{p.desc}</p>
-
-                <button onClick={() => applyToProject(p.id)}>
-                  Apply 🚀
-                </button>
-
-                {/* OWNER PANEL */}
-                {p.createdBy === auth.currentUser?.email && (
-                  <div>
-                    <h5>Applicants</h5>
-
-                    {p.applicants?.map((email) => (
-                      <div key={email}>
-                        {email}
-                        <button onClick={() => acceptMember(p.id, email)}>
-                          Accept
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* RIGHT SIDE (CHAT) */}
-          <div style={styles.right}>
-            {selectedProject ? (
-              <ChatBox project={selectedProject} />
-            ) : (
-              <p>Select a project to open chat</p>
-            )}
-          </div>
-        </div>
-      )}
+        {recommended.length === 0 ? (
+          <p>No recommendations available</p>
+        ) : (
+          recommended.map((p) => (
+            <div key={p.id} style={{ border: "1px solid blue", margin: 5, padding: 10 }}>
+              <h3>{p.title}</h3>
+              <p>{p.desc}</p>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
-
-// 🎨 STYLES
-const styles = {
-  container: { padding: 20, fontFamily: "Arial" },
-  logo: { color: "#4f46e5" },
-
-  nav: { display: "flex", gap: 10, marginBottom: 10 },
-
-  layout: { display: "flex", gap: 20 },
-
-  left: { width: 350 },
-
-  right: { flex: 1, padding: 10 },
-
-  card: {
-    padding: 15,
-    background: "#fff",
-    border: "1px solid #ddd"
-  },
-
-  cardSmall: {
-    padding: 10,
-    marginBottom: 10,
-    border: "1px solid #ddd",
-    cursor: "pointer"
-  },
-
-  input: { width: "100%", padding: 8 },
-
-  textarea: { width: "100%", padding: 8, height: 80 },
-
-  primaryBtn: {
-    background: "#4f46e5",
-    color: "#fff",
-    padding: 10,
-    border: "none"
-  },
-
-  scrollRow: {
-    display: "flex",
-    overflowX: "auto",
-    gap: 10,
-    paddingBottom: 10
-  },
-
-  tags: { fontSize: 12, marginTop: 5 },
-
-  tag: {
-    marginRight: 5,
-    color: "#4f46e5"
-  }
-};
