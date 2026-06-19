@@ -20,13 +20,12 @@ export default function Dashboard() {
   const [desc, setDesc] = useState("");
   const [page, setPage] = useState("home");
 
+  // REALTIME PROJECTS
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(
         snap.docs.map((d) => ({
           id: d.id,
-          members: [],
-          applicants: [],
           ...d.data()
         }))
       );
@@ -35,12 +34,15 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
+  // CREATE PROJECT (with default tags for CampusVerse)
   const createProject = async () => {
     if (!title || !desc) return alert("Fill all fields");
 
     await addDoc(collection(db, "projects"), {
       title,
       desc,
+      category: "General",
+      tags: ["Campus", "Project"],
       createdBy: auth.currentUser?.email,
       members: [auth.currentUser?.email],
       applicants: [],
@@ -51,6 +53,7 @@ export default function Dashboard() {
     setDesc("");
   };
 
+  // APPLY TO PROJECT
   const applyToProject = async (projectId) => {
     const user = auth.currentUser?.email;
     if (!user) return;
@@ -62,6 +65,7 @@ export default function Dashboard() {
     alert("Request sent 🚀");
   };
 
+  // ACCEPT MEMBER
   const acceptMember = async (projectId, email) => {
     await updateDoc(doc(db, "projects", projectId), {
       members: arrayUnion(email),
@@ -69,33 +73,15 @@ export default function Dashboard() {
     });
   };
 
-  // ⭐ NEW: Recommended Projects (STATIC STARTUP IDEAS)
-  const recommendedProjects = [
-    {
-      title: "CampusVerse AI",
-      desc: "AI-powered campus social network with smart matchmaking",
-    },
-    {
-      title: "Campus Wars",
-      desc: "Inter-college competition platform with leaderboards & challenges",
-    },
-    {
-      title: "SyncUp AI Assistant",
-      desc: "AI that suggests teammates based on skills & project history",
-    },
-    {
-      title: "SkillSwap Network",
-      desc: "Students exchange skills (coding ↔ design ↔ marketing)",
-    },
-    {
-      title: "Hackathon Finder AI",
-      desc: "Auto-detects hackathons and forms teams instantly",
-    },
-    {
-      title: "StudyRoom Live",
-      desc: "Real-time group study rooms with focus tracking",
-    }
-  ];
+  // 🌐 CAMPUSVERSE RECOMMENDED LOGIC
+  const recommendedProjects = projects.filter((p) => {
+    return (
+      p.category === "AI" ||
+      p.tags?.includes("AI") ||
+      p.tags?.includes("Web Dev") ||
+      p.tags?.includes("Campus")
+    );
+  });
 
   return (
     <div style={styles.container}>
@@ -132,74 +118,77 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* HOME */}
+      {/* PROJECT LIST */}
       {page === "home" && (
-        <div>
+        <div style={styles.layout}>
+          
+          {/* LEFT SIDE */}
+          <div style={styles.left}>
 
-          {/* ⭐ RECOMMENDED SECTION (NEW) */}
-          <h2 style={{ marginTop: 10 }}>⭐ Recommended Projects</h2>
+            {/* 🌐 CAMPUSVERSE SECTION */}
+            <h3>🌐 CampusVerse Recommended</h3>
 
-          <div style={styles.recommendedGrid}>
-            {recommendedProjects.map((p, i) => (
-              <div key={i} style={styles.recommendedCard}>
-                <h4>{p.title}</h4>
-                <p>{p.desc}</p>
-                <button style={styles.secondaryBtn}>
-                  Explore Idea
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* MAIN LAYOUT */}
-          <div style={styles.layout}>
-
-            {/* LEFT: LIVE PROJECTS */}
-            <div style={styles.left}>
-              <h3>🔥 Live Projects</h3>
-
-              {projects.map((p) => (
-                <div
-                  key={p.id}
-                  style={styles.cardSmall}
-                  onClick={() => setSelectedProject(p)}
-                >
+            <div style={styles.scrollRow}>
+              {recommendedProjects.map((p) => (
+                <div key={p.id} style={styles.cardSmall}>
                   <b>{p.title}</b>
                   <p>{p.desc}</p>
 
-                  <button onClick={() => applyToProject(p.id)}>
-                    Apply 🚀
+                  <div style={styles.tags}>
+                    {p.tags?.map((t) => (
+                      <span key={t} style={styles.tag}>#{t}</span>
+                    ))}
+                  </div>
+
+                  <button onClick={() => setSelectedProject(p)}>
+                    Explore
                   </button>
-
-                  {p.createdBy === auth.currentUser?.email && (
-                    <div>
-                      <h5>Applicants</h5>
-
-                      {p.applicants?.map((email) => (
-                        <div key={email}>
-                          {email}
-                          <button
-                            onClick={() => acceptMember(p.id, email)}
-                          >
-                            Accept
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
 
-            {/* RIGHT: CHAT */}
-            <div style={styles.right}>
-              {selectedProject ? (
-                <ChatBox project={selectedProject} />
-              ) : (
-                <p>Select a project to start chatting 💬</p>
-              )}
-            </div>
+            {/* ALL PROJECTS */}
+            <h3 style={{ marginTop: 20 }}>📌 All Projects</h3>
 
+            {projects.map((p) => (
+              <div
+                key={p.id}
+                style={styles.cardSmall}
+                onClick={() => setSelectedProject(p)}
+              >
+                <b>{p.title}</b>
+                <p>{p.desc}</p>
+
+                <button onClick={() => applyToProject(p.id)}>
+                  Apply 🚀
+                </button>
+
+                {/* OWNER PANEL */}
+                {p.createdBy === auth.currentUser?.email && (
+                  <div>
+                    <h5>Applicants</h5>
+
+                    {p.applicants?.map((email) => (
+                      <div key={email}>
+                        {email}
+                        <button onClick={() => acceptMember(p.id, email)}>
+                          Accept
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* RIGHT SIDE (CHAT) */}
+          <div style={styles.right}>
+            {selectedProject ? (
+              <ChatBox project={selectedProject} />
+            ) : (
+              <p>Select a project to open chat</p>
+            )}
           </div>
         </div>
       )}
@@ -207,15 +196,18 @@ export default function Dashboard() {
   );
 }
 
+// 🎨 STYLES
 const styles = {
   container: { padding: 20, fontFamily: "Arial" },
   logo: { color: "#4f46e5" },
 
   nav: { display: "flex", gap: 10, marginBottom: 10 },
 
-  layout: { display: "flex", gap: 20, marginTop: 20 },
-  left: { width: 320 },
-  right: { flex: 1 },
+  layout: { display: "flex", gap: 20 },
+
+  left: { width: 350 },
+
+  right: { flex: 1, padding: 10 },
 
   card: {
     padding: 15,
@@ -231,6 +223,7 @@ const styles = {
   },
 
   input: { width: "100%", padding: 8 },
+
   textarea: { width: "100%", padding: 8, height: 80 },
 
   primaryBtn: {
@@ -240,23 +233,17 @@ const styles = {
     border: "none"
   },
 
-  secondaryBtn: {
-    background: "#e5e7eb",
-    padding: 6,
-    border: "none",
-    marginTop: 5
-  },
-
-  recommendedGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  scrollRow: {
+    display: "flex",
+    overflowX: "auto",
     gap: 10,
-    marginBottom: 20
+    paddingBottom: 10
   },
 
-  recommendedCard: {
-    padding: 10,
-    border: "1px solid #ddd",
-    borderRadius: 8
+  tags: { fontSize: 12, marginTop: 5 },
+
+  tag: {
+    marginRight: 5,
+    color: "#4f46e5"
   }
 };
