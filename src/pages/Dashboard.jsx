@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db, auth } from "./firebase";
+import { db, auth } from "../firebase";
 import {
   collection,
   getDocs,
@@ -7,16 +7,17 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-export default function App() {
+export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [recommended, setRecommended] = useState([]);
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [tag, setTag] = useState("");
 
-  const currentUser = auth.currentUser;
+  const user = auth.currentUser;
 
-  // 🔄 FETCH PROJECTS
+  // 🔄 FETCH ALL PROJECTS
   const fetchProjects = async () => {
     try {
       const snap = await getDocs(collection(db, "projects"));
@@ -28,22 +29,19 @@ export default function App() {
 
       setProjects(data);
 
-      // ✅ FIXED RECOMMENDED LOGIC
-      const filtered = data.filter((p) => {
-        return p.createdBy !== currentUser?.uid;
-      });
-
+      // ⭐ Recommended = not your own projects
+      const filtered = data.filter((p) => p.createdBy !== user?.uid);
       setRecommended(filtered);
-    } catch (error) {
-      console.log("Error fetching projects:", error);
+    } catch (err) {
+      console.log("Fetch error:", err);
     }
   };
 
   useEffect(() => {
     fetchProjects();
-  }, [currentUser]);
+  }, [user]);
 
-  // ➕ CREATE PROJECT
+  // ➕ CREATE PROJECT (with tags)
   const createProject = async () => {
     if (!title || !desc) return;
 
@@ -51,69 +49,108 @@ export default function App() {
       await addDoc(collection(db, "projects"), {
         title,
         desc,
-        createdBy: currentUser?.uid || "anonymous",
+        tag: tag || "general",
+        createdBy: user?.uid || "anonymous",
         createdAt: serverTimestamp(),
       });
 
       setTitle("");
       setDesc("");
-      fetchProjects(); // refresh
-    } catch (error) {
-      console.log("Error creating project:", error);
+      setTag("");
+      fetchProjects();
+    } catch (err) {
+      console.log("Create error:", err);
     }
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+    <div style={{ padding: 20, fontFamily: "Arial" }}>
       <h1>🚀 SyncUp Dashboard</h1>
 
       {/* CREATE PROJECT */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: 20 }}>
         <h2>Create Project</h2>
 
         <input
-          placeholder="Project Title"
+          placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
         <br />
+
         <textarea
-          placeholder="Project Description"
+          placeholder="Description"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
         />
         <br />
 
-        <button onClick={createProject}>Create</button>
+        {/* TAGS SYSTEM */}
+        <input
+          placeholder="Tag (AI, WebDev, ML...)"
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
+        />
+        <br />
+
+        <button onClick={createProject}>Create Project</button>
       </div>
 
       {/* MY PROJECTS */}
       <div>
         <h2>📁 My Projects</h2>
+
         {projects
-          .filter((p) => p.createdBy === currentUser?.uid)
+          .filter((p) => p.createdBy === user?.uid)
           .map((p) => (
-            <div key={p.id} style={{ border: "1px solid gray", margin: 5, padding: 10 }}>
+            <div
+              key={p.id}
+              style={{ border: "1px solid gray", margin: 5, padding: 10 }}
+            >
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
+              <small>🏷 {p.tag}</small>
             </div>
           ))}
       </div>
 
       {/* RECOMMENDED PROJECTS */}
-      <div style={{ marginTop: "30px" }}>
+      <div style={{ marginTop: 30 }}>
         <h2>⭐ Recommended Projects</h2>
 
         {recommended.length === 0 ? (
           <p>No recommendations available</p>
         ) : (
           recommended.map((p) => (
-            <div key={p.id} style={{ border: "1px solid blue", margin: 5, padding: 10 }}>
+            <div
+              key={p.id}
+              style={{ border: "1px solid blue", margin: 5, padding: 10 }}
+            >
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
+              <small>🏷 {p.tag}</small>
             </div>
           ))
         )}
+      </div>
+
+      {/* SIMPLE CHAT BOX (RESTORED BASE VERSION) */}
+      <div style={{ marginTop: 40 }}>
+        <h2>💬 Chat Box</h2>
+
+        <div
+          style={{
+            border: "1px solid black",
+            height: 150,
+            overflowY: "scroll",
+            padding: 10,
+          }}
+        >
+          <p>Chat system will be connected next (Firebase real-time)</p>
+        </div>
+
+        <input placeholder="Type message..." />
+        <button>Send</button>
       </div>
     </div>
   );
