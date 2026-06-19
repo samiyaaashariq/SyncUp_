@@ -11,8 +11,8 @@ export default function Dashboard() {
       <h1>🚀 SyncUp</h1>
       <h3>Welcome {user?.email}</h3>
 
-      <button onClick={() => nav("/explore")}>Explore Projects</button>
-      <button onClick={() => nav("/explore")}>Create Project</button>
+      <button onClick={() => nav("/chat")}>Explore Projects</button>
+      <button onClick={() => nav("/chat")}>Create Project</button>
 
       <h2>Your Interests</h2>
 
