@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ onLoginSuccess }) {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -18,9 +21,21 @@ export default function Login({ onLoginSuccess }) {
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-      if (onLoginSuccess) onLoginSuccess();
+      // ✅ STORE USER SESSION (VERY IMPORTANT)
+      localStorage.setItem(
+        "user",
+        JSON.stringify(userCredential.user)
+      );
+
+      // ✅ REDIRECT TO APP
+      navigate("/dashboard");
+
     } catch (err) {
       console.log(err);
       setError("Invalid email or password");
@@ -31,15 +46,12 @@ export default function Login({ onLoginSuccess }) {
 
   return (
     <div style={styles.container}>
-      
-      {/* HEADER */}
       <div style={styles.card}>
         <h1 style={styles.title}>🚀 SyncUp</h1>
         <p style={styles.subtitle}>
           Welcome back. Continue building.
         </p>
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -48,7 +60,6 @@ export default function Login({ onLoginSuccess }) {
           style={styles.input}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
@@ -57,10 +68,8 @@ export default function Login({ onLoginSuccess }) {
           style={styles.input}
         />
 
-        {/* ERROR */}
         {error && <p style={styles.error}>{error}</p>}
 
-        {/* BUTTON */}
         <button
           onClick={handleLogin}
           style={styles.button}
@@ -73,7 +82,7 @@ export default function Login({ onLoginSuccess }) {
   );
 }
 
-// 🎨 STYLES (STARTUP LOOK)
+// 🎨 STYLES
 const styles = {
   container: {
     height: "100vh",
