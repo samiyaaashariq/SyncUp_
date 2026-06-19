@@ -1,65 +1,65 @@
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebase";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
+import CreateProject from "./pages/CreateProject";
+import Chat from "./pages/Chat";
 
-export default function App() {
-  const [user, setUser] = useState(undefined); // IMPORTANT (undefined = loading state)
-  const [error, setError] = useState(null);
+import { useAuth } from "./context/AuthContext";
 
-  useEffect(() => {
-    try {
-      const unsub = onAuthStateChanged(
-        auth,
-        (u) => {
-          setUser(u);
-        },
-        (err) => {
-          console.log(err);
-          setError("Auth error");
-          setUser(null);
-        }
-      );
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
 
-      return () => unsub();
-    } catch (e) {
-      console.log(e);
-      setError("Firebase init failed");
-      setUser(null);
-    }
-  }, []);
-
-  // 🔵 LOADING STATE (CRITICAL - prevents blank page)
-  if (user === undefined) {
-    return (
-      <div style={styles.center}>
-        Loading SyncUp...
-      </div>
-    );
-  }
-
-  // 🔴 ERROR STATE (safety fallback)
-  if (error) {
-    return (
-      <div style={styles.center}>
-        Something went wrong. Please refresh.
-      </div>
-    );
-  }
-
-  // 🟢 MAIN ROUTING
-  return user ? <Dashboard /> : <Login />;
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
 }
 
-const styles = {
-  center: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontFamily: "Arial",
-    color: "#4f46e5"
-  }
-};
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-project"
+          element={
+            <ProtectedRoute>
+              <CreateProject />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
+}
