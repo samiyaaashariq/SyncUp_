@@ -1,18 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import CreateProject from "./pages/CreateProject";
-import Chat from "./pages/Chat";
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import Dashboard from "./pages/dashboard";
+import Home from "./pages/home";
+import Profile from "./pages/profile";
+import Notification from "./pages/notification";
+import ChatBox from "./pages/chatbox";
+import Auth from "./pages/auth";
 
-// TEMP SAFE AUTH (prevents deploy crash)
-const fakeUser = { email: "demo@syncup.com" };
+// Temporary safe user (prevents crash)
+const user = { email: "demo@syncup.com" };
 
 function ProtectedRoute({ children }) {
-  // SAFE MODE: no auth crash during deploy
-  const user = fakeUser;
-
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
@@ -22,10 +22,22 @@ export default function App() {
     <Router>
       <Routes>
 
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
+        {/* Protected Core App */}
         <Route
           path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
@@ -34,32 +46,37 @@ export default function App() {
         />
 
         <Route
-          path="/projects"
+          path="/profile"
           element={
             <ProtectedRoute>
-              <Projects />
+              <Profile />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/create-project"
+          path="/notifications"
           element={
             <ProtectedRoute>
-              <CreateProject />
+              <Notification />
             </ProtectedRoute>
           }
         />
 
+        {/* ChatBox page (direct route if needed) */}
         <Route
           path="/chat"
           element={
             <ProtectedRoute>
-              <Chat />
+              <ChatBox />
             </ProtectedRoute>
           }
         />
 
+        {/* Auth helper route (if you are using it internally) */}
+        <Route path="/auth" element={<Auth />} />
+
+        {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
