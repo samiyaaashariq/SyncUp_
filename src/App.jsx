@@ -10,30 +10,41 @@ import ChatBox from "./pages/ChatBox";
 import { auth } from "./firebase";
 
 export default function App() {
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (user === undefined) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <h2>Loading...</h2>;
   }
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={user ? <Dashboard /> : <Login />} />
+        <Route
+          path="/"
+          element={user ? <Navigate to="/dashboard" /> : <Login />}
+        />
+
         <Route path="/signup" element={<Signup />} />
+
         <Route
           path="/dashboard"
           element={user ? <Dashboard /> : <Navigate to="/" />}
         />
-        <Route path="/chat/:projectId" element={<ChatBox />} />
+
+        <Route
+          path="/chat/:projectId"
+          element={user ? <ChatBox /> : <Navigate to="/" />}
+        />
       </Routes>
     </BrowserRouter>
   );
