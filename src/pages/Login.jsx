@@ -21,17 +21,33 @@ export default function Login() {
     <div style={{ padding: 20 }}>
       <h1>SyncUp Login</h1>
 
-      <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
       <br />
+      <br />
+
       <input
         placeholder="Password"
         type="password"
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+
+      <br />
       <br />
 
       <button onClick={login}>Login</button>
-      <p onClick={() => nav("/signup")}>New user? Sign up</p>
+
+      <p
+        style={{ cursor: "pointer" }}
+        onClick={() => nav("/signup")}
+      >
+        New user? Sign up
+      </p>
     </div>
   );
 }
