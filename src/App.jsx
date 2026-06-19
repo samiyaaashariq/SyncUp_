@@ -1,50 +1,26 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import Notification from "./pages/Notification";
-import ChatBox from "./pages/ChatBox";
-import Auth from "./pages/Auth";
+import Explore from "./pages/Explore";
+import ChatBot from "./pages/ChatBot";
 
-function getUser() {
-  try {
-    return JSON.parse(localStorage.getItem("user"));
-  } catch (e) {
-    return null;
-  }
-}
-
-function ProtectedRoute({ children }) {
-  const user = getUser();
-  return user ? children : <Navigate to="/login" />;
-}
+import { auth } from "./firebase";
 
 export default function App() {
+  const user = auth.currentUser;
+
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-
-        {/* AUTH */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={user ? <Dashboard /> : <Login />} />
         <Route path="/signup" element={<Signup />} />
-
-        {/* MAIN APP */}
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
-        <Route path="/chat" element={<ProtectedRoute><ChatBox /></ProtectedRoute>} />
-
-        {/* OPTIONAL */}
-        <Route path="/auth" element={<Auth />} />
-
-        {/* fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
-
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/chat/:projectId" element={<ChatBot />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
