@@ -46,11 +46,15 @@ export default function App() {
         />
 
         {/* 🔥 PROJECT CHAT ROOMS (IMPORTANT FIX) */}
-        <Route
-          path="/chat/:projectId"
-          element={user ? <ChatBox /> : <Navigate to="/" />}
-        />
-        <Route path="/chat/:projectId" element={<ChatBox />} />
+       <Route
+  path="/chat"
+  element={user ? <ChatBox /> : <Navigate to="/" />}
+/>
+
+<Route
+  path="/chat/:projectId"
+  element={user ? <ChatBox /> : <Navigate to="/" />}
+/>
         <Route path="/profile" element={<Profile />} />
       
       </Routes>
