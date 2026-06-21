@@ -88,7 +88,7 @@ export default function Dashboard() {
       boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
     }}
   >
-    SyncUp
+    📊
   </div>
 
   {/* Brand */}
@@ -101,7 +101,7 @@ export default function Dashboard() {
         letterSpacing: "1px",
       }}
     >
-      📊
+      SyncUp
     </div>
 
     <div
