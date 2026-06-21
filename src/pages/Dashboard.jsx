@@ -38,6 +38,8 @@ export default function Dashboard() {
     },
   ];
 
+  const interests = ["AI", "Web Dev", "ML", "Cybersecurity", "App Dev"];
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
 
@@ -50,7 +52,6 @@ export default function Dashboard() {
           padding: "20px",
         }}
       >
-        {/* LOGO (LOCKED) */}
         <h2
           style={{
             marginBottom: "10px",
@@ -109,16 +110,33 @@ export default function Dashboard() {
           background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
         }}
       >
-        <h1 style={{ color: "#0f172a" }}>
-          Welcome, {user?.email || "User"} 👋
-        </h1>
 
-        <p style={{ color: "#475569" }}>
-          Build projects, find teammates, and collaborate in one place.
-        </p>
+        {/* HERO CARD */}
+        <div
+          style={{
+            background: "white",
+            padding: "22px",
+            borderRadius: "14px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+            marginBottom: "20px",
+          }}
+        >
+          <h1 style={{ color: "#0f172a", marginBottom: "6px" }}>
+            Welcome back 👋
+          </h1>
+
+          <p style={{ color: "#475569", marginBottom: "10px" }}>
+            {user?.email}
+          </p>
+
+          <p style={{ color: "#64748b" }}>
+            Build projects, find teammates, and collaborate in one place.
+          </p>
+        </div>
 
         {/* PROJECTS */}
-        <h2 style={{ marginTop: "30px", color: "#0f172a" }}>
+        <h2 style={{ marginTop: "20px", color: "#0f172a" }}>
           🔥 Featured Projects
         </h2>
 
@@ -197,6 +215,28 @@ export default function Dashboard() {
             Create Project
           </button>
         </div>
+
+        {/* INTERESTS */}
+        <h2 style={{ marginTop: "30px", color: "#0f172a" }}>
+          🎯 Your Interests
+        </h2>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {interests.map((item, index) => (
+            <span
+              key={index}
+              style={{
+                background: "#e8f0fe",
+                padding: "8px 12px",
+                borderRadius: "20px",
+                fontSize: "13px",
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+
       </div>
     </div>
   );
