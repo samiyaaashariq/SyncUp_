@@ -119,7 +119,7 @@ export default function Dashboard() {
           </div>
 
           <div
-            onClick={() => nav("/chat")}
+            onClick={() => nav(`/chat/${p.id}`)
             style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
           >
             AI Chat
@@ -217,7 +217,7 @@ export default function Dashboard() {
               </button>
 
               <button
-                onClick={() => nav("/chat")}
+                onClick={() => nav(`/chat/${p.id}`)}
                 style={{
                   padding: "8px 12px",
                   cursor: "pointer",
