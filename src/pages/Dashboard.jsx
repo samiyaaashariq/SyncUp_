@@ -171,64 +171,75 @@ export default function Dashboard() {
         </h2>
 
         {projects.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              background: "#ffffff",
-              padding: "16px",
-              marginBottom: "12px",
-              borderRadius: "12px",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-            }}
-          >
-            <h3 style={{ fontWeight: "700", color: "#0f172a" }}>
-              {p.title}
-            </h3>
+  <div
+    key={p.id}
+    style={{
+      background: "#fff",
+      padding: "16px",
+      marginBottom: "14px",
+      borderRadius: "12px",
+      border: "1px solid #e5e7eb",
+    }}
+  >
+    {/* HEADER */}
+    <h3 style={{ fontWeight: "700" }}>{p.title}</h3>
 
-            <p style={{ color: "#334155" }}>{p.description}</p>
+    <p style={{ color: "#475569" }}>{p.description}</p>
 
-            <small style={{ color: "#64748b" }}>{p.tech}</small>
+    <small style={{ color: "#64748b" }}>{p.tech}</small>
 
-            {p.createdBy && (
-              <p style={{ fontSize: "12px", color: "#94a3b8" }}>
-                Posted by: {p.createdBy}
-              </p>
-            )}
+    <p style={{ fontSize: "12px", marginTop: "6px", color: "#94a3b8" }}>
+      Posted by: {p.createdBy || "Anonymous"}
+    </p>
 
-            <div style={{ marginTop: "10px" }}>
-              <button
-                onClick={() => applyToProject(p.id)}
-                style={{
-                  marginRight: "10px",
-                  padding: "8px 12px",
-                  background: "#0ea5e9",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                Apply
-              </button>
+    {/* ACTIONS */}
+    <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+      
+      <button
+        onClick={() => applyToProject(p.id)}
+        style={{
+          padding: "6px 10px",
+          background: "#0ea5e9",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        Apply
+      </button>
 
-              <button
-                onClick={() => nav(`/chat/${p.id}`)}
-                style={{
-                  padding: "8px 12px",
-                  background: "#6366f1",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                Discuss
-              </button>
-            </div>
-          </div>
-        ))}
+      <button
+        onClick={() => nav(`/chat/${p.id}`)}
+        style={{
+          padding: "6px 10px",
+          background: "#6366f1",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        Discuss
+      </button>
 
+      {/* LIKE BUTTON (frontend only for now) */}
+      <button
+        onClick={() => alert("Like system coming next upgrade 🚀")}
+        style={{
+          padding: "6px 10px",
+          background: "#f43f5e",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        ❤️ Like
+      </button>
+    </div>
+  </div>
+))}
         {/* QUICK ACTIONS */}
         <div
           style={{
