@@ -5,10 +5,10 @@ export default function Profile() {
 const user = auth.currentUser;
 
 const [skills, setSkills] = useState([
-“AI”,
-“Web Dev”,
-“React”,
-“Firebase”
+"AI",
+"Web Dev",
+"React",
+"Firebase"
 ]);
 
 const [newSkill, setNewSkill] = useState(””);
