@@ -112,7 +112,9 @@ export default function Dashboard() {
 
         {/* HEADER */}
         <div style={styles.header}>
-          <h2>Welcome back 👋</h2>
+         <h2 style={{ fontSize: "24px", fontWeight: "900", color: "#0f172a" }}>
+  Welcome back 👋
+</h2>
           <p>{user?.email}</p>
         </div>
 
