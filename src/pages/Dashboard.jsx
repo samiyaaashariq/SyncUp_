@@ -48,7 +48,7 @@ export default function Dashboard() {
         background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
         padding: "20px",
         fontFamily: "Arial, sans-serif",
-        color: "#1f1f1f"
+        color: "#1f1f1f",
       }}
     >
       {/* Header */}
@@ -61,69 +61,61 @@ export default function Dashboard() {
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         }}
       >
+        {/* LOGO */}
         <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    marginBottom: "10px"
-  }}
->
-  {/* Logo Icon */}
-  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    marginBottom: "10px"
-  }}
->
-  {/* Logo Icon */}
-  <div
-    style={{
-      width: "42px",
-      height: "42px",
-      borderRadius: "12px",
-      background: "linear-gradient(135deg, #2563eb, #60a5fa)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "white",
-      fontWeight: "bold",
-      fontSize: "18px",
-      boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)"
-    }}
-  >
-    SU
-  </div>
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "10px",
+          }}
+        >
+          <div
+            style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #2563eb, #60a5fa)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "18px",
+              boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)",
+            }}
+          >
+            SU
+          </div>
 
-  {/* Brand Text */}
-  <div>
-    <div
-      style={{
-        fontSize: "22px",
-        fontWeight: "800",
-        color: "#0f172a",
-        letterSpacing: "0.5px"
-      }}
-    >
-      SyncUp
-    </div>
+          <div>
+            <div
+              style={{
+                fontSize: "22px",
+                fontWeight: "800",
+                color: "#0f172a",
+                letterSpacing: "0.5px",
+              }}
+            >
+              SyncUp
+            </div>
 
-    <div
-      style={{
-        fontSize: "12px",
-        color: "#64748b",
-        marginTop: "-2px"
-      }}
-    >
-      Build • Collaborate • Grow
-    </div>
-  </div>
-</div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#64748b",
+                marginTop: "-2px",
+              }}
+            >
+              Build • Collaborate • Grow
+            </div>
+          </div>
+        </div>
+
         <p>
           Welcome, <b>{user?.email}</b>
         </p>
+
         <p>Build projects. Find teammates. Grow together.</p>
 
         <button
