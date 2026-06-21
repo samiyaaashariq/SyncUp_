@@ -122,9 +122,16 @@ export default function Dashboard() {
             marginBottom: "20px",
           }}
         >
-          <h1 style={{ color: "#0f172a", marginBottom: "6px" }}>
-            Welcome back 👋
-          </h1>
+          <h1
+  style={{
+    color: "#0f172a",
+    marginBottom: "6px",
+    fontSize: "20px",
+    fontWeight: "700",
+  }}
+>
+  Welcome back 👋
+</h1>
 
           <p style={{ color: "#475569", marginBottom: "10px" }}>
             {user?.email}
