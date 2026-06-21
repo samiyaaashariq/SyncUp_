@@ -1,46 +1,79 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { auth } from "../firebase";
 
 export default function Profile() {
-  const [name, setName] = useState("");
-  const [skills, setSkills] = useState("");
+  const user = auth.currentUser;
 
-  const saveProfile = () => {
-    const profile = {
+  const [skills, setSkills] = useState(["AI", "Web Dev", "React"]);
+  const [newSkill, setNewSkill] = useState("");
 
-    name,
-
-    skills: skills.split(",").map(s => s.trim().toLowerCase())
-
-  };
-
-  localStorage.setItem("syncup_profile", JSON.stringify(profile));
-
-    alert("Profile saved 🚀");
+  const addSkill = () => {
+    if (!newSkill) return;
+    setSkills([...skills, newSkill]);
+    setNewSkill("");
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Profile 👤</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: "30px",
+        fontFamily: "Inter",
+        background: "linear-gradient(135deg,#dbeafe,#f8fafc)",
+        color: "#0f172a",
+      }}
+    >
+      {/* PROFILE CARD */}
+      <div
+        style={{
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "12px",
+          border: "1px solid #e5e7eb",
+        }}
+      >
+        <h2>👤 My Profile</h2>
 
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+        <p><b>Email:</b> {user?.email}</p>
 
-      <br /><br />
+        {/* SKILLS */}
+        <h3>Skills</h3>
 
-      <input
-        placeholder="Skills"
-        value={skills}
-        onChange={(e) => setSkills(e.target.value)}
-      />
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          {skills.map((s, i) => (
+            <span
+              key={i}
+              style={{
+                background: "#e0f2fe",
+                padding: "6px 10px",
+                borderRadius: "20px",
+              }}
+            >
+              {s}
+            </span>
+          ))}
+        </div>
 
-      <br /><br />
+        {/* ADD SKILL */}
+        <div style={{ marginTop: "10px" }}>
+          <input
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            placeholder="Add skill"
+            style={{ padding: "8px", marginRight: "10px" }}
+          />
 
-      <button onClick={saveProfile}>
-        Save Profile
-      </button>
+          <button onClick={addSkill}>Add</button>
+        </div>
+
+        {/* PORTFOLIO */}
+        <h3 style={{ marginTop: "20px" }}>Portfolio</h3>
+
+        <ul>
+          <li>GitHub: https://github.com/your-profile</li>
+          <li>LinkedIn: https://linkedin.com/in/your-profile</li>
+        </ul>
+      </div>
     </div>
   );
 }
