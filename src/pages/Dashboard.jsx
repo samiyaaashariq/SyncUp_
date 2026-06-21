@@ -6,6 +6,11 @@ export default function Dashboard() {
   const nav = useNavigate();
   const user = auth.currentUser || {};
 
+  const menu = [
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Chat AI", path: "/chat" },
+  ];
+
   const projects = [
     {
       title: "CampusVerse",
@@ -33,201 +38,139 @@ export default function Dashboard() {
     },
   ];
 
-  const interests = [
-    "AI",
-    "Web Development",
-    "Machine Learning",
-    "Cybersecurity",
-    "App Development",
-  ];
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
-        padding: "20px",
-        maxWidth: "900px",
-        margin: "0 auto",
-        fontFamily: "Arial, sans-serif",
-        color: "#1f1f1f",
-      }}
-    >
-      {/* HEADER */}
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+
+      {/* SIDEBAR */}
       <div
         style={{
-          background: "#fff",
+          width: "240px",
+          background: "#0f172a",
+          color: "white",
           padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "20px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         }}
       >
-        {/* LOGO */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "14px",
-            marginBottom: "15px",
-          }}
-        >
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "14px",
-              background: "linear-gradient(135deg, #0ea5e9, #6366f1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: "900",
-              fontSize: "18px",
-              boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
-            }}
-          >
-            📊
-          </div>
+        <h2 style={{ marginBottom: "10px" }}>🚀 SyncUp</h2>
 
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                fontSize: "24px",
-                fontWeight: "900",
-                color: "#0f172a",
-                letterSpacing: "1px",
-              }}
-            >
-              SyncUp
-            </div>
-
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#64748b",
-              }}
-            >
-              Build • Collaborate • Grow
-            </div>
-          </div>
-        </div>
-
-        <p>
-          Welcome, <b>{user?.email}</b>
+        <p style={{ fontSize: "12px", color: "#94a3b8" }}>
+          {user?.email}
         </p>
 
-        <p>Build projects. Find teammates. Grow together.</p>
-
-        <button
-          onClick={() => nav("/chat")}
-          style={{
-            marginTop: "10px",
-            padding: "10px 15px",
-            cursor: "pointer",
-          }}
-        >
-          Open AI Assistant
-        </button>
-      </div>
-
-      {/* FEATURED PROJECTS */}
-      <div style={{ textAlign: "center", marginTop: "30px" }}>
-        <h2
-          style={{
-            fontSize: "22px",
-            fontWeight: "800",
-            color: "#0f172a",
-            marginBottom: "20px",
-          }}
-        >
-          🔥 Featured Projects
-        </h2>
-      </div>
-
-      {projects.map((project, index) => (
-        <div
-          key={index}
-          style={{
-            background: "#ffffff",
-            padding: "18px",
-            marginBottom: "15px",
-            borderRadius: "12px",
-            border: "1px solid #e5e7eb",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-            transition: "all 0.2s ease",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow =
-              "0 8px 20px rgba(0,0,0,0.08)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = "translateY(0px)";
-            e.currentTarget.style.boxShadow =
-              "0 1px 2px rgba(0,0,0,0.04)";
-          }}
-        >
-          <h3 style={{ marginBottom: "6px", color: "#0f172a" }}>
-            {project.title}
-          </h3>
-
-          <p style={{ color: "#475569", marginBottom: "8px" }}>
-            {project.description}
-          </p>
-
-          <small style={{ color: "#64748b" }}>{project.tech}</small>
-
-          <div style={{ marginTop: "10px" }}>
-            <button
-              onClick={() => alert("Applied successfully!")}
+        <div style={{ marginTop: "30px" }}>
+          {menu.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => nav(item.path)}
               style={{
-                marginRight: "10px",
-                padding: "8px 12px",
+                padding: "10px",
+                marginBottom: "10px",
+                background: "#1e293b",
+                borderRadius: "8px",
                 cursor: "pointer",
               }}
             >
-              Apply
-            </button>
-
-            <button
-              onClick={() => nav("/chat")}
-              style={{
-                padding: "8px 12px",
-                cursor: "pointer",
-              }}
-            >
-              Discuss
-            </button>
-          </div>
+              {item.name}
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
 
-      {/* INTERESTS */}
-      <h2
+      {/* MAIN CONTENT */}
+      <div
         style={{
-          marginTop: "30px",
-          color: "#0f172a",
+          flex: 1,
+          padding: "30px",
+          background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
         }}
       >
-        🎯 Your Interests
-      </h2>
+        <h1 style={{ color: "#0f172a" }}>
+          Welcome, {user?.email || "User"} 👋
+        </h1>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {interests.map((item, index) => (
-          <span
+        <p style={{ color: "#475569" }}>
+          Build projects, find teammates, and collaborate in one place.
+        </p>
+
+        {/* PROJECTS */}
+        <h2 style={{ marginTop: "30px", color: "#0f172a" }}>
+          🔥 Featured Projects
+        </h2>
+
+        {projects.map((project, index) => (
+          <div
             key={index}
             style={{
-              background: "#e8f0fe",
-              padding: "8px 12px",
-              borderRadius: "20px",
-              fontSize: "13px",
+              background: "#ffffff",
+              padding: "18px",
+              marginTop: "15px",
+              borderRadius: "12px",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             }}
           >
-            {item}
-          </span>
+            <h3 style={{ marginBottom: "6px", color: "#0f172a" }}>
+              {project.title}
+            </h3>
+
+            <p style={{ color: "#475569", marginBottom: "6px" }}>
+              {project.description}
+            </p>
+
+            <small style={{ color: "#64748b" }}>
+              {project.tech}
+            </small>
+
+            <div style={{ marginTop: "10px" }}>
+              <button
+                onClick={() => alert("Applied successfully!")}
+                style={{
+                  marginRight: "10px",
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Apply
+              </button>
+
+              <button
+                onClick={() => nav("/chat")}
+                style={{
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Discuss
+              </button>
+            </div>
+          </div>
         ))}
+
+        {/* QUICK ACTION */}
+        <div
+          style={{
+            marginTop: "30px",
+            padding: "20px",
+            background: "white",
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <h3>⚡ Quick Actions</h3>
+
+          <button
+            onClick={() => nav("/chat")}
+            style={{ marginRight: "10px", padding: "10px 14px" }}
+          >
+            Open AI Chat
+          </button>
+
+          <button
+            onClick={() => alert("Feature coming soon!")}
+            style={{ padding: "10px 14px" }}
+          >
+            Create Project
+          </button>
+        </div>
       </div>
     </div>
   );
