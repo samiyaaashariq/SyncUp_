@@ -53,6 +53,7 @@ export default function App() {
   path="/chat"
   element={user ? <ChatBox /> : <Navigate to="/" />}
 />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );
