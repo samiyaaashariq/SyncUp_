@@ -48,6 +48,7 @@ export default function Dashboard() {
         backgroundColor: "#f5f7fb",
         padding: "20px",
         fontFamily: "Arial, sans-serif",
+        color: "#1f1f1f"
       }}
     >
       {/* Header */}
