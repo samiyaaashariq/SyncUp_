@@ -4,9 +4,9 @@ import { auth, db } from "../firebase";
 import {
   collection,
   addDoc,
+  onSnapshot,
   query,
   orderBy,
-  onSnapshot,
 } from "firebase/firestore";
 
 export default function ChatBox() {
@@ -14,22 +14,20 @@ export default function ChatBox() {
   const user = auth.currentUser;
 
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [text, setText] = useState("");
 
-  // REAL-TIME CHAT
+  // REALTIME MESSAGES
   useEffect(() => {
-    if (!projectId) return;
-
     const q = query(
       collection(db, "projects", projectId, "messages"),
       orderBy("createdAt")
     );
 
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsub = onSnapshot(q, (snap) => {
       setMessages(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
         }))
       );
     });
@@ -39,89 +37,96 @@ export default function ChatBox() {
 
   // SEND MESSAGE
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!text.trim()) return;
 
-    await addDoc(
-      collection(db, "projects", projectId, "messages"),
-      {
-        text: input,
-        sender: user?.email,
-        createdAt: new Date(),
-      }
-    );
+    await addDoc(collection(db, "projects", projectId, "messages"), {
+      text,
+      user: user?.email,
+      createdAt: new Date(),
+    });
 
-    setInput("");
+    setText("");
   };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        fontFamily: "Arial",
-      }}
-    >
-      <h2>💬 Project Chat Room</h2>
-      <p style={{ color: "gray" }}>Project ID: {projectId}</p>
+    <div style={styles.page}>
+      <h2 style={styles.title}>💬 Project Chat Room</h2>
+      <p style={styles.sub}>Project ID: {projectId}</p>
 
-      {/* MESSAGES BOX */}
-      <div
-        style={{
-          height: "400px",
-          overflowY: "auto",
-          border: "1px solid #ddd",
-          padding: "10px",
-          borderRadius: "10px",
-          marginBottom: "10px",
-        }}
-      >
-        {messages.length === 0 ? (
-          <p style={{ color: "gray" }}>No messages yet...</p>
-        ) : (
-          messages.map((m) => (
-            <div
-              key={m.id}
-              style={{
-                marginBottom: "10px",
-                padding: "8px",
-                background: "#f3f4f6",
-                borderRadius: "8px",
-              }}
-            >
-              <b>{m.sender}</b>
-              <p style={{ margin: "5px 0" }}>{m.text}</p>
-            </div>
-          ))
-        )}
+      <div style={styles.chatBox}>
+        {messages.map((m) => (
+          <div key={m.id} style={styles.msg}>
+            <b>{m.user}:</b> {m.text}
+          </div>
+        ))}
       </div>
 
-      {/* INPUT */}
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div style={styles.inputBox}>
         <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           placeholder="Type message..."
-          style={{
-            flex: 1,
-            padding: "10px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
+          style={styles.input}
         />
 
-        <button
-          onClick={sendMessage}
-          style={{
-            padding: "10px 15px",
-            background: "#0ea5e9",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={sendMessage} style={styles.btn}>
           Send
         </button>
       </div>
     </div>
   );
 }
+
+const styles = {
+  page: {
+    padding: "20px",
+    fontFamily: "Inter, sans-serif",
+    background: "linear-gradient(135deg, #ffe4ec, #fff)",
+    minHeight: "100vh",
+  },
+
+  title: {
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+
+  sub: {
+    color: "#475569",
+    marginBottom: "10px",
+  },
+
+  chatBox: {
+    background: "white",
+    padding: "15px",
+    borderRadius: "12px",
+    height: "400px",
+    overflowY: "auto",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+  },
+
+  msg: {
+    marginBottom: "10px",
+    color: "#0f172a",
+  },
+
+  inputBox: {
+    marginTop: "10px",
+    display: "flex",
+    gap: "10px",
+  },
+
+  input: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+  },
+
+  btn: {
+    padding: "10px 14px",
+    background: "#0ea5e9",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+  },
+};
