@@ -1,42 +1,127 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { auth, db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 
-export default function ChatBot() {
+export default function ChatBox() {
+  const { projectId } = useParams();
+  const user = auth.currentUser;
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const send = async () => {
-    if (!input) return;
+  // REAL-TIME CHAT
+  useEffect(() => {
+    if (!projectId) return;
 
-    const userMsg = { role: "user", text: input };
-    setMessages([...messages, userMsg]);
+    const q = query(
+      collection(db, "projects", projectId, "messages"),
+      orderBy("createdAt")
+    );
 
-    // Simple AI simulation (we can upgrade to real OpenAI later)
-    setTimeout(() => {
-      const botMsg = {
-        role: "bot",
-        text: "AI Response: I understand your project query → " + input,
-      };
+    const unsub = onSnapshot(q, (snapshot) => {
+      setMessages(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
+    });
 
-      setMessages((prev) => [...prev, botMsg]);
-    }, 800);
+    return () => unsub();
+  }, [projectId]);
+
+  // SEND MESSAGE
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    await addDoc(
+      collection(db, "projects", projectId, "messages"),
+      {
+        text: input,
+        sender: user?.email,
+        createdAt: new Date(),
+      }
+    );
 
     setInput("");
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🤖 SyncUp AI Chat</h2>
+    <div
+      style={{
+        padding: "20px",
+        fontFamily: "Arial",
+      }}
+    >
+      <h2>💬 Project Chat Room</h2>
+      <p style={{ color: "gray" }}>Project ID: {projectId}</p>
 
-      <div style={{ height: 300, overflowY: "scroll", border: "1px solid gray" }}>
-        {messages.map((m, i) => (
-          <p key={i}>
-            <b>{m.role}:</b> {m.text}
-          </p>
-        ))}
+      {/* MESSAGES BOX */}
+      <div
+        style={{
+          height: "400px",
+          overflowY: "auto",
+          border: "1px solid #ddd",
+          padding: "10px",
+          borderRadius: "10px",
+          marginBottom: "10px",
+        }}
+      >
+        {messages.length === 0 ? (
+          <p style={{ color: "gray" }}>No messages yet...</p>
+        ) : (
+          messages.map((m) => (
+            <div
+              key={m.id}
+              style={{
+                marginBottom: "10px",
+                padding: "8px",
+                background: "#f3f4f6",
+                borderRadius: "8px",
+              }}
+            >
+              <b>{m.sender}</b>
+              <p style={{ margin: "5px 0" }}>{m.text}</p>
+            </div>
+          ))
+        )}
       </div>
 
-      <input value={input} onChange={(e) => setInput(e.target.value)} />
-      <button onClick={send}>Send</button>
+      {/* INPUT */}
+      <div style={{ display: "flex", gap: "10px" }}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type message..."
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+          }}
+        />
+
+        <button
+          onClick={sendMessage}
+          style={{
+            padding: "10px 15px",
+            background: "#0ea5e9",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          Send
+        </button>
+      </div>
     </div>
   );
 }
