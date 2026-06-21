@@ -29,20 +29,24 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* LOGIN */}
         <Route
           path="/"
           element={user ? <Navigate to="/dashboard" /> : <Login />}
         />
 
+        {/* SIGNUP */}
         <Route path="/signup" element={<Signup />} />
 
+        {/* DASHBOARD */}
         <Route
           path="/dashboard"
           element={user ? <Dashboard /> : <Navigate to="/" />}
         />
 
+        {/* 🔥 PROJECT CHAT ROOMS (IMPORTANT FIX) */}
         <Route
-          path="/chat"
+          path="/chat/:projectId"
           element={user ? <ChatBox /> : <Navigate to="/" />}
         />
       </Routes>
