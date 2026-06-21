@@ -115,6 +115,9 @@ export default function Dashboard() {
          <h2 style={{ fontSize: "24px", fontWeight: "900", color: "#0f172a" }}>
   Welcome back 👋
 </h2>
+          <p style={{ fontSize: "14px", color: "#334155", marginTop: "4px" }}>
+  Let’s build something great today.
+</p>
           <p>{user?.email}</p>
         </div>
 
