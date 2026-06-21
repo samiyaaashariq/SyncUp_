@@ -1,5 +1,5 @@
-import React, { useState } from “react”;
-import { auth } from “../firebase”;
+import React, { useState } from "react";
+import { auth } from "../firebase";
 
 export default function Profile() {
 const user = auth.currentUser;
