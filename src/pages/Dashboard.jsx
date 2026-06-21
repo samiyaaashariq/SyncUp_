@@ -45,7 +45,7 @@ export default function Dashboard() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f5f7fb",
+        background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
         padding: "20px",
         fontFamily: "Arial, sans-serif",
         color: "#1f1f1f"
@@ -61,7 +61,25 @@ export default function Dashboard() {
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         }}
       >
-        <h1>🚀 SyncUp</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+  <div
+    style={{
+      width: "36px",
+      height: "36px",
+      borderRadius: "10px",
+      background: "#4f46e5",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "white",
+      fontWeight: "bold",
+    }}
+  >
+    S
+  </div>
+
+  <h1 style={{ margin: 0 }}>SyncUp</h1>
+</div>
         <p>
           Welcome, <b>{user?.email}</b>
         </p>
