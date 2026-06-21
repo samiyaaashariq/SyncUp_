@@ -101,7 +101,7 @@ export default function Dashboard() {
         letterSpacing: "1px",
       }}
     >
-      SyncUp
+      📊
     </div>
 
     <div
