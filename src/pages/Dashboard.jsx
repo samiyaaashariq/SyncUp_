@@ -29,33 +29,44 @@ export default function Dashboard() {
   const createProject = async () => {
     const title = prompt("Enter project title");
     const description = prompt("Enter project description");
+
     if (!title || !description) return;
 
-    await addDoc(collection(db, "projects"), {
-      title,
-      description,
-      tech: "React • Firebase",
-    });
+    try {
+      await addDoc(collection(db, "projects"), {
+        title,
+        description,
+        tech: "React • Firebase",
+        createdBy: user?.email,
+        createdAt: new Date(),
+      });
 
-    fetchProjects();
+      fetchProjects();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const applyToProject = async (projectId) => {
-    await addDoc(collection(db, "projects", projectId, "applicants"), {
-      name: user?.email,
-      appliedAt: new Date(),
-    });
+    try {
+      await addDoc(collection(db, "projects", projectId, "applicants"), {
+        name: user?.email,
+        appliedAt: new Date(),
+      });
 
-    alert("Applied successfully 🚀");
+      alert("Applied successfully 🚀");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <div
       style={{
-        display: "flex",
         minHeight: "100vh",
+        display: "flex",
         fontFamily: "Inter, Arial, sans-serif",
-        background: "#f8fafc",
+        background: "linear-gradient(135deg, #dbeafe, #f8fafc)",
         color: "#0f172a",
       }}
     >
@@ -79,8 +90,8 @@ export default function Dashboard() {
         >
           <span
             style={{
-              width: "38px",
-              height: "38px",
+              width: "40px",
+              height: "40px",
               borderRadius: "10px",
               background: "linear-gradient(135deg,#0ea5e9,#6366f1)",
               display: "flex",
@@ -101,56 +112,61 @@ export default function Dashboard() {
         <div style={{ marginTop: "30px" }}>
           <div
             onClick={() => nav("/dashboard")}
-            style={{
-              padding: "10px",
-              cursor: "pointer",
-              color: "#cbd5e1",
-            }}
+            style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
           >
             Dashboard
           </div>
 
-          {/* FIXED: AI CHAT ONLY */}
           <div
             onClick={() => nav("/chat")}
-            style={{
-              padding: "10px",
-              cursor: "pointer",
-              color: "#cbd5e1",
-            }}
+            style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
           >
             AI Chat
           </div>
         </div>
       </div>
 
-      {/* MAIN */}
+      {/* MAIN AREA */}
       <div style={{ flex: 1, padding: "30px" }}>
         {/* HEADER */}
         <div
           style={{
             background: "#ffffff",
-            padding: "20px",
+            padding: "22px",
             borderRadius: "14px",
             marginBottom: "20px",
             border: "1px solid #e5e7eb",
           }}
         >
-          <h1 style={{ fontSize: "18px", fontWeight: "700" }}>
+          <h1
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              color: "#0f172a",
+              marginBottom: "4px",
+            }}
+          >
             Welcome back 👋
           </h1>
 
-          <p style={{ fontWeight: "500", color: "#334155" }}>
+          <p style={{ fontWeight: "600", color: "#111827" }}>
             {user?.email}
           </p>
 
-          <p style={{ color: "#64748b", fontSize: "13px" }}>
-            Build projects. Connect. Grow.
+          <p style={{ color: "#475569", fontSize: "13px" }}>
+            Build projects. Collaborate. Grow faster.
           </p>
         </div>
 
         {/* PROJECTS */}
-        <h2 style={{ fontWeight: "800", marginBottom: "12px" }}>
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: "800",
+            marginBottom: "12px",
+            color: "#0f172a",
+          }}
+        >
           🔥 Featured Projects
         </h2>
 
@@ -163,13 +179,22 @@ export default function Dashboard() {
               marginBottom: "12px",
               borderRadius: "12px",
               border: "1px solid #e5e7eb",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             }}
           >
-            <h3 style={{ fontWeight: "700" }}>{p.title}</h3>
+            <h3 style={{ fontWeight: "700", color: "#0f172a" }}>
+              {p.title}
+            </h3>
 
-            <p style={{ color: "#475569" }}>{p.description}</p>
+            <p style={{ color: "#334155" }}>{p.description}</p>
 
             <small style={{ color: "#64748b" }}>{p.tech}</small>
+
+            {p.createdBy && (
+              <p style={{ fontSize: "12px", color: "#94a3b8" }}>
+                Posted by: {p.createdBy}
+              </p>
+            )}
 
             <div style={{ marginTop: "10px" }}>
               <button
@@ -187,7 +212,6 @@ export default function Dashboard() {
                 Apply
               </button>
 
-              {/* FIXED: PROJECT CHAT WITH ID */}
               <button
                 onClick={() => nav(`/chat/${p.id}`)}
                 style={{
@@ -215,7 +239,9 @@ export default function Dashboard() {
             border: "1px solid #e5e7eb",
           }}
         >
-          <h3 style={{ fontWeight: "700" }}>⚡ Quick Actions</h3>
+          <h3 style={{ fontWeight: "700", color: "#0f172a" }}>
+            ⚡ Quick Actions
+          </h3>
 
           <button
             onClick={() => nav("/chat")}
@@ -245,8 +271,14 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* INTERESTS (FIXED VISIBILITY) */}
-        <h2 style={{ marginTop: "30px", fontWeight: "800" }}>
+        {/* INTERESTS */}
+        <h2
+          style={{
+            marginTop: "30px",
+            fontWeight: "800",
+            color: "#0f172a",
+          }}
+        >
           🎯 Your Interests
         </h2>
 
@@ -261,7 +293,7 @@ export default function Dashboard() {
                   borderRadius: "20px",
                   fontSize: "13px",
                   color: "#0f172a",
-                  fontWeight: "500",
+                  fontWeight: "600",
                 }}
               >
                 {item}
