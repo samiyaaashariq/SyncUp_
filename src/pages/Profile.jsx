@@ -48,7 +48,7 @@ fontWeight: “900”,
 marginBottom: “10px”
 }}
 >
-👤 My Profile
+My Profile
     <p style={{ fontSize: "16px", marginBottom: "10px" }}>
       <strong>Email:</strong> {user?.email}
     </p>
@@ -68,7 +68,7 @@ marginBottom: “10px”
         fontWeight: "800"
       }}
     >
-      📊 Activity Overview
+      Activity Overview
     </h2>
     <div
       style={{
@@ -86,7 +86,7 @@ marginBottom: “10px”
           minWidth: "180px"
         }}
       >
-        <h2>🚀 5</h2>
+        <h2>5</h2>
         <p>Projects Created</p>
       </div>
       <div
@@ -97,7 +97,7 @@ marginBottom: “10px”
           minWidth: "180px"
         }}
       >
-        <h2>🤝 3</h2>
+        <h2>3</h2>
         <p>Applications Sent</p>
       </div>
       <div
@@ -108,7 +108,7 @@ marginBottom: “10px”
           minWidth: "180px"
         }}
       >
-        <h2>⭐ 12</h2>
+        <h2>12</h2>
         <p>Total Likes</p>
       </div>
     </div>
@@ -118,7 +118,7 @@ marginBottom: “10px”
         fontWeight: "800"
       }}
     >
-      🛠 Skills
+      Skills
     </h2>
     <div
       style={{
@@ -174,7 +174,7 @@ marginBottom: “10px”
         fontWeight: "800"
       }}
     >
-      🌐 Portfolio
+      Portfolio
     </h2>
     <ul style={{ lineHeight: "2" }}>
       <li>GitHub: github.com/your-profile</li>
@@ -188,7 +188,7 @@ marginBottom: “10px”
         fontWeight: "800"
       }}
     >
-      🏆 Achievements
+      Achievements
     </h2>
     <ul style={{ lineHeight: "2" }}>
       <li>CodeAlpha Python Intern</li>
