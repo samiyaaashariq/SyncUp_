@@ -149,7 +149,7 @@ export default function Dashboard() {
               </button>
 
               <button
-                onClick={() => nav("/chat")}
+                onClick={() => nav(`/chat/${p.id}`)}
                 style={styles.btnAlt}
               >
                 Discuss
