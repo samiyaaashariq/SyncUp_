@@ -49,6 +49,10 @@ export default function App() {
           path="/chat/:projectId"
           element={user ? <ChatBox /> : <Navigate to="/" />}
         />
+        <Route
+  path="/chat"
+  element={user ? <ChatBox /> : <Navigate to="/" />}
+/>
       </Routes>
     </BrowserRouter>
   );
