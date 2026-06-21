@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 
 export default function Dashboard() {
   const nav = useNavigate();
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
-  const [commentText, setCommentText] = useState({});
 
-  // SAFE AUTH LISTENER (fixes blank screen issues)
+  // AUTH SAFE LISTENER
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => {
       setUser(u);
@@ -21,11 +16,11 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  // REAL-TIME PROJECTS
+  // REALTIME PROJECTS
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "projects"), (snapshot) => {
+    const unsub = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(
-        snapshot.docs.map((d) => ({
+        snap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
         }))
@@ -51,121 +46,243 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Inter" }}>
+    <div style={styles.page}>
 
-      {/* SIDEBAR (RESTORED) */}
-      <div
-        style={{
-          width: "250px",
-          background: "#0f172a",
-          color: "white",
-          padding: "20px",
-        }}
-      >
-        <h2>📊 SyncUp</h2>
+      {/* SIDEBAR */}
+      <div style={styles.sidebar}>
+        <div style={styles.logoBox}>
+          <span style={styles.logo}>📊</span>
+          <span style={styles.brand}>SyncUp</span>
+        </div>
 
-        <p style={{ fontSize: "12px", color: "#94a3b8" }}>
-          {user?.email}
-        </p>
+        <p style={styles.email}>{user?.email}</p>
 
-        <div style={{ marginTop: "30px" }}>
-          <div onClick={() => nav("/dashboard")} style={{ cursor: "pointer", padding: 10 }}>
+        <div style={styles.nav}>
+          <div style={styles.navItem} onClick={() => nav("/dashboard")}>
             Dashboard
           </div>
 
-          <div onClick={() => nav("/chat")} style={{ cursor: "pointer", padding: 10 }}>
+          <div style={styles.navItem} onClick={() => nav("/chat")}>
             AI Chat
           </div>
 
-          <div onClick={() => nav("/profile")} style={{ cursor: "pointer", padding: 10 }}>
+          <div style={styles.navItem} onClick={() => nav("/profile")}>
             Profile
           </div>
         </div>
       </div>
 
       {/* MAIN */}
-      <div style={{ flex: 1, padding: "25px", background: "#f1f5f9" }}>
+      <div style={styles.main}>
 
         {/* HEADER */}
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "20px",
-          }}
-        >
-          <h2>Welcome back 👋</h2>
-          <p>{user?.email}</p>
+        <div style={styles.headerCard}>
+          <h1 style={styles.title}>Welcome back 👋</h1>
+          <p style={styles.subText}>{user?.email}</p>
+          <p style={styles.muted}>Build. Collaborate. Grow.</p>
         </div>
 
-        {/* FEATURED PROJECTS HEADING (RESTORED) */}
-        <h2 style={{ marginBottom: "15px" }}>
-          🔥 Featured Projects
-        </h2>
+        {/* FEATURED */}
+        <h2 style={styles.sectionTitle}>🔥 Featured Projects</h2>
 
-        {/* PROJECT FEED */}
-        {projects.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              background: "white",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "12px",
-            }}
-          >
-            <h3>{p.title}</h3>
-            <p>{p.description}</p>
+        <div style={styles.grid}>
+          {projects.map((p) => (
+            <div key={p.id} style={styles.card}>
+              <h3 style={styles.cardTitle}>{p.title}</h3>
+              <p style={styles.cardDesc}>{p.description}</p>
+              <small style={styles.tech}>{p.tech}</small>
 
-            <small>{p.tech}</small>
-
-            <div style={{ marginTop: "10px" }}>
-              <button onClick={() => nav("/chat")} style={{ marginRight: 10 }}>
-                Discuss
-              </button>
+              <div style={styles.cardActions}>
+                <button style={styles.btnPrimary} onClick={() => nav("/chat")}>
+                  Discuss
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-
-        {/* QUICK ACTIONS (RESTORED) */}
-        <div
-          style={{
-            marginTop: "25px",
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-          }}
-        >
-          <h3>⚡ Quick Actions</h3>
-
-          <button onClick={() => nav("/chat")} style={{ marginRight: 10 }}>
-            Open Chat
-          </button>
-
-          <button onClick={createProject}>
-            Create Project
-          </button>
+          ))}
         </div>
 
-        {/* INTERESTS (RESTORED) */}
-        <h3 style={{ marginTop: "25px" }}>🎯 Your Interests</h3>
+        {/* QUICK ACTIONS */}
+        <div style={styles.actionCard}>
+          <h3 style={styles.sectionTitle}>⚡ Quick Actions</h3>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {["AI", "Web Dev", "ML", "Cybersecurity"].map((i, idx) => (
-            <span
-              key={idx}
-              style={{
-                background: "#e0f2fe",
-                padding: "6px 10px",
-                borderRadius: "20px",
-              }}
-            >
-              {i}
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button style={styles.btnPrimary} onClick={() => nav("/chat")}>
+              Open Chat
+            </button>
+
+            <button style={styles.btnGreen} onClick={createProject}>
+              Create Project
+            </button>
+          </div>
+        </div>
+
+        {/* INTERESTS */}
+        <h3 style={styles.sectionTitle}>🎯 Your Interests</h3>
+
+        <div style={styles.tags}>
+          {["AI", "Web Dev", "ML", "Cybersecurity", "App Dev"].map((t, i) => (
+            <span key={i} style={styles.tag}>
+              {t}
             </span>
           ))}
         </div>
+
       </div>
     </div>
   );
 }
+
+/* ================= STYLES ================= */
+
+const styles = {
+  page: {
+    display: "flex",
+    minHeight: "100vh",
+    fontFamily: "Inter, sans-serif",
+    background: "linear-gradient(135deg, #e0f2fe, #f8fafc, #eef2ff)",
+    color: "#0f172a",
+  },
+
+  sidebar: {
+    width: "260px",
+    background: "#0f172a",
+    color: "white",
+    padding: "20px",
+  },
+
+  logoBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    fontSize: "18px",
+    fontWeight: "800",
+  },
+
+  logo: {
+    fontSize: "20px",
+  },
+
+  brand: {
+    fontWeight: "800",
+  },
+
+  email: {
+    fontSize: "12px",
+    color: "#94a3b8",
+    marginTop: "10px",
+  },
+
+  nav: {
+    marginTop: "30px",
+  },
+
+  navItem: {
+    padding: "10px",
+    cursor: "pointer",
+    color: "#cbd5e1",
+  },
+
+  main: {
+    flex: 1,
+    padding: "30px",
+  },
+
+  headerCard: {
+    background: "white",
+    padding: "20px",
+    borderRadius: "14px",
+    marginBottom: "20px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+  },
+
+  title: {
+    fontSize: "20px",
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+
+  subText: {
+    color: "#111827",
+    fontWeight: "600",
+  },
+
+  muted: {
+    color: "#334155",
+  },
+
+  sectionTitle: {
+    fontSize: "18px",
+    fontWeight: "800",
+    margin: "20px 0 10px",
+    color: "#0f172a",
+  },
+
+  grid: {
+    display: "grid",
+    gap: "15px",
+  },
+
+  card: {
+    background: "white",
+    padding: "16px",
+    borderRadius: "14px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+  },
+
+  cardTitle: {
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+
+  cardDesc: {
+    color: "#1f2937",
+    marginTop: "5px",
+  },
+
+  tech: {
+    color: "#334155",
+  },
+
+  cardActions: {
+    marginTop: "10px",
+  },
+
+  btnPrimary: {
+    padding: "8px 12px",
+    background: "#0ea5e9",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+  },
+
+  btnGreen: {
+    padding: "8px 12px",
+    background: "#22c55e",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+  },
+
+  actionCard: {
+    marginTop: "25px",
+    background: "white",
+    padding: "20px",
+    borderRadius: "14px",
+  },
+
+  tags: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+  },
+
+  tag: {
+    background: "#e0f2fe",
+    padding: "6px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "600",
+  },
+};
