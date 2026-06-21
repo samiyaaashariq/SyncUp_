@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const nav = useNavigate();
-  const user = auth.currentUser;
+  const user = auth.currentUser || {};
 
   const projects = [
     {
@@ -53,7 +53,7 @@ export default function Dashboard() {
         color: "#1f1f1f",
       }}
     >
-      {/* Header */}
+      {/* HEADER */}
       <div
         style={{
           background: "#fff",
@@ -63,57 +63,57 @@ export default function Dashboard() {
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         }}
       >
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "14px",
-    marginBottom: "15px",
-  }}
->
-  {/* Better Logo Icon */}
-  <div
-    style={{
-      width: "44px",
-      height: "44px",
-      borderRadius: "14px",
-      background: "linear-gradient(135deg, #0ea5e9, #6366f1)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "white",
-      fontWeight: "900",
-      fontSize: "18px",
-      boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
-    }}
-  >
-    📊
-  </div>
+        {/* LOGO */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "14px",
+            marginBottom: "15px",
+          }}
+        >
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, #0ea5e9, #6366f1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: "900",
+              fontSize: "18px",
+              boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
+            }}
+          >
+            📊
+          </div>
 
-  {/* Brand */}
-  <div style={{ textAlign: "center" }}>
-    <div
-      style={{
-        fontSize: "24px",
-        fontWeight: "900",
-        color: "#0f172a",
-        letterSpacing: "1px",
-      }}
-    >
-      SyncUp
-    </div>
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: "900",
+                color: "#0f172a",
+                letterSpacing: "1px",
+              }}
+            >
+              SyncUp
+            </div>
 
-    <div
-      style={{
-        fontSize: "12px",
-        color: "#64748b",
-      }}
-    >
-      Build • Collaborate • Grow
-    </div>
-  </div>
-</div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#64748b",
+              }}
+            >
+              Build • Collaborate • Grow
+            </div>
+          </div>
+        </div>
+
         <p>
           Welcome, <b>{user?.email}</b>
         </p>
@@ -122,51 +122,81 @@ export default function Dashboard() {
 
         <button
           onClick={() => nav("/chat")}
-          style={{ marginTop: "10px", padding: "10px 15px" }}
+          style={{
+            marginTop: "10px",
+            padding: "10px 15px",
+            cursor: "pointer",
+          }}
         >
           Open AI Assistant
         </button>
       </div>
 
-      {/* Featured Projects */}
-     <div style={{ textAlign: "center", marginTop: "30px" }}>
-  <h2
-    style={{
-      fontSize: "22px",
-      fontWeight: "800",
-      color: "#0f172a",
-      marginBottom: "20px",
-    }}
-  >
-    🔥 Featured Projects
-  </h2>
-</div>
+      {/* FEATURED PROJECTS */}
+      <div style={{ textAlign: "center", marginTop: "30px" }}>
+        <h2
+          style={{
+            fontSize: "22px",
+            fontWeight: "800",
+            color: "#0f172a",
+            marginBottom: "20px",
+          }}
+        >
+          🔥 Featured Projects
+        </h2>
+      </div>
+
       {projects.map((project, index) => (
         <div
           key={index}
           style={{
-            background: "#fff",
-            padding: "15px",
+            background: "#ffffff",
+            padding: "18px",
             marginBottom: "15px",
-            borderRadius: "10px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.boxShadow =
+              "0 8px 20px rgba(0,0,0,0.08)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = "translateY(0px)";
+            e.currentTarget.style.boxShadow =
+              "0 1px 2px rgba(0,0,0,0.04)";
           }}
         >
-          <h3>{project.title}</h3>
-          <p>{project.description}</p>
-          <small>{project.tech}</small>
+          <h3 style={{ marginBottom: "6px", color: "#0f172a" }}>
+            {project.title}
+          </h3>
+
+          <p style={{ color: "#475569", marginBottom: "8px" }}>
+            {project.description}
+          </p>
+
+          <small style={{ color: "#64748b" }}>{project.tech}</small>
 
           <div style={{ marginTop: "10px" }}>
             <button
               onClick={() => alert("Applied successfully!")}
-              style={{ marginRight: "10px", padding: "8px 12px" }}
+              style={{
+                marginRight: "10px",
+                padding: "8px 12px",
+                cursor: "pointer",
+              }}
             >
               Apply
             </button>
 
             <button
               onClick={() => nav("/chat")}
-              style={{ padding: "8px 12px" }}
+              style={{
+                padding: "8px 12px",
+                cursor: "pointer",
+              }}
             >
               Discuss
             </button>
@@ -174,8 +204,15 @@ export default function Dashboard() {
         </div>
       ))}
 
-      {/* Interests */}
-      <h2>🎯 Your Interests</h2>
+      {/* INTERESTS */}
+      <h2
+        style={{
+          marginTop: "30px",
+          color: "#0f172a",
+        }}
+      >
+        🎯 Your Interests
+      </h2>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
         {interests.map((item, index) => (
@@ -185,6 +222,7 @@ export default function Dashboard() {
               background: "#e8f0fe",
               padding: "8px 12px",
               borderRadius: "20px",
+              fontSize: "13px",
             }}
           >
             {item}
