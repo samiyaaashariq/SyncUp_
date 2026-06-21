@@ -88,7 +88,7 @@ export default function Dashboard() {
       boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
     }}
   >
-    ⚡
+    SyncUp
   </div>
 
   {/* Brand */}
@@ -137,7 +137,7 @@ export default function Dashboard() {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    marginTop: "25px",
+    marginBottom: "20px",
   }}
 >
   <span>🔥</span>
