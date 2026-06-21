@@ -47,6 +47,8 @@ export default function Dashboard() {
         minHeight: "100vh",
         background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",
         padding: "20px",
+        maxWidth: "900px",
+        margin: "0 auto",
         fontFamily: "Arial, sans-serif",
         color: "#1f1f1f",
       }}
@@ -61,57 +63,57 @@ export default function Dashboard() {
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         }}
       >
-        {/* LOGO */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            marginBottom: "10px",
-          }}
-        >
-          <div
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, #2563eb, #60a5fa)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: "bold",
-              fontSize: "18px",
-              boxShadow: "0 6px 16px rgba(37, 99, 235, 0.3)",
-            }}
-          >
-            SU
-          </div>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "14px",
+    marginBottom: "15px",
+  }}
+>
+  {/* Better Logo Icon */}
+  <div
+    style={{
+      width: "44px",
+      height: "44px",
+      borderRadius: "14px",
+      background: "linear-gradient(135deg, #0ea5e9, #6366f1)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "white",
+      fontWeight: "900",
+      fontSize: "18px",
+      boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
+    }}
+  >
+    ⚡
+  </div>
 
-          <div>
-            <div
-              style={{
-                fontSize: "22px",
-                fontWeight: "800",
-                color: "#0f172a",
-                letterSpacing: "0.5px",
-              }}
-            >
-              SyncUp
-            </div>
+  {/* Brand */}
+  <div style={{ textAlign: "center" }}>
+    <div
+      style={{
+        fontSize: "24px",
+        fontWeight: "900",
+        color: "#0f172a",
+        letterSpacing: "1px",
+      }}
+    >
+      SyncUp
+    </div>
 
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#64748b",
-                marginTop: "-2px",
-              }}
-            >
-              Build • Collaborate • Grow
-            </div>
-          </div>
-        </div>
-
+    <div
+      style={{
+        fontSize: "12px",
+        color: "#64748b",
+      }}
+    >
+      Build • Collaborate • Grow
+    </div>
+  </div>
+</div>
         <p>
           Welcome, <b>{user?.email}</b>
         </p>
