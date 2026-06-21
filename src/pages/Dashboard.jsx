@@ -50,7 +50,33 @@ export default function Dashboard() {
           padding: "20px",
         }}
       >
-        <h2 style={{ marginBottom: "10px" }}>🚀 SyncUp</h2>
+        {/* LOGO (LOCKED) */}
+        <h2
+          style={{
+            marginBottom: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <span
+            style={{
+              width: "34px",
+              height: "34px",
+              borderRadius: "10px",
+              background: "linear-gradient(135deg, #0ea5e9, #6366f1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+              fontWeight: "900",
+              color: "white",
+            }}
+          >
+            📊
+          </span>
+          SyncUp
+        </h2>
 
         <p style={{ fontSize: "12px", color: "#94a3b8" }}>
           {user?.email}
@@ -145,7 +171,7 @@ export default function Dashboard() {
           </div>
         ))}
 
-        {/* QUICK ACTION */}
+        {/* QUICK ACTIONS */}
         <div
           style={{
             marginTop: "30px",
