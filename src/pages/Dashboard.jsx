@@ -129,21 +129,18 @@ export default function Dashboard() {
       </div>
 
       {/* Featured Projects */}
-     <h2
-  style={{
-    fontSize: "22px",
-    fontWeight: "800",
-    color: "#0f172a",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "20px",
-  }}
->
-  <span>🔥</span>
-  Featured Projects
-</h2>
-
+     <div style={{ textAlign: "center", marginTop: "30px" }}>
+  <h2
+    style={{
+      fontSize: "22px",
+      fontWeight: "800",
+      color: "#0f172a",
+      marginBottom: "20px",
+    }}
+  >
+    🔥 Featured Projects
+  </h2>
+</div>
       {projects.map((project, index) => (
         <div
           key={index}
