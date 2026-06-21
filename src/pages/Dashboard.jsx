@@ -71,6 +71,15 @@ export default function Dashboard() {
 >
   {/* Logo Icon */}
   <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "10px"
+  }}
+>
+  {/* Logo Icon */}
+  <div
     style={{
       width: "42px",
       height: "42px",
@@ -89,29 +98,29 @@ export default function Dashboard() {
   </div>
 
   {/* Brand Text */}
-    <div>
-      <div
-      1  style={{
-          fontSize: "22px",
-          fontWeight: "800",
-          color: "#0f172a",
-          letterSpacing: "0.5px"
-        }}
-      >
-        SyncUp
-      </div>
-
-       <div
-        style={{
-          fontSize: "12px",
-          color: "#64748b",
-          marginTop: "-2px"
-        }}
-      >
-        Build • Collaborate • Grow
-       </div>
+  <div>
+    <div
+      style={{
+        fontSize: "22px",
+        fontWeight: "800",
+        color: "#0f172a",
+        letterSpacing: "0.5px"
+      }}
+    >
+      SyncUp
     </div>
-  
+
+    <div
+      style={{
+        fontSize: "12px",
+        color: "#64748b",
+        marginTop: "-2px"
+      }}
+    >
+      Build • Collaborate • Grow
+    </div>
+  </div>
+</div>
         <p>
           Welcome, <b>{user?.email}</b>
         </p>
