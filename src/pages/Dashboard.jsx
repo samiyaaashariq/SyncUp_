@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  setDoc,
+  deleteDoc,
+  getDocs,
+} from "firebase/firestore";
 
 export default function Dashboard() {
   const nav = useNavigate();
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
 
-  // AUTH SAFE LISTENER
+  // AUTH
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged((u) => {
-      setUser(u);
-    });
+    const unsub = auth.onAuthStateChanged((u) => setUser(u));
     return () => unsub();
   }, []);
 
@@ -26,7 +32,6 @@ export default function Dashboard() {
         }))
       );
     });
-
     return () => unsub();
   }, []);
 
@@ -45,15 +50,45 @@ export default function Dashboard() {
     });
   };
 
+  // LIKE TOGGLE
+  const toggleLike = async (projectId) => {
+    const likeRef = doc(db, "projects", projectId, "likes", user?.email);
+
+    const likesSnap = await getDocs(
+      collection(db, "projects", projectId, "likes")
+    );
+
+    const alreadyLiked = likesSnap.docs.some(
+      (d) => d.id === user?.email
+    );
+
+    if (alreadyLiked) {
+      await deleteDoc(likeRef);
+    } else {
+      await setDoc(likeRef, {
+        user: user?.email,
+      });
+    }
+  };
+
+  // COMMENT
+  const addComment = async (projectId) => {
+    const text = prompt("Write your comment");
+    if (!text) return;
+
+    await addDoc(collection(db, "projects", projectId, "comments"), {
+      text,
+      user: user?.email,
+      createdAt: new Date(),
+    });
+  };
+
   return (
     <div style={styles.page}>
 
       {/* SIDEBAR */}
       <div style={styles.sidebar}>
-        <div style={styles.logoBox}>
-          <span style={styles.logo}>📊</span>
-          <span style={styles.brand}>SyncUp</span>
-        </div>
+        <h2 style={styles.logo}>📊 SyncUp</h2>
 
         <p style={styles.email}>{user?.email}</p>
 
@@ -76,52 +111,68 @@ export default function Dashboard() {
       <div style={styles.main}>
 
         {/* HEADER */}
-        <div style={styles.headerCard}>
-          <h1 style={styles.title}>Welcome back 👋</h1>
-          <p style={styles.subText}>{user?.email}</p>
-          <p style={styles.muted}>Build. Collaborate. Grow.</p>
+        <div style={styles.header}>
+          <h2>Welcome back 👋</h2>
+          <p>{user?.email}</p>
         </div>
 
-        {/* FEATURED */}
-        <h2 style={styles.sectionTitle}>🔥 Featured Projects</h2>
+        {/* PROJECTS */}
+        <h3 style={styles.heading}>🔥 Featured Projects</h3>
 
-        <div style={styles.grid}>
-          {projects.map((p) => (
-            <div key={p.id} style={styles.card}>
-              <h3 style={styles.cardTitle}>{p.title}</h3>
-              <p style={styles.cardDesc}>{p.description}</p>
-              <small style={styles.tech}>{p.tech}</small>
+        {projects.map((p) => (
+          <div key={p.id} style={styles.card}>
 
-              <div style={styles.cardActions}>
-                <button style={styles.btnPrimary} onClick={() => nav("/chat")}>
-                  Discuss
-                </button>
-              </div>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <small>{p.tech}</small>
+
+            {/* ACTIONS */}
+            <div style={styles.actions}>
+
+              <button
+                onClick={() => toggleLike(p.id)}
+                style={styles.btn}
+              >
+                ❤️ Like
+              </button>
+
+              <button
+                onClick={() => addComment(p.id)}
+                style={styles.btn}
+              >
+                💬 Comment
+              </button>
+
+              <button
+                onClick={() => nav("/chat")}
+                style={styles.btnAlt}
+              >
+                Discuss
+              </button>
+
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* QUICK ACTIONS */}
-        <div style={styles.actionCard}>
-          <h3 style={styles.sectionTitle}>⚡ Quick Actions</h3>
+        <div style={styles.quick}>
+          <h3>⚡ Quick Actions</h3>
 
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <button style={styles.btnPrimary} onClick={() => nav("/chat")}>
-              Open Chat
-            </button>
+          <button onClick={() => nav("/chat")} style={styles.btn}>
+            Open AI Chat
+          </button>
 
-            <button style={styles.btnGreen} onClick={createProject}>
-              Create Project
-            </button>
-          </div>
+          <button onClick={createProject} style={styles.btnGreen}>
+            Create Project
+          </button>
         </div>
 
         {/* INTERESTS */}
-        <h3 style={styles.sectionTitle}>🎯 Your Interests</h3>
+        <h3 style={styles.heading}>🎯 Your Interests</h3>
 
         <div style={styles.tags}>
-          {["AI", "Web Dev", "ML", "Cybersecurity", "App Dev"].map((t, i) => (
-            <span key={i} style={styles.tag}>
+          {["AI", "Web Dev", "ML", "Cybersecurity", "App Dev"].map((t) => (
+            <span key={t} style={styles.tag}>
               {t}
             </span>
           ))}
@@ -132,14 +183,14 @@ export default function Dashboard() {
   );
 }
 
-/* ================= STYLES ================= */
+/* =================== STYLES (UNCHANGED THEME) =================== */
 
 const styles = {
   page: {
     display: "flex",
     minHeight: "100vh",
     fontFamily: "Inter, sans-serif",
-    background: "linear-gradient(135deg, #e0f2fe, #f8fafc, #eef2ff)",
+    background: "linear-gradient(135deg, #ffe4ec, #ffffff, #fff0f5)",
     color: "#0f172a",
   },
 
@@ -150,26 +201,14 @@ const styles = {
     padding: "20px",
   },
 
-  logoBox: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    fontSize: "18px",
-    fontWeight: "800",
-  },
-
   logo: {
     fontSize: "20px",
-  },
-
-  brand: {
     fontWeight: "800",
   },
 
   email: {
     fontSize: "12px",
     color: "#94a3b8",
-    marginTop: "10px",
   },
 
   nav: {
@@ -187,69 +226,43 @@ const styles = {
     padding: "30px",
   },
 
-  headerCard: {
+  header: {
     background: "white",
     padding: "20px",
     borderRadius: "14px",
     marginBottom: "20px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
   },
 
-  title: {
-    fontSize: "20px",
-    fontWeight: "800",
-    color: "#0f172a",
-  },
-
-  subText: {
-    color: "#111827",
-    fontWeight: "600",
-  },
-
-  muted: {
-    color: "#334155",
-  },
-
-  sectionTitle: {
-    fontSize: "18px",
+  heading: {
     fontWeight: "800",
     margin: "20px 0 10px",
-    color: "#0f172a",
-  },
-
-  grid: {
-    display: "grid",
-    gap: "15px",
   },
 
   card: {
     background: "white",
     padding: "16px",
     borderRadius: "14px",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+    marginBottom: "15px",
   },
 
-  cardTitle: {
-    fontWeight: "800",
-    color: "#0f172a",
-  },
-
-  cardDesc: {
-    color: "#1f2937",
-    marginTop: "5px",
-  },
-
-  tech: {
-    color: "#334155",
-  },
-
-  cardActions: {
+  actions: {
+    display: "flex",
+    gap: "10px",
     marginTop: "10px",
   },
 
-  btnPrimary: {
+  btn: {
     padding: "8px 12px",
     background: "#0ea5e9",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+  },
+
+  btnAlt: {
+    padding: "8px 12px",
+    background: "#6366f1",
     color: "white",
     border: "none",
     borderRadius: "8px",
@@ -265,7 +278,7 @@ const styles = {
     cursor: "pointer",
   },
 
-  actionCard: {
+  quick: {
     marginTop: "25px",
     background: "white",
     padding: "20px",
