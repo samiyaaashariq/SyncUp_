@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
 
 export default function Dashboard() {
   const nav = useNavigate();
@@ -49,13 +48,10 @@ export default function Dashboard() {
 
   const applyToProject = async (projectId) => {
     try {
-      await addDoc(
-        collection(db, "projects", projectId, "applicants"),
-        {
-          name: user?.email,
-          appliedAt: new Date(),
-        }
-      );
+      await addDoc(collection(db, "projects", projectId, "applicants"), {
+        name: user?.email,
+        appliedAt: new Date(),
+      });
 
       alert("Applied successfully 🚀");
     } catch (err) {
@@ -119,7 +115,7 @@ export default function Dashboard() {
           </div>
 
           <div
-            onClick={() => nav(`/chat/${p.id}`)
+            onClick={() => nav("/chat")}
             style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
           >
             AI Chat
@@ -139,27 +135,15 @@ export default function Dashboard() {
             boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
           }}
         >
-          <h1
-            style={{
-              fontSize: "20px",
-              fontWeight: "800",
-              color: "#0f172a",
-              marginBottom: "6px",
-            }}
-          >
+          <h1 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a" }}>
             Welcome back 👋
           </h1>
 
-          <p
-            style={{
-              color: "#1f2937",
-              fontWeight: "500",
-            }}
-          >
+          <p style={{ color: "#1f2937", fontWeight: "500" }}>
             {user?.email}
           </p>
 
-          <p style={{ color: "#64748b", marginTop: "6px" }}>
+          <p style={{ color: "#64748b" }}>
             Build projects. Connect. Grow.
           </p>
         </div>
@@ -185,20 +169,15 @@ export default function Dashboard() {
               marginBottom: "15px",
               borderRadius: "12px",
               border: "1px solid #e5e7eb",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             }}
           >
-            <h3 style={{ color: "#0f172a", fontWeight: "700" }}>
+            <h3 style={{ fontWeight: "700", color: "#0f172a" }}>
               {p.title}
             </h3>
 
-            <p style={{ color: "#1f2937", fontWeight: "500" }}>
-              {p.description}
-            </p>
+            <p style={{ color: "#1f2937" }}>{p.description}</p>
 
-            <small style={{ color: "#475569", fontWeight: "500" }}>
-              {p.tech}
-            </small>
+            <small style={{ color: "#475569" }}>{p.tech}</small>
 
             <div style={{ marginTop: "10px" }}>
               <button
@@ -206,11 +185,11 @@ export default function Dashboard() {
                 style={{
                   padding: "8px 12px",
                   marginRight: "10px",
-                  cursor: "pointer",
                   background: "#0ea5e9",
                   color: "white",
                   border: "none",
                   borderRadius: "6px",
+                  cursor: "pointer",
                 }}
               >
                 Apply
@@ -220,11 +199,11 @@ export default function Dashboard() {
                 onClick={() => nav(`/chat/${p.id}`)}
                 style={{
                   padding: "8px 12px",
-                  cursor: "pointer",
                   background: "#6366f1",
                   color: "white",
                   border: "none",
                   borderRadius: "6px",
+                  cursor: "pointer",
                 }}
               >
                 Discuss
@@ -240,12 +219,9 @@ export default function Dashboard() {
             background: "white",
             padding: "20px",
             borderRadius: "12px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           }}
         >
-          <h3 style={{ fontWeight: "800", color: "#0f172a" }}>
-            ⚡ Quick Actions
-          </h3>
+          <h3 style={{ fontWeight: "800" }}>⚡ Quick Actions</h3>
 
           <button
             onClick={() => nav("/chat")}
@@ -256,7 +232,6 @@ export default function Dashboard() {
               color: "white",
               border: "none",
               borderRadius: "6px",
-              cursor: "pointer",
             }}
           >
             Open AI Chat
@@ -270,7 +245,6 @@ export default function Dashboard() {
               color: "white",
               border: "none",
               borderRadius: "6px",
-              cursor: "pointer",
             }}
           >
             Create Project
@@ -278,29 +252,20 @@ export default function Dashboard() {
         </div>
 
         {/* INTERESTS */}
-        <h2
-          style={{
-            marginTop: "30px",
-            fontSize: "20px",
-            fontWeight: "800",
-            color: "#0f172a",
-          }}
-        >
+        <h2 style={{ marginTop: "30px", fontWeight: "800" }}>
           🎯 Your Interests
         </h2>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {["AI", "Web Dev", "ML", "Cybersecurity", "App Dev"].map(
-            (item, index) => (
+            (item, i) => (
               <span
-                key={index}
+                key={i}
                 style={{
                   background: "#e0f2fe",
                   padding: "8px 12px",
                   borderRadius: "20px",
                   fontSize: "13px",
-                  fontWeight: "500",
-                  color: "#0f172a",
                 }}
               >
                 {item}
