@@ -29,34 +29,24 @@ export default function Dashboard() {
   const createProject = async () => {
     const title = prompt("Enter project title");
     const description = prompt("Enter project description");
-
     if (!title || !description) return;
 
-    try {
-      await addDoc(collection(db, "projects"), {
-        title,
-        description,
-        tech: "React • Firebase",
-      });
+    await addDoc(collection(db, "projects"), {
+      title,
+      description,
+      tech: "React • Firebase",
+    });
 
-      fetchProjects();
-      alert("Project created 🚀");
-    } catch (err) {
-      console.log(err);
-    }
+    fetchProjects();
   };
 
   const applyToProject = async (projectId) => {
-    try {
-      await addDoc(collection(db, "projects", projectId, "applicants"), {
-        name: user?.email,
-        appliedAt: new Date(),
-      });
+    await addDoc(collection(db, "projects", projectId, "applicants"), {
+      name: user?.email,
+      appliedAt: new Date(),
+    });
 
-      alert("Applied successfully 🚀");
-    } catch (err) {
-      console.log(err);
-    }
+    alert("Applied successfully 🚀");
   };
 
   return (
@@ -65,28 +55,38 @@ export default function Dashboard() {
         display: "flex",
         minHeight: "100vh",
         fontFamily: "Inter, Arial, sans-serif",
-        background: "#f1f5f9",
+        background: "#f8fafc",
+        color: "#0f172a",
       }}
     >
       {/* SIDEBAR */}
       <div
         style={{
-          width: "250px",
-          background: "#0f172a",
-          color: "white",
+          width: "260px",
+          background: "#0b1220",
+          color: "#e2e8f0",
           padding: "20px",
         }}
       >
-        <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <h2
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontWeight: "800",
+            color: "#fff",
+          }}
+        >
           <span
             style={{
-              width: "36px",
-              height: "36px",
+              width: "38px",
+              height: "38px",
               borderRadius: "10px",
               background: "linear-gradient(135deg,#0ea5e9,#6366f1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              fontSize: "16px",
             }}
           >
             📊
@@ -101,68 +101,85 @@ export default function Dashboard() {
         <div style={{ marginTop: "30px" }}>
           <div
             onClick={() => nav("/dashboard")}
-            style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              color: "#cbd5e1",
+            }}
           >
             Dashboard
           </div>
 
+          {/* FIXED: AI CHAT ONLY */}
           <div
             onClick={() => nav("/chat")}
-            style={{ padding: "10px", cursor: "pointer", color: "#cbd5e1" }}
+            style={{
+              padding: "10px",
+              cursor: "pointer",
+              color: "#cbd5e1",
+            }}
           >
             AI Chat
           </div>
         </div>
       </div>
 
-      {/* MAIN AREA */}
+      {/* MAIN */}
       <div style={{ flex: 1, padding: "30px" }}>
         {/* HEADER */}
         <div
           style={{
-            background: "white",
+            background: "#ffffff",
             padding: "20px",
-            borderRadius: "12px",
+            borderRadius: "14px",
             marginBottom: "20px",
+            border: "1px solid #e5e7eb",
           }}
         >
-          <h1 style={{ fontSize: "20px", fontWeight: "800" }}>
+          <h1 style={{ fontSize: "18px", fontWeight: "700" }}>
             Welcome back 👋
           </h1>
 
-          <p style={{ fontWeight: "500" }}>{user?.email}</p>
+          <p style={{ fontWeight: "500", color: "#334155" }}>
+            {user?.email}
+          </p>
 
-          <p style={{ color: "#64748b" }}>
+          <p style={{ color: "#64748b", fontSize: "13px" }}>
             Build projects. Connect. Grow.
           </p>
         </div>
 
         {/* PROJECTS */}
-        <h2 style={{ fontWeight: "800" }}>🔥 Featured Projects</h2>
+        <h2 style={{ fontWeight: "800", marginBottom: "12px" }}>
+          🔥 Featured Projects
+        </h2>
 
         {projects.map((p) => (
           <div
             key={p.id}
             style={{
-              background: "white",
+              background: "#ffffff",
               padding: "16px",
-              marginBottom: "15px",
+              marginBottom: "12px",
               borderRadius: "12px",
+              border: "1px solid #e5e7eb",
             }}
           >
-            <h3>{p.title}</h3>
-            <p>{p.description}</p>
-            <small>{p.tech}</small>
+            <h3 style={{ fontWeight: "700" }}>{p.title}</h3>
+
+            <p style={{ color: "#475569" }}>{p.description}</p>
+
+            <small style={{ color: "#64748b" }}>{p.tech}</small>
 
             <div style={{ marginTop: "10px" }}>
               <button
                 onClick={() => applyToProject(p.id)}
                 style={{
                   marginRight: "10px",
+                  padding: "8px 12px",
                   background: "#0ea5e9",
                   color: "white",
                   border: "none",
-                  padding: "8px 12px",
                   borderRadius: "6px",
                   cursor: "pointer",
                 }}
@@ -170,13 +187,14 @@ export default function Dashboard() {
                 Apply
               </button>
 
+              {/* FIXED: PROJECT CHAT WITH ID */}
               <button
                 onClick={() => nav(`/chat/${p.id}`)}
                 style={{
+                  padding: "8px 12px",
                   background: "#6366f1",
                   color: "white",
                   border: "none",
-                  padding: "8px 12px",
                   borderRadius: "6px",
                   cursor: "pointer",
                 }}
@@ -188,8 +206,16 @@ export default function Dashboard() {
         ))}
 
         {/* QUICK ACTIONS */}
-        <div style={{ marginTop: "25px", background: "white", padding: "20px" }}>
-          <h3>⚡ Quick Actions</h3>
+        <div
+          style={{
+            marginTop: "25px",
+            background: "#ffffff",
+            padding: "18px",
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <h3 style={{ fontWeight: "700" }}>⚡ Quick Actions</h3>
 
           <button
             onClick={() => nav("/chat")}
@@ -219,7 +245,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* INTERESTS */}
+        {/* INTERESTS (FIXED VISIBILITY) */}
         <h2 style={{ marginTop: "30px", fontWeight: "800" }}>
           🎯 Your Interests
         </h2>
@@ -234,6 +260,8 @@ export default function Dashboard() {
                   padding: "8px 12px",
                   borderRadius: "20px",
                   fontSize: "13px",
+                  color: "#0f172a",
+                  fontWeight: "500",
                 }}
               >
                 {item}
