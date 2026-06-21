@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
+import Profile from "./pages/Profile";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -53,6 +54,7 @@ export default function App() {
   path="/chat"
   element={user ? <ChatBox /> : <Navigate to="/" />}
 />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
