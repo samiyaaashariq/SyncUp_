@@ -1,37 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import {
   collection,
   onSnapshot,
   doc,
   updateDoc,
   setDoc,
+  deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
 export default function ProjectMembers() {
   const { id } = useParams();
-  const [applications, setApplications] = useState([]);
+
   const [members, setMembers] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [project, setProject] = useState(null);
 
-  // GET APPLICATIONS (pending/accepted/rejected)
+  const user = auth.currentUser;
+  const isOwner = project?.createdBy === user?.email;
+
+  /* ================= GET PROJECT ================= */
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "projects", id, "applications"),
-      (snap) => {
-        setApplications(
-          snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          }))
-        );
-      }
-    );
+    const fetchProject = async () => {
+      const ref = doc(db, "projects", id);
+      const snap = await getDoc(ref);
 
-    return () => unsub();
+      if (snap.exists()) {
+        setProject(snap.data());
+      }
+    };
+
+    fetchProject();
   }, [id]);
 
-  // GET MEMBERS (only accepted users)
+  /* ================= GET MEMBERS ================= */
   useEffect(() => {
     const unsub = onSnapshot(
       collection(db, "projects", id, "members"),
@@ -48,7 +52,24 @@ export default function ProjectMembers() {
     return () => unsub();
   }, [id]);
 
-  // ACCEPT USER
+  /* ================= GET APPLICATIONS ================= */
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, "projects", id, "applications"),
+      (snap) => {
+        setApplications(
+          snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }))
+        );
+      }
+    );
+
+    return () => unsub();
+  }, [id]);
+
+  /* ================= ACCEPT USER ================= */
   const acceptUser = async (appId, email) => {
     const ref = doc(db, "projects", id, "applications", appId);
 
@@ -56,7 +77,6 @@ export default function ProjectMembers() {
       status: "accepted",
     });
 
-    // add to members collection
     await setDoc(doc(db, "projects", id, "members", email), {
       email,
       role: "member",
@@ -64,7 +84,7 @@ export default function ProjectMembers() {
     });
   };
 
-  // REJECT USER
+  /* ================= REJECT USER ================= */
   const rejectUser = async (appId) => {
     const ref = doc(db, "projects", id, "applications", appId);
 
@@ -73,13 +93,20 @@ export default function ProjectMembers() {
     });
   };
 
+  /* ================= KICK MEMBER ================= */
+  const kickUser = async (email) => {
+    if (!isOwner) return;
+
+    await deleteDoc(doc(db, "projects", id, "members", email));
+  };
+
   return (
     <div style={styles.page}>
 
       <h2 style={styles.title}>👑 Project Control Panel</h2>
 
-      {/* MEMBERS SECTION */}
-      <h3 style={styles.sectionTitle}>👥 Members</h3>
+      {/* ================= MEMBERS ================= */}
+      <h3 style={styles.section}>👥 Members</h3>
 
       {members.length === 0 ? (
         <p style={{ color: "#94a3b8" }}>No members yet</p>
@@ -87,26 +114,33 @@ export default function ProjectMembers() {
         members.map((m) => (
           <div key={m.id} style={styles.card}>
             <p>👤 {m.email}</p>
-            <small style={{ color: "#94a3b8" }}>{m.role}</small>
+            <p style={{ color: "#94a3b8" }}>{m.role}</p>
+
+            {isOwner && (
+              <button
+                onClick={() => kickUser(m.email)}
+                style={styles.kickBtn}
+              >
+                ❌ Kick
+              </button>
+            )}
           </div>
         ))
       )}
 
-      {/* APPLICATIONS SECTION */}
-      <h3 style={styles.sectionTitle}>📩 Applications</h3>
+      {/* ================= APPLICATIONS ================= */}
+      <h3 style={styles.section}>📩 Applications</h3>
 
       {applications.length === 0 ? (
         <p style={{ color: "#94a3b8" }}>No applications yet</p>
       ) : (
         applications.map((a) => (
           <div key={a.id} style={styles.card}>
-
             <p>👤 {a.applicant}</p>
             <p>Status: {a.status}</p>
 
-            {a.status === "pending" && (
+            {a.status === "pending" && isOwner && (
               <div style={styles.row}>
-
                 <button
                   onClick={() => acceptUser(a.id, a.applicant)}
                   style={styles.accept}
@@ -120,10 +154,8 @@ export default function ProjectMembers() {
                 >
                   ❌ Reject
                 </button>
-
               </div>
             )}
-
           </div>
         ))
       )}
@@ -145,7 +177,7 @@ const styles = {
     marginBottom: "20px",
   },
 
-  sectionTitle: {
+  section: {
     color: "#38bdf8",
     marginTop: "20px",
   },
@@ -178,5 +210,14 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     fontWeight: "bold",
+  },
+
+  kickBtn: {
+    marginTop: "10px",
+    padding: "6px",
+    background: "#ef4444",
+    border: "none",
+    borderRadius: "6px",
+    color: "#fff",
   },
 };
