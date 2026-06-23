@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { sendNotification } from "../notifications";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -127,6 +128,19 @@ export default function Dashboard() {
     console.error(err);
   }
 };
+  await addDoc(collection(db, "projects", project.id, "applications"), {
+  applicant: user.email,
+  status: "pending",
+  createdAt: new Date(),
+});
+
+// 🔔 NOTIFY OWNER
+await sendNotification({
+  to: project.createdBy,
+  text: `${user.email} applied to your project ${project.title}`,
+  type: "apply",
+  projectId: project.id,
+});
 
   return (
     <div style={styles.page}>
