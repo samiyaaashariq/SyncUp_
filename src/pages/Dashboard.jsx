@@ -166,21 +166,27 @@ export default function Dashboard() {
 
    {projects.map((p) => (
   <div key={p.id} style={styles.card}>
-    <h3>{p.title}</h3>
+   <h2 style={{ fontSize: "18px", fontWeight: "600" }}>
+  {p.title}
+</h2>
 
-    <p style={{ color: "#94a3b8" }}>
-      Created By: {p.createdBy}
-    </p>
+<p style={{ color: "#94a3b8", fontSize: "13px" }}>
+  👤 {p.createdBy}
+</p>
 
-    <p style={{ color: "#22d3ee" }}>
-      Looking For: {p.roleNeeded}
-    </p>
+<p style={{ color: "#22d3ee", fontSize: "13px" }}>
+  🎯 Looking For: {p.roleNeeded}
+</p>
 
-    <p style={{ color: "#cbd5e1" }}>
-      Tech Stack: {p.techStack}
-    </p>
+<p style={{ color: "#cbd5e1", fontSize: "13px" }}>
+  ⚙️ Tech Stack: {p.techStack}
+</p>
 
-    <p>{p.description}</p>
+<p style={{ marginTop: "8px", color: "#e2e8f0" }}>
+  {p.description?.length > 140
+    ? p.description.slice(0, 140) + "..."
+    : p.description}
+</p>
             {/* ACTIONS */}
             <div style={styles.actions}>
 
