@@ -8,17 +8,15 @@ export default function ProjectMembers() {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "projects", id, "members"),
-      (snap) => {
-        setMembers(
-          snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          }))
-        );
-      }
-    );
+    const ref = collection(db, "projects", id, "applications");
+
+    const unsub = onSnapshot(ref, (snap) => {
+      const accepted = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((m) => m.status === "accepted");
+
+      setMembers(accepted);
+    });
 
     return () => unsub();
   }, [id]);
@@ -29,12 +27,15 @@ export default function ProjectMembers() {
 
       {members.length === 0 ? (
         <p style={{ color: "#94a3b8" }}>
-          No members yet. Be the first to join 🚀
+          No approved members yet 🚀
         </p>
       ) : (
         members.map((m) => (
           <div key={m.id} style={styles.card}>
-            <p>👤 {m.email}</p>
+            <p>👤 {m.applicant}</p>
+            <small style={{ color: "#94a3b8" }}>
+              Status: {m.status}
+            </small>
           </div>
         ))
       )}
