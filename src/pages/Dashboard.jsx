@@ -165,28 +165,84 @@ export default function Dashboard() {
         <h3 style={styles.heading}>🔥 Featured Projects</h3>
 
    {projects.map((p) => (
-  <div key={p.id} style={styles.card}>
-   <h2 style={{ fontSize: "18px", fontWeight: "600" }}>
-  {p.title}
-</h2>
+  {projects.length === 0 ? (
+  <div style={{ color: "#94a3b8", padding: "20px" }}>
+    No projects yet. Be the first to create one 🚀
+  </div>
+) : (
+  projects.map((p) => (
+    <div key={p.id} style={styles.card}>
 
-<p style={{ color: "#94a3b8", fontSize: "13px" }}>
-  👤 {p.createdBy}
-</p>
+      {/* TITLE */}
+      <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#22d3ee" }}>
+        {p.title}
+      </h2>
 
-<p style={{ color: "#22d3ee", fontSize: "13px" }}>
-  🎯 Looking For: {p.roleNeeded}
-</p>
+      {/* META INFO */}
+      <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+        👤 {p.createdBy}
+      </p>
 
-<p style={{ color: "#cbd5e1", fontSize: "13px" }}>
-  ⚙️ Tech Stack: {p.techStack}
-</p>
+      <p style={{ color: "#22d3ee", fontSize: "13px" }}>
+        🎯 Looking For: {p.roleNeeded}
+      </p>
 
-<p style={{ marginTop: "8px", color: "#e2e8f0" }}>
-  {p.description?.length > 140
-    ? p.description.slice(0, 140) + "..."
-    : p.description}
-</p>
+      <p style={{ color: "#cbd5e1", fontSize: "13px" }}>
+        ⚙️ Tech Stack: {p.techStack}
+      </p>
+
+      {/* DESCRIPTION (TRUNCATED) */}
+      <p style={{ marginTop: "8px", color: "#e2e8f0", fontSize: "14px" }}>
+        {p.description?.length > 140
+          ? p.description.slice(0, 140) + "..."
+          : p.description}
+      </p>
+
+      {/* TAGS (NEW UX UPGRADE) */}
+      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "10px" }}>
+        {p.techStack?.split(",").map((tag, i) => (
+          <span
+            key={i}
+            style={{
+              background: "#164e63",
+              color: "#22d3ee",
+              padding: "4px 10px",
+              borderRadius: "999px",
+              fontSize: "11px",
+              fontWeight: "600",
+            }}
+          >
+            #{tag.trim()}
+          </span>
+        ))}
+      </div>
+
+      {/* ACTIONS (UNCHANGED) */}
+      <div style={styles.actions}>
+
+        <button onClick={() => toggleLike(p.id)} style={styles.btn}>
+          ❤️ Like
+        </button>
+
+        <button onClick={() => addComment(p.id)} style={styles.btn}>
+          💬 Comment
+        </button>
+
+        <button onClick={() => applyToProject(p)} style={styles.btn}>
+          🚀 Apply to Join
+        </button>
+
+        <button
+          onClick={() => nav(`/chat/${p.id}`)}
+          style={styles.btnAlt}
+        >
+          👥 View Team Room
+        </button>
+
+      </div>
+    </div>
+  ))
+)}
             {/* ACTIONS */}
             <div style={styles.actions}>
 
