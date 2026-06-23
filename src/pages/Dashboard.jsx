@@ -234,6 +234,9 @@ export default function Dashboard() {
               <p style={{ color: "#cbd5e1", fontSize: "13px" }}>
                 ⚙️ Tech Stack: {p.techStack}
               </p>
+              <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+  👥 Members: {p.membersCount || 0}
+</p>
 
               <p style={{ marginTop: "8px", color: "#e2e8f0" }}>
                 {p.description?.length > 140
@@ -291,6 +294,15 @@ export default function Dashboard() {
   style={styles.btnAlt}
 >
   👑 Manage Team
+</button>
+                <button
+  onClick={(e) => {
+    e.stopPropagation();
+    nav(`/members/${p.id}`);
+  }}
+  style={styles.btn}
+>
+  👥 View Members
 </button>
 
               </div>
