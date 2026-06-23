@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import Profile from "./pages/Profile";
+import ProjectMembers from "./pages/ProjectMembers";
 import ProjectChat from "./pages/ProjectChat";
 import ProjectManage from "./pages/ProjectManage";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -60,6 +61,7 @@ export default function App() {
 />
         <Route path="/profile" element={<Profile />} />
         <Route path="/project/:id" element={<ProjectDetails />} />
+        <Route path="/members/:id" element={<ProjectMembers />} />
       
       </Routes>
     </BrowserRouter>
