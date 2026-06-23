@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { generateProjectIdea } from "../ai";
 import { sendNotification } from "../notifications";
 import {
   collection,
@@ -20,13 +19,13 @@ export default function Dashboard() {
   const [selectedTag, setSelectedTag] = useState("");
   const [projects, setProjects] = useState([]);
 
-  // AUTH
+  /* ================= AUTH ================= */
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => setUser(u));
     return () => unsub();
   }, []);
 
-  // REALTIME PROJECTS
+  /* ================= PROJECTS REALTIME ================= */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(
@@ -40,37 +39,32 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  // FILTER
+  /* ================= FILTER ================= */
   const filteredProjects = projects.filter((p) => {
-    const text = search.toLowerCase();
-
     const matchSearch =
-      p.title?.toLowerCase().includes(text) ||
-      p.description?.toLowerCase().includes(text) ||
-      p.techStack?.toLowerCase().includes(text) ||
-      p.roleNeeded?.toLowerCase().includes(text);
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase()) ||
+      p.techStack?.toLowerCase().includes(search.toLowerCase()) ||
+      p.roleNeeded?.toLowerCase().includes(search.toLowerCase());
 
     const matchTag =
       selectedTag === "" ||
-      p.roleNeeded?.toLowerCase().includes(selectedTag) ||
-      p.techStack?.toLowerCase().includes(selectedTag);
+      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase()) ||
+      p.techStack?.toLowerCase().includes(selectedTag.toLowerCase());
 
     return matchSearch && matchTag;
   });
 
-  // CREATE PROJECT
+  /* ================= CREATE PROJECT ================= */
   const createProject = async () => {
-    
     if (!user?.email) return;
 
-    const title = prompt("Project title");
-    const description = prompt("Project description");
+    const title = prompt("Enter project title");
+    const description = prompt("Enter project description");
     const roleNeeded = prompt("Role Needed");
     const techStack = prompt("Tech Stack");
-   
 
     if (!title || !description) return;
-     const role = suggestRole(techStack);
 
     await addDoc(collection(db, "projects"), {
       title,
@@ -78,41 +72,71 @@ export default function Dashboard() {
       roleNeeded,
       techStack,
       createdBy: user.email,
-      membersCount: 0,
     });
   };
 
-  // APPLY (FIXED + SAFE)
+  /* ================= LIKE ================= */
+  const toggleLike = async (projectId) => {
+    if (!user?.email) return;
+
+    const likeRef = doc(db, "projects", projectId, "likes", user.email);
+
+    const likesSnap = await getDocs(
+      collection(db, "projects", projectId, "likes")
+    );
+
+    const alreadyLiked = likesSnap.docs.some(
+      (d) => d.id === user.email
+    );
+
+    if (alreadyLiked) {
+      await deleteDoc(likeRef);
+    } else {
+      await setDoc(likeRef, {
+        user: user.email,
+      });
+    }
+  };
+
+  /* ================= COMMENT ================= */
+  const addComment = async (projectId) => {
+    if (!user?.email) return;
+
+    const text = prompt("Write comment");
+    if (!text) return;
+
+    await addDoc(collection(db, "projects", projectId, "comments"), {
+      text,
+      user: user.email,
+      createdAt: new Date(),
+    });
+  };
+
+  /* ================= APPLY (FIXED) ================= */
   const applyToProject = async (project) => {
-  if (!user?.email) return;
+    if (!user?.email) return;
 
-  await addDoc(collection(db, "projects", project.id, "applications"), {
-    applicant: user.email,
-    status: "pending",
-    createdAt: new Date(),
-  });
+    try {
+      await addDoc(
+        collection(db, "projects", project.id, "applications"),
+        {
+          applicant: user.email,
+          status: "pending",
+          createdAt: new Date(),
+        }
+      );
 
-  await sendNotification({
-    to: project.createdBy,
-    text: `${user.email} applied to ${project.title}`,
-    type: "apply",
-    projectId: project.id,
-  });
-
-  alert("Applied successfully 🚀");
-};
-
-      // notification
       await sendNotification({
         to: project.createdBy,
-        text: `${user.email} applied to ${project.title}`,
+        text: `${user.email} applied to your project ${project.title}`,
         type: "apply",
         projectId: project.id,
       });
 
-      alert("Application sent!");
+      alert("🎉 Applied successfully!");
     } catch (err) {
       console.error(err);
+      alert("Error applying");
     }
   };
 
@@ -128,15 +152,12 @@ export default function Dashboard() {
           <div style={styles.navItem} onClick={() => nav("/dashboard")}>
             Dashboard
           </div>
-
           <div style={styles.navItem} onClick={() => nav("/chat")}>
             AI Chat
           </div>
-
           <div style={styles.navItem} onClick={() => nav("/profile")}>
             Profile
           </div>
-
           <div style={styles.navItem} onClick={() => nav("/notifications")}>
             Notifications 🔔
           </div>
@@ -150,106 +171,80 @@ export default function Dashboard() {
         <div style={styles.hero}>
           <h1 style={styles.heroTitle}>🚀 Welcome to SyncUp</h1>
 
-          <p style={styles.heroText}>
-            Find teammates, join projects, collaborate, and build real-world experience.
-          </p>
-
-          <p style={{ color: "#94a3b8" }}>
-            Logged in: {user?.email}
-          </p>
-
-          <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
             <button onClick={createProject} style={styles.btnGreen}>
-              + Create Project
+              Create Project
             </button>
-
-            <button
-              onClick={() => nav("/chat")}
-              style={styles.btn}
-            >
-              Open AI Chat
-            </button>
-            <button
-  onClick={() => {
-    const idea = generateProjectIdea();
-    alert("💡 AI Suggestion:\n\n" + idea);
-  }}
-  style={styles.btnAlt}
->
-  🤖 AI Idea
-</button>
           </div>
         </div>
 
         {/* SEARCH */}
-        <input
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={styles.input}
-        />
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <input
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.input}
+          />
 
-        {/* PROJECT LIST */}
-        <h3 style={styles.heading}>🔥 Featured Projects</h3>
+          <select
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+            style={styles.input}
+          >
+            <option value="">All</option>
+            <option value="frontend">Frontend</option>
+            <option value="backend">Backend</option>
+            <option value="ui">UI/UX</option>
+            <option value="ai">AI</option>
+          </select>
+        </div>
 
-        {filteredProjects.length === 0 ? (
-          <p style={{ color: "#94a3b8" }}>No projects found</p>
-        ) : (
-          filteredProjects.map((p) => (
-            <div key={p.id} style={styles.card}>
+        {/* PROJECTS */}
+        <h3 style={styles.heading}>🔥 Projects</h3>
 
-              <h3 style={{ color: "#22d3ee" }}>{p.title}</h3>
+        {filteredProjects.map((p) => (
+          <div key={p.id} style={styles.card}>
 
-              <p>{p.description}</p>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <p>Role: {p.roleNeeded}</p>
+            <p>Tech: {p.techStack}</p>
 
-              <p>👤 {p.createdBy}</p>
-              <p>🎯 {p.roleNeeded}</p>
-              <p>⚙️ {p.techStack}</p>
+            <div style={styles.actions}>
 
-              {/* 🔥 ALL ACTION BUTTONS RESTORED */}
-              <div style={styles.actions}>
+              <button onClick={() => toggleLike(p.id)} style={styles.btn}>
+                ❤️ Like
+              </button>
 
-                <button
-                  onClick={() => applyToProject(p)}
-                  style={styles.btn}
-                >
-                  🚀 Apply
-                </button>
+              <button onClick={() => addComment(p.id)} style={styles.btn}>
+                💬 Comment
+              </button>
 
-                <button
-                  onClick={() => nav(`/chat/${p.id}`)}
-                  style={styles.btnAlt}
-                >
-                  👥 Team Chat
-                </button>
+              <button
+                onClick={() => applyToProject(p)}
+                style={styles.btnGreen}
+              >
+                🚀 Apply
+              </button>
 
-                <button
-                  onClick={() => nav(`/members/${p.id}`)}
-                  style={styles.btn}
-                >
-                  👥 Members
-                </button>
+              <button
+                onClick={() => nav(`/chat/${p.id}`)}
+                style={styles.btnAlt}
+              >
+                Team Chat
+              </button>
 
-                <button
-                  onClick={() => nav(`/manage/${p.id}`)}
-                  style={styles.btnAlt}
-                >
-                  👑 Manage
-                </button>
-
-                <button
-                  onClick={() => nav(`/project/${p.id}`)}
-                  style={styles.btn}
-                >
-                  📄 Details
-                </button>
-
-              </div>
+              <button
+                onClick={() => nav(`/members/${p.id}`)}
+                style={styles.btnAlt}
+              >
+                Members
+              </button>
 
             </div>
-          ))
-        )}
-
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -258,64 +253,18 @@ export default function Dashboard() {
 /* ================= STYLES ================= */
 const styles = {
   page: { display: "flex", minHeight: "100vh", background: "#0b1120", color: "#fff" },
-  sidebar: { width: "260px", padding: "20px", background: "#111827" },
+  sidebar: { width: "250px", padding: "20px", background: "#111827" },
+  main: { flex: 1, padding: "20px" },
   logo: { color: "#22d3ee" },
   email: { fontSize: "12px", color: "#94a3b8" },
   navItem: { padding: "10px", cursor: "pointer" },
-
-  main: { flex: 1, padding: "20px" },
-
-  hero: {
-    padding: "20px",
-    border: "1px solid #22d3ee",
-    borderRadius: "12px",
-    marginBottom: "15px",
-  },
-
+  hero: { marginBottom: "20px" },
   heroTitle: { color: "#22d3ee" },
-
-  input: {
-    width: "100%",
-    padding: "10px",
-    margin: "10px 0",
-  },
-
   heading: { color: "#22d3ee" },
-
-  card: {
-    border: "1px solid #22d3ee",
-    padding: "15px",
-    marginBottom: "10px",
-    borderRadius: "10px",
-  },
-
-  actions: {
-    display: "flex",
-    gap: "8px",
-    marginTop: "10px",
-    flexWrap: "wrap",
-  },
-
-  btn: {
-    padding: "8px 10px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "6px",
-  },
-
-  btnAlt: {
-    padding: "8px 10px",
-    background: "#8b5cf6",
-    border: "none",
-    borderRadius: "6px",
-    color: "#fff",
-  },
-
-  btnGreen: {
-    padding: "10px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-  },
+  card: { padding: "15px", border: "1px solid #22d3ee", marginBottom: "10px" },
+  actions: { display: "flex", gap: "10px", marginTop: "10px" },
+  btn: { padding: "8px", background: "#22d3ee", border: "none" },
+  btnGreen: { padding: "8px", background: "#22c55e", border: "none" },
+  btnAlt: { padding: "8px", background: "#8b5cf6", border: "none", color: "#fff" },
+  input: { padding: "8px", flex: 1 },
 };
