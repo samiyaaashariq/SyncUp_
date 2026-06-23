@@ -40,30 +40,39 @@ export default function Profile() {
           boxShadow: "0 8px 24px rgba(0,0,0,0.08)"
         }}
       >
-        <h1
-          style={{
-            fontSize: "32px",
-            fontWeight: "900",
-            marginBottom: "10px"
-          }}
-        >
-          My Profile
-        </h1>
+       <h1
+  style={{
+    fontSize: "36px",
+    fontWeight: "900",
+    marginBottom: "10px"
+  }}
+>
+  👤 Samiya Shariq
+</h1>
 
-        <p style={{ fontSize: "16px", marginBottom: "10px" }}>
-          <strong>Email:</strong> {user?.email}
-        </p>
+<h3
+  style={{
+    color: "#0ea5e9",
+    marginBottom: "10px"
+  }}
+>
+  🎓 B.Tech CSE Student
+</h3>
 
-        <p
-          style={{
-            color: "#475569",
-            lineHeight: "1.7",
-            marginBottom: "25px"
-          }}
-        >
-          B.Tech CSE student passionate about AI, Web Development,
-          startups, innovation, and building impactful products.
-        </p>
+<p
+  style={{
+    color: "#475569",
+    lineHeight: "1.8",
+    marginBottom: "15px"
+  }}
+>
+  💡 Passionate about AI, Web Development, Startups,
+  Innovation, and Product Building.
+</p>
+
+<p style={{ fontSize: "15px", color: "#64748b" }}>
+  📧 {user?.email}
+</p>
 
         <h2
           style={{
@@ -103,7 +112,7 @@ export default function Profile() {
             }}
           >
             <h2>3</h2>
-            <p>Applications Sent</p>
+<p>👥 Collaborations</p>
           </div>
 
           <div
@@ -114,11 +123,22 @@ export default function Profile() {
               minWidth: "180px"
             }}
           >
+            <div
+  style={{
+    background: "#f8fafc",
+    padding: "20px",
+    borderRadius: "14px",
+    minWidth: "180px"
+  }}
+>
+  <h2>4</h2>
+  <p>🏆 Achievements</p>
+</div>
             <h2>12</h2>
             <p>Total Likes</p>
           </div>
         </div>
-
+      >
         <h2
           style={{
             marginBottom: "15px",
