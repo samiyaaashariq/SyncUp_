@@ -30,38 +30,39 @@ export default function Profile() {
         minHeight: "100vh",
         padding: "30px",
         fontFamily: "Inter, sans-serif",
-        background: "linear-gradient(135deg,#ffe4ec,#ffffff,#fff0f5)",
-        color: "#0f172a",
+        background: "#0b1120",
+        color: "#f8fafc",
       }}
     >
       <div
         style={{
           maxWidth: "1000px",
           margin: "0 auto",
-          background: "#ffffff",
+          background: "#111827",
           padding: "30px",
           borderRadius: "20px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          border: "1px solid #1e293b",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
         }}
       >
         {/* PROFILE HEADER */}
 
         <h1
-  style={{
-    fontSize: "36px",
-    fontWeight: "900",
-    background: "linear-gradient(90deg, #0ea5e9, #6366f1)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    marginBottom: "10px"
-  }}
->
-  👤 Samiya Shariq
-</h1>
+          style={{
+            fontSize: "36px",
+            fontWeight: "900",
+            background: "linear-gradient(90deg, #22d3ee, #8b5cf6)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: "10px",
+          }}
+        >
+          👤 Samiya Shariq
+        </h1>
 
         <h3
           style={{
-            color: "#0ea5e9",
+            color: "#22d3ee",
             marginBottom: "10px",
           }}
         >
@@ -70,7 +71,7 @@ export default function Profile() {
 
         <p
           style={{
-            color: "#475569",
+            color: "#cbd5e1",
             lineHeight: "1.8",
             marginBottom: "15px",
           }}
@@ -82,7 +83,7 @@ export default function Profile() {
         <p
           style={{
             fontSize: "15px",
-            color: "#64748b",
+            color: "#94a3b8",
             marginBottom: "25px",
           }}
         >
@@ -95,7 +96,7 @@ export default function Profile() {
           style={{
             marginBottom: "15px",
             fontWeight: "800",
-            color: "#0ea5e9",
+            color: "#22d3ee",
           }}
         >
           Activity Overview
@@ -111,49 +112,53 @@ export default function Profile() {
         >
           <div
             style={{
-              background: "#f8fafc",
+              background: "#0f172a",
+              border: "1px solid #22d3ee",
               padding: "20px",
               borderRadius: "14px",
               minWidth: "180px",
             }}
           >
-            <h2>5</h2>
+            <h2 style={{ color: "#22d3ee" }}>5</h2>
             <p>🚀 Projects Created</p>
           </div>
 
           <div
             style={{
-              background: "#f8fafc",
+              background: "#0f172a",
+              border: "1px solid #22d3ee",
               padding: "20px",
               borderRadius: "14px",
               minWidth: "180px",
             }}
           >
-            <h2>3</h2>
+            <h2 style={{ color: "#22d3ee" }}>3</h2>
             <p>👥 Collaborations</p>
           </div>
 
           <div
             style={{
-              background: "#f8fafc",
+              background: "#0f172a",
+              border: "1px solid #22d3ee",
               padding: "20px",
               borderRadius: "14px",
               minWidth: "180px",
             }}
           >
-            <h2>8</h2>
+            <h2 style={{ color: "#22d3ee" }}>8</h2>
             <p>🛠 Skills</p>
           </div>
 
           <div
             style={{
-              background: "#f8fafc",
+              background: "#0f172a",
+              border: "1px solid #22d3ee",
               padding: "20px",
               borderRadius: "14px",
               minWidth: "180px",
             }}
           >
-            <h2>4</h2>
+            <h2 style={{ color: "#22d3ee" }}>4</h2>
             <p>🏆 Achievements</p>
           </div>
         </div>
@@ -164,7 +169,7 @@ export default function Profile() {
           style={{
             marginBottom: "15px",
             fontWeight: "800",
-            color: "#0ea5e9",
+            color: "#22d3ee",
           }}
         >
           Skills
@@ -181,7 +186,8 @@ export default function Profile() {
             <span
               key={index}
               style={{
-                background: "#e0f2fe",
+                background: "#164e63",
+                color: "#22d3ee",
                 padding: "8px 14px",
                 borderRadius: "20px",
                 fontWeight: "600",
@@ -200,7 +206,9 @@ export default function Profile() {
             style={{
               padding: "10px",
               borderRadius: "8px",
-              border: "1px solid #d1d5db",
+              border: "1px solid #334155",
+              background: "#0f172a",
+              color: "#ffffff",
               marginRight: "10px",
             }}
           />
@@ -209,10 +217,11 @@ export default function Profile() {
             onClick={addSkill}
             style={{
               padding: "10px 16px",
-              background: "#0ea5e9",
-              color: "#ffffff",
+              background: "#22d3ee",
+              color: "#0f172a",
               border: "none",
               borderRadius: "8px",
+              fontWeight: "700",
               cursor: "pointer",
             }}
           >
@@ -227,13 +236,13 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
-            color: "#0ea5e9",
+            color: "#22d3ee",
           }}
         >
           Portfolio
         </h2>
 
-        <ul style={{ lineHeight: "2" }}>
+        <ul style={{ lineHeight: "2", color: "#cbd5e1" }}>
           <li>GitHub: github.com/your-profile</li>
           <li>LinkedIn: linkedin.com/in/your-profile</li>
           <li>Portfolio Website: Coming Soon</li>
@@ -246,7 +255,7 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
-            color: "#0ea5e9",
+            color: "#22d3ee",
           }}
         >
           📌 Current Project
@@ -254,14 +263,15 @@ export default function Profile() {
 
         <div
           style={{
-            background: "#f8fafc",
+            background: "#0f172a",
+            border: "1px solid #22d3ee",
             padding: "20px",
             borderRadius: "14px",
           }}
         >
-          <h3>SyncUp</h3>
+          <h3 style={{ color: "#22d3ee" }}>SyncUp</h3>
 
-          <p>
+          <p style={{ color: "#cbd5e1" }}>
             A student collaboration platform that helps students
             find teammates, discover projects, and build real-world
             experience together.
@@ -275,13 +285,13 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
-            color: "#0ea5e9",
+            color: "#22d3ee",
           }}
         >
           Achievements
         </h2>
 
-        <ul style={{ lineHeight: "2" }}>
+        <ul style={{ lineHeight: "2", color: "#cbd5e1" }}>
           <li>CodeAlpha Python Intern</li>
           <li>MLSA Community Member</li>
           <li>Building SyncUp Platform</li>
