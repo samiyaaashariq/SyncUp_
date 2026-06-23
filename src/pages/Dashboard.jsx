@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { sendNotification } from "../Notifications";
+import { sendNotification } from "../notifications";
 import {
   collection,
   addDoc,
