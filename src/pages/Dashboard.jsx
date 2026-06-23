@@ -112,23 +112,21 @@ export default function Dashboard() {
   };
 
   // APPLY
-  const applyToProject = async (project) => {
-    if (!user?.email) return;
+ const applyToProject = async (project) => {
+  if (!user?.email) return;
 
-    try {
-      await addDoc(collection(db, "applications"), {
-        applicant: user.email,
-        projectId: project.id,
-        projectTitle: project.title,
-        createdAt: new Date(),
-      });
+  try {
+    await addDoc(collection(db, "projects", project.id, "applications"), {
+      applicant: user.email,
+      status: "pending",
+      createdAt: new Date(),
+    });
 
-      alert("🎉 Application submitted successfully!");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to apply.");
-    }
-  };
+    alert("🎉 Applied successfully!");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div style={styles.page}>
