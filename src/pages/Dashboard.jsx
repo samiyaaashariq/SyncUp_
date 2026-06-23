@@ -283,6 +283,15 @@ export default function Dashboard() {
                 >
                   👥 Team Room
                 </button>
+                <button
+  onClick={(e) => {
+    e.stopPropagation();
+    nav(`/manage/${p.id}`);
+  }}
+  style={styles.btnAlt}
+>
+  👑 Manage Team
+</button>
 
               </div>
             </div>
