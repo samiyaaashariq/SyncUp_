@@ -162,6 +162,9 @@ await sendNotification({
           <div style={styles.navItem} onClick={() => nav("/profile")}>
             Profile
           </div>
+          <div style={styles.navItem} onClick={() => nav("/notifications")}>
+  Notifications 🔔
+</div>
         </div>
       </div>
 
