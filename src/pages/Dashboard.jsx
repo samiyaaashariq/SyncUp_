@@ -85,6 +85,21 @@ export default function Dashboard() {
       createdAt: new Date(),
     });
   };
+  const applyToProject = async (project) => {
+  try {
+    await addDoc(collection(db, "applications"), {
+      applicant: user?.email,
+      projectId: project.id,
+      projectTitle: project.title,
+      createdAt: new Date(),
+    });
+
+    alert("🎉 Application submitted successfully!");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to apply.");
+  }
+};
 
   return (
     <div style={styles.page}>
@@ -182,14 +197,21 @@ export default function Dashboard() {
               >
                 💬 Comment
               </button>
-
               <button
-                onClick={() => nav(`/chat/${p.id}`)}
-                style={styles.btnAlt}
-              >
-                View Team Room
-              </button>
+  onClick={() => applyToProject(p)}
+  style={styles.btn}
+>
+  🚀 Apply to Join
+</button>
 
+<button
+  onClick={() => nav(`/chat/${p.id}`)}
+  style={styles.btnAlt}
+>
+  👥 View Team Room
+</button>
+
+             
             </div>
           </div>
         ))}
