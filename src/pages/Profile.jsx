@@ -47,14 +47,17 @@ export default function Profile() {
         {/* PROFILE HEADER */}
 
         <h1
-          style={{
-            fontSize: "36px",
-            fontWeight: "900",
-            marginBottom: "10px",
-          }}
-        >
-          👤 Samiya Shariq
-        </h1>
+  style={{
+    fontSize: "36px",
+    fontWeight: "900",
+    background: "linear-gradient(90deg, #0ea5e9, #6366f1)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    marginBottom: "10px"
+  }}
+>
+  👤 Samiya Shariq
+</h1>
 
         <h3
           style={{
@@ -92,6 +95,7 @@ export default function Profile() {
           style={{
             marginBottom: "15px",
             fontWeight: "800",
+            color: "#0ea5e9",
           }}
         >
           Activity Overview
@@ -160,6 +164,7 @@ export default function Profile() {
           style={{
             marginBottom: "15px",
             fontWeight: "800",
+            color: "#0ea5e9",
           }}
         >
           Skills
@@ -222,6 +227,7 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
+            color: "#0ea5e9",
           }}
         >
           Portfolio
@@ -240,6 +246,7 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
+            color: "#0ea5e9",
           }}
         >
           📌 Current Project
@@ -268,6 +275,7 @@ export default function Profile() {
             marginTop: "30px",
             marginBottom: "15px",
             fontWeight: "800",
+            color: "#0ea5e9",
           }}
         >
           Achievements
