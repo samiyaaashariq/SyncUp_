@@ -14,6 +14,8 @@ import {
 export default function Dashboard() {
   const nav = useNavigate();
   const [user, setUser] = useState(null);
+  const [search, setSearch] = useState("");
+const [selectedTag, setSelectedTag] = useState("");
   const [projects, setProjects] = useState([]);
 
   // AUTH
