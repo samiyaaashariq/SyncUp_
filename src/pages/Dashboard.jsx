@@ -41,18 +41,25 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  // FILTERED PROJECTS (NEW 🔥)
+  // FILTERED PROJECTS
   const filteredProjects = projects.filter((p) => {
+    const title = p.title?.toLowerCase() || "";
+    const desc = p.description?.toLowerCase() || "";
+    const tech = p.techStack?.toLowerCase() || "";
+    const role = p.roleNeeded?.toLowerCase() || "";
+
+    const searchText = search.toLowerCase();
+
     const matchSearch =
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase()) ||
-      p.techStack?.toLowerCase().includes(search.toLowerCase()) ||
-      p.roleNeeded?.toLowerCase().includes(search.toLowerCase());
+      title.includes(searchText) ||
+      desc.includes(searchText) ||
+      tech.includes(searchText) ||
+      role.includes(searchText);
 
     const matchTag =
       selectedTag === "" ||
-      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase()) ||
-      p.techStack?.toLowerCase().includes(selectedTag.toLowerCase());
+      tech.includes(selectedTag.toLowerCase()) ||
+      role.includes(selectedTag.toLowerCase());
 
     return matchSearch && matchTag;
   });
@@ -112,39 +119,35 @@ export default function Dashboard() {
     });
   };
 
-  // APPLY
- const applyToProject = async (project) => {
-  if (!user?.email) return;
+  // APPLY (FIXED 🔥)
+  const applyToProject = async (project) => {
+    if (!user?.email) return;
 
-  try {
-    await addDoc(collection(db, "projects", project.id, "applications"), {
-      applicant: user.email,
-      status: "pending",
-      createdAt: new Date(),
-    });
+    try {
+      // store application
+      await addDoc(collection(db, "projects", project.id, "applications"), {
+        applicant: user.email,
+        status: "pending",
+        createdAt: new Date(),
+      });
 
-    alert("🎉 Applied successfully!");
-  } catch (err) {
-    console.error(err);
-  }
-};
-  await addDoc(collection(db, "projects", project.id, "applications"), {
-  applicant: user.email,
-  status: "pending",
-  createdAt: new Date(),
-});
+      // notification to owner
+      await sendNotification({
+        to: project.createdBy,
+        text: `${user.email} applied to your project ${project.title}`,
+        type: "apply",
+        projectId: project.id,
+      });
 
-// 🔔 NOTIFY OWNER
-await sendNotification({
-  to: project.createdBy,
-  text: `${user.email} applied to your project ${project.title}`,
-  type: "apply",
-  projectId: project.id,
-});
+      alert("🎉 Applied successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  };
 
   return (
     <div style={styles.page}>
-
       {/* SIDEBAR */}
       <div style={styles.sidebar}>
         <h2 style={styles.logo}>📊 SyncUp</h2>
@@ -162,15 +165,15 @@ await sendNotification({
           <div style={styles.navItem} onClick={() => nav("/profile")}>
             Profile
           </div>
+
           <div style={styles.navItem} onClick={() => nav("/notifications")}>
-  Notifications 🔔
-</div>
+            Notifications 🔔
+          </div>
         </div>
       </div>
 
       {/* MAIN */}
       <div style={styles.main}>
-
         {/* HERO */}
         <div style={styles.hero}>
           <h1 style={styles.heroTitle}>🚀 Welcome to SyncUp</h1>
@@ -190,7 +193,7 @@ await sendNotification({
           </div>
         </div>
 
-        {/* 🔥 SEARCH + FILTER (NEW) */}
+        {/* SEARCH + FILTER */}
         <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
           <input
             placeholder="Search projects..."
@@ -235,7 +238,6 @@ await sendNotification({
               style={{ ...styles.card, cursor: "pointer" }}
               onClick={() => nav(`/project/${p.id}`)}
             >
-
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#22d3ee" }}>
                 {p.title}
               </h2>
@@ -251,9 +253,10 @@ await sendNotification({
               <p style={{ color: "#cbd5e1", fontSize: "13px" }}>
                 ⚙️ Tech Stack: {p.techStack}
               </p>
+
               <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-  👥 Members: {p.membersCount || 0}
-</p>
+                👥 Members: {p.membersCount || 0}
+              </p>
 
               <p style={{ marginTop: "8px", color: "#e2e8f0" }}>
                 {p.description?.length > 140
@@ -263,7 +266,6 @@ await sendNotification({
 
               {/* ACTIONS */}
               <div style={styles.actions}>
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -303,25 +305,26 @@ await sendNotification({
                 >
                   👥 Team Room
                 </button>
-                <button
-  onClick={(e) => {
-    e.stopPropagation();
-    nav(`/manage/${p.id}`);
-  }}
-  style={styles.btnAlt}
->
-  👑 Manage Team
-</button>
-                <button
-  onClick={(e) => {
-    e.stopPropagation();
-    nav(`/members/${p.id}`);
-  }}
-  style={styles.btn}
->
-  👥 View Members
-</button>
 
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nav(`/manage/${p.id}`);
+                  }}
+                  style={styles.btnAlt}
+                >
+                  👑 Manage Team
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nav(`/members/${p.id}`);
+                  }}
+                  style={styles.btn}
+                >
+                  👥 View Members
+                </button>
               </div>
             </div>
           ))
@@ -339,7 +342,6 @@ await sendNotification({
             Create Project
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -354,40 +356,17 @@ const styles = {
     background: "#0b1120",
     color: "#f8fafc",
   },
-
   sidebar: {
     width: "260px",
     background: "#111827",
     padding: "20px",
     borderRight: "1px solid #22d3ee",
   },
-
-  logo: {
-    fontSize: "22px",
-    fontWeight: "900",
-    color: "#22d3ee",
-  },
-
-  email: {
-    fontSize: "12px",
-    color: "#94a3b8",
-  },
-
-  nav: {
-    marginTop: "30px",
-  },
-
-  navItem: {
-    padding: "12px",
-    cursor: "pointer",
-    color: "#cbd5e1",
-  },
-
-  main: {
-    flex: 1,
-    padding: "30px",
-  },
-
+  logo: { fontSize: "22px", fontWeight: "900", color: "#22d3ee" },
+  email: { fontSize: "12px", color: "#94a3b8" },
+  nav: { marginTop: "30px" },
+  navItem: { padding: "12px", cursor: "pointer", color: "#cbd5e1" },
+  main: { flex: 1, padding: "30px" },
   hero: {
     background: "#111827",
     padding: "30px",
@@ -395,22 +374,9 @@ const styles = {
     border: "1px solid #22d3ee",
     marginBottom: "25px",
   },
-
-  heroTitle: {
-    fontSize: "34px",
-    fontWeight: "900",
-    color: "#22d3ee",
-  },
-
-  heroText: {
-    color: "#cbd5e1",
-  },
-
-  heading: {
-    color: "#22d3ee",
-    fontWeight: "800",
-  },
-
+  heroTitle: { fontSize: "34px", fontWeight: "900", color: "#22d3ee" },
+  heroText: { color: "#cbd5e1" },
+  heading: { color: "#22d3ee", fontWeight: "800" },
   card: {
     background: "#111827",
     border: "1px solid #22d3ee",
@@ -418,14 +384,12 @@ const styles = {
     borderRadius: "16px",
     marginBottom: "15px",
   },
-
   actions: {
     display: "flex",
     gap: "10px",
     marginTop: "15px",
     flexWrap: "wrap",
   },
-
   btn: {
     padding: "10px",
     background: "#22d3ee",
@@ -433,7 +397,6 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "700",
   },
-
   btnAlt: {
     padding: "10px",
     background: "#8b5cf6",
@@ -442,7 +405,6 @@ const styles = {
     color: "white",
     fontWeight: "700",
   },
-
   btnGreen: {
     padding: "10px",
     background: "#22d3ee",
@@ -450,7 +412,6 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "700",
   },
-
   quick: {
     marginTop: "20px",
     padding: "20px",
