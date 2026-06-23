@@ -75,86 +75,70 @@ export default function Profile() {
 </p>
 
         <h2
-          style={{
-            marginBottom: "15px",
-            fontWeight: "800"
-          }}
-        >
-          Activity Overview
-        </h2>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "15px",
-            flexWrap: "wrap",
-            marginBottom: "30px"
-          }}
-        >
-          <div
-            style={{
-              background: "#f8fafc",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px"
-            }}
-          >
-            <h2>5</h2>
-            <p>Projects Created</p>
-          </div>
-
-          <div
-            style={{
-              background: "#f8fafc",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px"
-            }}
-          >
-            <h2>3</h2>
-<p>👥 Collaborations</p>
-          </div>
-
-          <div
-            style={{
-              background: "#f8fafc",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px"
-            }}
-          >
-            <div
   style={{
-    background: "#f8fafc",
-    padding: "20px",
-    borderRadius: "14px",
-    minWidth: "180px"
+    marginBottom: "15px",
+    fontWeight: "800"
   }}
 >
-  <h2>4</h2>
-  <p>🏆 Achievements</p>
-</div>
-            <h2>12</h2>
-            <p>Total Likes</p>
-          </div>
-        </div>
-      >
-        <h2
-          style={{
-            marginBottom: "15px",
-            fontWeight: "800"
-          }}
-        >
-          Skills
-        </h2>
+  Activity Overview
+</h2>
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px"
-          }}
-        >
+<div
+  style={{
+    display: "flex",
+    gap: "15px",
+    flexWrap: "wrap",
+    marginBottom: "30px"
+  }}
+>
+  <div
+    style={{
+      background: "#f8fafc",
+      padding: "20px",
+      borderRadius: "14px",
+      minWidth: "180px"
+    }}
+  >
+    <h2>5</h2>
+    <p>🚀 Projects Created</p>
+  </div>
+
+  <div
+    style={{
+      background: "#f8fafc",
+      padding: "20px",
+      borderRadius: "14px",
+      minWidth: "180px"
+    }}
+  >
+    <h2>3</h2>
+    <p>👥 Collaborations</p>
+  </div>
+
+  <div
+    style={{
+      background: "#f8fafc",
+      padding: "20px",
+      borderRadius: "14px",
+      minWidth: "180px"
+    }}
+  >
+    <h2>8</h2>
+    <p>🛠 Skills</p>
+  </div>
+
+  <div
+    style={{
+      background: "#f8fafc",
+      padding: "20px",
+      borderRadius: "14px",
+      minWidth: "180px"
+    }}
+  >
+    <h2>4</h2>
+    <p>🏆 Achievements</p>
+  </div>
+</div>
           {skills.map((skill, index) => (
             <span
               key={index}
