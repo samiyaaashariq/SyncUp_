@@ -174,7 +174,11 @@ export default function Dashboard() {
           </div>
         ) : (
           projects.map((p) => (
-            <div key={p.id} style={styles.card}>
+           <div
+  key={p.id}
+  style={{ ...styles.card, cursor: "pointer" }}
+  onClick={() => nav(`/project/${p.id}`)}
+>
 
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#22d3ee" }}>
                 {p.title}
@@ -201,20 +205,24 @@ export default function Dashboard() {
               {/* ACTIONS */}
               <div style={styles.actions}>
 
-                <button onClick={() => toggleLike(p.id)} style={styles.btn}>
+                <button onClick={() => e.stopPropagation();
+                toggleLike(p.id)} style={styles.btn}>
                   ❤️ Like
                 </button>
 
-                <button onClick={() => addComment(p.id)} style={styles.btn}>
+                <button onClick={() => e.stopPropagation();
+             addComment(p.id)} style={styles.btn}>
                   💬 Comment
                 </button>
 
-                <button onClick={() => applyToProject(p)} style={styles.btn}>
+                <button onClick={() =>e.stopPropagation();
+        applyToProject(p)} style={styles.btn}>
                   🚀 Apply to Join
                 </button>
 
                 <button
-                  onClick={() => nav(`/chat/${p.id}`)}
+                  onClick={() => e.stopPropagation();
+      nav(`/chat/${p.id}`)}
                   style={styles.btnAlt}
                 >
                   👥 View Team Room
