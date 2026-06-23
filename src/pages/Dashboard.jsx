@@ -14,10 +14,11 @@ import {
 
 export default function Dashboard() {
   const nav = useNavigate();
+
   const [user, setUser] = useState(null);
+  const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
-  const [projects, setProjects] = useState([]);
 
   /* ================= AUTH ================= */
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  /* ================= PROJECTS REALTIME ================= */
+  /* ================= PROJECTS ================= */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "projects"), (snap) => {
       setProjects(
@@ -38,22 +39,6 @@ export default function Dashboard() {
 
     return () => unsub();
   }, []);
-
-  /* ================= FILTER ================= */
-  const filteredProjects = projects.filter((p) => {
-    const matchSearch =
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase()) ||
-      p.techStack?.toLowerCase().includes(search.toLowerCase()) ||
-      p.roleNeeded?.toLowerCase().includes(search.toLowerCase());
-
-    const matchTag =
-      selectedTag === "" ||
-      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase()) ||
-      p.techStack?.toLowerCase().includes(selectedTag.toLowerCase());
-
-    return matchSearch && matchTag;
-  });
 
   /* ================= CREATE PROJECT ================= */
   const createProject = async () => {
@@ -72,6 +57,7 @@ export default function Dashboard() {
       roleNeeded,
       techStack,
       createdBy: user.email,
+      createdAt: new Date(),
     });
   };
 
@@ -80,14 +66,9 @@ export default function Dashboard() {
     if (!user?.email) return;
 
     const likeRef = doc(db, "projects", projectId, "likes", user.email);
+    const snap = await getDocs(collection(db, "projects", projectId, "likes"));
 
-    const likesSnap = await getDocs(
-      collection(db, "projects", projectId, "likes")
-    );
-
-    const alreadyLiked = likesSnap.docs.some(
-      (d) => d.id === user.email
-    );
+    const alreadyLiked = snap.docs.some((d) => d.id === user.email);
 
     if (alreadyLiked) {
       await deleteDoc(likeRef);
@@ -112,37 +93,48 @@ export default function Dashboard() {
     });
   };
 
-  /* ================= APPLY (FIXED) ================= */
+  /* ================= APPLY (FIXED + NOTIFICATION) ================= */
   const applyToProject = async (project) => {
     if (!user?.email) return;
 
     try {
-      await addDoc(
-        collection(db, "projects", project.id, "applications"),
-        {
-          applicant: user.email,
-          status: "pending",
-          createdAt: new Date(),
-        }
-      );
+      await addDoc(collection(db, "projects", project.id, "applications"), {
+        applicant: user.email,
+        status: "pending",
+        createdAt: new Date(),
+      });
 
+      // ✅ FIXED: now safely inside async function
       await sendNotification({
         to: project.createdBy,
-        text: `${user.email} applied to your project ${project.title}`,
+        text: `${user.email} applied to ${project.title}`,
         type: "apply",
         projectId: project.id,
       });
 
-      alert("🎉 Applied successfully!");
+      alert("Application sent!");
     } catch (err) {
       console.error(err);
       alert("Error applying");
     }
   };
 
+  /* ================= FILTER ================= */
+  const filteredProjects = projects.filter((p) => {
+    const matchSearch =
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase()) ||
+      p.techStack?.toLowerCase().includes(search.toLowerCase());
+
+    const matchTag =
+      selectedTag === "" ||
+      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase());
+
+    return matchSearch && matchTag;
+  });
+
   return (
     <div style={styles.page}>
-
       {/* SIDEBAR */}
       <div style={styles.sidebar}>
         <h2 style={styles.logo}>📊 SyncUp</h2>
@@ -159,26 +151,23 @@ export default function Dashboard() {
             Profile
           </div>
           <div style={styles.navItem} onClick={() => nav("/notifications")}>
-            Notifications 🔔
+            Notifications
           </div>
         </div>
       </div>
 
       {/* MAIN */}
       <div style={styles.main}>
-
         {/* HERO */}
         <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>🚀 Welcome to SyncUp</h1>
+          <h1 style={styles.heroTitle}>🚀 SyncUp Dashboard</h1>
 
-          <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
-            <button onClick={createProject} style={styles.btnGreen}>
-              Create Project
-            </button>
-          </div>
+          <button onClick={createProject} style={styles.btn}>
+            Create Project
+          </button>
         </div>
 
-        {/* SEARCH */}
+        {/* SEARCH + FILTER */}
         <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
           <input
             placeholder="Search projects..."
@@ -201,18 +190,16 @@ export default function Dashboard() {
         </div>
 
         {/* PROJECTS */}
-        <h3 style={styles.heading}>🔥 Projects</h3>
-
         {filteredProjects.map((p) => (
           <div key={p.id} style={styles.card}>
-
             <h3>{p.title}</h3>
             <p>{p.description}</p>
-            <p>Role: {p.roleNeeded}</p>
-            <p>Tech: {p.techStack}</p>
+
+            <p style={{ color: "#94a3b8" }}>
+              👥 Members: {p.membersCount || 0}
+            </p>
 
             <div style={styles.actions}>
-
               <button onClick={() => toggleLike(p.id)} style={styles.btn}>
                 ❤️ Like
               </button>
@@ -223,16 +210,16 @@ export default function Dashboard() {
 
               <button
                 onClick={() => applyToProject(p)}
-                style={styles.btnGreen}
+                style={styles.btn}
               >
                 🚀 Apply
               </button>
 
               <button
-                onClick={() => nav(`/chat/${p.id}`)}
+                onClick={() => nav(`/project/${p.id}`)}
                 style={styles.btnAlt}
               >
-                Team Chat
+                Open
               </button>
 
               <button
@@ -241,7 +228,6 @@ export default function Dashboard() {
               >
                 Members
               </button>
-
             </div>
           </div>
         ))}
@@ -252,19 +238,67 @@ export default function Dashboard() {
 
 /* ================= STYLES ================= */
 const styles = {
-  page: { display: "flex", minHeight: "100vh", background: "#0b1120", color: "#fff" },
-  sidebar: { width: "250px", padding: "20px", background: "#111827" },
-  main: { flex: 1, padding: "20px" },
+  page: {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#0b1120",
+    color: "#fff",
+  },
+  sidebar: {
+    width: "250px",
+    background: "#111827",
+    padding: "20px",
+  },
   logo: { color: "#22d3ee" },
   email: { fontSize: "12px", color: "#94a3b8" },
-  navItem: { padding: "10px", cursor: "pointer" },
-  hero: { marginBottom: "20px" },
+  nav: { marginTop: "20px" },
+  navItem: { padding: "10px", cursor: "pointer", color: "#cbd5e1" },
+
+  main: { flex: 1, padding: "20px" },
+
+  hero: {
+    padding: "20px",
+    border: "1px solid #22d3ee",
+    borderRadius: "10px",
+    marginBottom: "20px",
+  },
+
   heroTitle: { color: "#22d3ee" },
-  heading: { color: "#22d3ee" },
-  card: { padding: "15px", border: "1px solid #22d3ee", marginBottom: "10px" },
-  actions: { display: "flex", gap: "10px", marginTop: "10px" },
-  btn: { padding: "8px", background: "#22d3ee", border: "none" },
-  btnGreen: { padding: "8px", background: "#22c55e", border: "none" },
-  btnAlt: { padding: "8px", background: "#8b5cf6", border: "none", color: "#fff" },
-  input: { padding: "8px", flex: 1 },
+
+  input: {
+    padding: "10px",
+    borderRadius: "8px",
+    border: "1px solid #22d3ee",
+    flex: 1,
+  },
+
+  card: {
+    padding: "15px",
+    border: "1px solid #22d3ee",
+    marginBottom: "10px",
+    borderRadius: "10px",
+  },
+
+  actions: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "10px",
+    flexWrap: "wrap",
+  },
+
+  btn: {
+    padding: "8px",
+    background: "#22d3ee",
+    border: "none",
+    borderRadius: "6px",
+    fontWeight: "bold",
+  },
+
+  btnAlt: {
+    padding: "8px",
+    background: "#8b5cf6",
+    border: "none",
+    borderRadius: "6px",
+    color: "white",
+  },
 };
