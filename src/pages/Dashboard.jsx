@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { sendNotification } from "../notifications";
 import { auth, db } from "../firebase";
+import { sendNotification } from "../notifications";
 import {
   collection,
   addDoc,
@@ -15,10 +15,8 @@ import {
 export default function Dashboard() {
   const nav = useNavigate();
   const [user, setUser] = useState(null);
-
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
-
   const [projects, setProjects] = useState([]);
 
   // AUTH
@@ -41,25 +39,20 @@ export default function Dashboard() {
     return () => unsub();
   }, []);
 
-  // FILTERED PROJECTS
+  // FILTER
   const filteredProjects = projects.filter((p) => {
-    const title = p.title?.toLowerCase() || "";
-    const desc = p.description?.toLowerCase() || "";
-    const tech = p.techStack?.toLowerCase() || "";
-    const role = p.roleNeeded?.toLowerCase() || "";
-
-    const searchText = search.toLowerCase();
+    const text = search.toLowerCase();
 
     const matchSearch =
-      title.includes(searchText) ||
-      desc.includes(searchText) ||
-      tech.includes(searchText) ||
-      role.includes(searchText);
+      p.title?.toLowerCase().includes(text) ||
+      p.description?.toLowerCase().includes(text) ||
+      p.techStack?.toLowerCase().includes(text) ||
+      p.roleNeeded?.toLowerCase().includes(text);
 
     const matchTag =
       selectedTag === "" ||
-      tech.includes(selectedTag.toLowerCase()) ||
-      role.includes(selectedTag.toLowerCase());
+      p.roleNeeded?.toLowerCase().includes(selectedTag) ||
+      p.techStack?.toLowerCase().includes(selectedTag);
 
     return matchSearch && matchTag;
   });
@@ -68,9 +61,9 @@ export default function Dashboard() {
   const createProject = async () => {
     if (!user?.email) return;
 
-    const title = prompt("Enter project title");
-    const description = prompt("Enter project description");
-    const roleNeeded = prompt("Role Needed (Frontend, Backend, UI/UX, AI etc.)");
+    const title = prompt("Project title");
+    const description = prompt("Description");
+    const roleNeeded = prompt("Role Needed");
     const techStack = prompt("Tech Stack");
 
     if (!title || !description) return;
@@ -81,68 +74,37 @@ export default function Dashboard() {
       roleNeeded,
       techStack,
       createdBy: user.email,
+      membersCount: 0,
+      applicationsCount: 0,
+      views: 0,
     });
   };
 
-  // LIKE
-  const toggleLike = async (projectId) => {
-    if (!user?.email) return;
-
-    const likeRef = doc(db, "projects", projectId, "likes", user.email);
-
-    const likesSnap = await getDocs(
-      collection(db, "projects", projectId, "likes")
-    );
-
-    const alreadyLiked = likesSnap.docs.some((d) => d.id === user.email);
-
-    if (alreadyLiked) {
-      await deleteDoc(likeRef);
-    } else {
-      await setDoc(likeRef, {
-        user: user.email,
-      });
-    }
-  };
-
-  // COMMENT
-  const addComment = async (projectId) => {
-    if (!user?.email) return;
-
-    const text = prompt("Write your comment");
-    if (!text) return;
-
-    await addDoc(collection(db, "projects", projectId, "comments"), {
-      text,
-      user: user.email,
-      createdAt: new Date(),
-    });
-  };
-
-  // APPLY (FIXED 🔥)
+  // APPLY (FIXED)
   const applyToProject = async (project) => {
     if (!user?.email) return;
 
     try {
-      // store application
-      await addDoc(collection(db, "projects", project.id, "applications"), {
-        applicant: user.email,
-        status: "pending",
-        createdAt: new Date(),
-      });
+      await addDoc(
+        collection(db, "projects", project.id, "applications"),
+        {
+          applicant: user.email,
+          status: "pending",
+          createdAt: new Date(),
+        }
+      );
 
-      // notification to owner
+      // notification
       await sendNotification({
         to: project.createdBy,
-        text: `${user.email} applied to your project ${project.title}`,
+        text: `${user.email} applied to ${project.title}`,
         type: "apply",
         projectId: project.id,
       });
 
-      alert("🎉 Applied successfully!");
+      alert("Applied successfully!");
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
     }
   };
 
@@ -174,248 +136,50 @@ export default function Dashboard() {
 
       {/* MAIN */}
       <div style={styles.main}>
-        {/* HERO */}
-        <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>🚀 Welcome to SyncUp</h1>
+        <h1 style={styles.heroTitle}>🚀 SyncUp Dashboard</h1>
 
-          <p style={styles.heroText}>
-            Find teammates, join projects, collaborate, and build real-world experience.
-          </p>
+        <button onClick={createProject} style={styles.btn}>
+          Create Project
+        </button>
 
-          <p style={{ color: "#94a3b8", marginTop: "10px" }}>
-            Logged in as: {user?.email}
-          </p>
-
-          <div style={{ marginTop: "20px", display: "flex", gap: "12px" }}>
-            <button onClick={createProject} style={styles.btnGreen}>
-              Create Project
-            </button>
-          </div>
-        </div>
-
-        {/* SEARCH + FILTER */}
-        <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
-          <input
-            placeholder="Search projects..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #22d3ee",
-              flex: 1,
-            }}
-          />
-
-          <select
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #22d3ee",
-            }}
-          >
-            <option value="">All</option>
-            <option value="frontend">Frontend</option>
-            <option value="backend">Backend</option>
-            <option value="ui">UI/UX</option>
-            <option value="ai">AI</option>
-          </select>
-        </div>
+        {/* SEARCH */}
+        <input
+          placeholder="Search projects..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={styles.input}
+        />
 
         {/* PROJECTS */}
-        <h3 style={styles.heading}>🔥 Featured Projects</h3>
+        {filteredProjects.map((p) => (
+          <div key={p.id} style={styles.card}>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <p>👤 {p.createdBy}</p>
 
-        {filteredProjects.length === 0 ? (
-          <div style={{ color: "#94a3b8" }}>
-            No matching projects found 🚀
-          </div>
-        ) : (
-          filteredProjects.map((p) => (
-            <div
-              key={p.id}
-              style={{ ...styles.card, cursor: "pointer" }}
-              onClick={() => nav(`/project/${p.id}`)}
+            <button
+              onClick={() => applyToProject(p)}
+              style={styles.btn}
             >
-              <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#22d3ee" }}>
-                {p.title}
-              </h2>
-
-              <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-                👤 {p.createdBy}
-              </p>
-
-              <p style={{ color: "#22d3ee", fontSize: "13px" }}>
-                🎯 Looking For: {p.roleNeeded}
-              </p>
-
-              <p style={{ color: "#cbd5e1", fontSize: "13px" }}>
-                ⚙️ Tech Stack: {p.techStack}
-              </p>
-
-              <p style={{ color: "#94a3b8", fontSize: "13px" }}>
-                👥 Members: {p.membersCount || 0}
-              </p>
-
-              <p style={{ marginTop: "8px", color: "#e2e8f0" }}>
-                {p.description?.length > 140
-                  ? p.description.slice(0, 140) + "..."
-                  : p.description}
-              </p>
-
-              {/* ACTIONS */}
-              <div style={styles.actions}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleLike(p.id);
-                  }}
-                  style={styles.btn}
-                >
-                  ❤️ Like
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addComment(p.id);
-                  }}
-                  style={styles.btn}
-                >
-                  💬 Comment
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    applyToProject(p);
-                  }}
-                  style={styles.btn}
-                >
-                  🚀 Apply
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nav(`/chat/${p.id}`);
-                  }}
-                  style={styles.btnAlt}
-                >
-                  👥 Team Room
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nav(`/manage/${p.id}`);
-                  }}
-                  style={styles.btnAlt}
-                >
-                  👑 Manage Team
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nav(`/members/${p.id}`);
-                  }}
-                  style={styles.btn}
-                >
-                  👥 View Members
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-
-        {/* QUICK ACTIONS */}
-        <div style={styles.quick}>
-          <h3>⚡ Quick Actions</h3>
-
-          <button onClick={() => nav("/chat")} style={styles.btn}>
-            Open AI Chat
-          </button>
-
-          <button onClick={createProject} style={styles.btnGreen}>
-            Create Project
-          </button>
-        </div>
+              Apply
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-/* =================== STYLES =================== */
+/* STYLES */
 const styles = {
-  page: {
-    display: "flex",
-    minHeight: "100vh",
-    fontFamily: "Inter, sans-serif",
-    background: "#0b1120",
-    color: "#f8fafc",
-  },
-  sidebar: {
-    width: "260px",
-    background: "#111827",
-    padding: "20px",
-    borderRight: "1px solid #22d3ee",
-  },
-  logo: { fontSize: "22px", fontWeight: "900", color: "#22d3ee" },
+  page: { display: "flex", minHeight: "100vh", background: "#0b1120", color: "#fff" },
+  sidebar: { width: "250px", background: "#111827", padding: "20px" },
+  logo: { color: "#22d3ee" },
   email: { fontSize: "12px", color: "#94a3b8" },
-  nav: { marginTop: "30px" },
-  navItem: { padding: "12px", cursor: "pointer", color: "#cbd5e1" },
-  main: { flex: 1, padding: "30px" },
-  hero: {
-    background: "#111827",
-    padding: "30px",
-    borderRadius: "20px",
-    border: "1px solid #22d3ee",
-    marginBottom: "25px",
-  },
-  heroTitle: { fontSize: "34px", fontWeight: "900", color: "#22d3ee" },
-  heroText: { color: "#cbd5e1" },
-  heading: { color: "#22d3ee", fontWeight: "800" },
-  card: {
-    background: "#111827",
-    border: "1px solid #22d3ee",
-    padding: "20px",
-    borderRadius: "16px",
-    marginBottom: "15px",
-  },
-  actions: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "15px",
-    flexWrap: "wrap",
-  },
-  btn: {
-    padding: "10px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
-  },
-  btnAlt: {
-    padding: "10px",
-    background: "#8b5cf6",
-    border: "none",
-    borderRadius: "8px",
-    color: "white",
-    fontWeight: "700",
-  },
-  btnGreen: {
-    padding: "10px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
-  },
-  quick: {
-    marginTop: "20px",
-    padding: "20px",
-    border: "1px solid #22d3ee",
-    borderRadius: "16px",
-  },
+  navItem: { padding: "10px", cursor: "pointer" },
+  main: { flex: 1, padding: "20px" },
+  heroTitle: { color: "#22d3ee" },
+  card: { padding: "15px", border: "1px solid #22d3ee", marginBottom: "10px" },
+  btn: { padding: "8px 12px", marginTop: "10px" },
+  input: { padding: "10px", margin: "10px 0", width: "100%" },
 };
