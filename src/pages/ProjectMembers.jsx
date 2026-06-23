@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { auth, db } from "../firebase";
+import { sendNotification } from "../notifications";
 import {
   collection,
   onSnapshot,
@@ -19,6 +20,7 @@ export default function ProjectMembers() {
   const [project, setProject] = useState(null);
 
   const user = auth.currentUser;
+
   const isOwner = project?.createdBy === user?.email;
 
   /* ================= GET PROJECT ================= */
@@ -71,6 +73,8 @@ export default function ProjectMembers() {
 
   /* ================= ACCEPT USER ================= */
   const acceptUser = async (appId, email) => {
+    if (!isOwner) return;
+
     const ref = doc(db, "projects", id, "applications", appId);
 
     await updateDoc(ref, {
@@ -82,14 +86,32 @@ export default function ProjectMembers() {
       role: "member",
       joinedAt: new Date(),
     });
+
+    // 🔔 NOTIFICATION
+    await sendNotification({
+      to: email,
+      text: `You were accepted into project: ${project.title}`,
+      type: "accepted",
+      projectId: id,
+    });
   };
 
   /* ================= REJECT USER ================= */
-  const rejectUser = async (appId) => {
+  const rejectUser = async (appId, email) => {
+    if (!isOwner) return;
+
     const ref = doc(db, "projects", id, "applications", appId);
 
     await updateDoc(ref, {
       status: "rejected",
+    });
+
+    // 🔔 NOTIFICATION
+    await sendNotification({
+      to: email,
+      text: `Your application was rejected from: ${project.title}`,
+      type: "rejected",
+      projectId: id,
     });
   };
 
@@ -98,11 +120,18 @@ export default function ProjectMembers() {
     if (!isOwner) return;
 
     await deleteDoc(doc(db, "projects", id, "members", email));
+
+    // 🔔 NOTIFICATION
+    await sendNotification({
+      to: email,
+      text: `You were removed from project: ${project.title}`,
+      type: "kicked",
+      projectId: id,
+    });
   };
 
   return (
     <div style={styles.page}>
-
       <h2 style={styles.title}>👑 Project Control Panel</h2>
 
       {/* ================= MEMBERS ================= */}
@@ -149,7 +178,7 @@ export default function ProjectMembers() {
                 </button>
 
                 <button
-                  onClick={() => rejectUser(a.id)}
+                  onClick={() => rejectUser(a.id, a.applicant)}
                   style={styles.reject}
                 >
                   ❌ Reject
