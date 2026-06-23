@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import {
@@ -9,6 +9,9 @@ import {
   orderBy,
   doc,
   getDoc,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 export default function ProjectChat() {
@@ -19,12 +22,15 @@ export default function ProjectChat() {
   const [input, setInput] = useState("");
   const [allowed, setAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [typingUsers, setTypingUsers] = useState([]);
 
-  // CHECK ACCESS
+  const endRef = useRef(null);
+
+  const user = auth.currentUser;
+
+  /* ================= ACCESS CHECK ================= */
   useEffect(() => {
     const checkAccess = async () => {
-      const user = auth.currentUser;
-
       if (!user) {
         nav("/");
         return;
@@ -49,9 +55,9 @@ export default function ProjectChat() {
     };
 
     checkAccess();
-  }, [id, nav]);
+  }, [id]);
 
-  // REALTIME CHAT
+  /* ================= REALTIME MESSAGES ================= */
   useEffect(() => {
     const ref = collection(db, "projects", id, "messages");
     const q = query(ref, orderBy("createdAt"));
@@ -68,20 +74,53 @@ export default function ProjectChat() {
     return () => unsub();
   }, [id]);
 
-  // SEND MESSAGE
+  /* ================= TYPING USERS ================= */
+  useEffect(() => {
+    const ref = collection(db, "projects", id, "typing");
+
+    const unsub = onSnapshot(ref, (snap) => {
+      setTypingUsers(snap.docs.map((d) => d.id));
+    });
+
+    return () => unsub();
+  }, [id]);
+
+  /* ================= AUTO SCROLL ================= */
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  /* ================= SEND MESSAGE ================= */
   const sendMessage = async () => {
     if (!input.trim()) return;
 
     await addDoc(collection(db, "projects", id, "messages"), {
       text: input,
-      sender: auth.currentUser.email,
-      createdAt: new Date(),
+      sender: user.email,
+      createdAt: serverTimestamp(),
     });
 
     setInput("");
+
+    // remove typing status
+    const tRef = doc(db, "projects", id, "typing", user.email);
+    await deleteDoc(tRef);
   };
 
-  // LOADING
+  /* ================= TYPING HANDLER ================= */
+  const handleTyping = async (value) => {
+    setInput(value);
+
+    const tRef = doc(db, "projects", id, "typing", user.email);
+
+    if (value.length > 0) {
+      await setDoc(tRef, { typing: true });
+    } else {
+      await deleteDoc(tRef);
+    }
+  };
+
+  /* ================= LOADING ================= */
   if (loading) {
     return (
       <div style={styles.page}>
@@ -90,39 +129,68 @@ export default function ProjectChat() {
     );
   }
 
-  // BLOCKED
-  if (!allowed) {
-    return null;
-  }
+  /* ================= BLOCKED ================= */
+  if (!allowed) return null;
 
-  // UI (IMPORTANT FIX: MUST RETURN)
+  /* ================= UI ================= */
   return (
     <div style={styles.page}>
-
       <h2 style={styles.title}>💬 Project Chat</h2>
 
+      {/* CHAT BOX */}
       <div style={styles.chatBox}>
 
-        {/* messages */}
-        <div style={{ height: "300px", overflowY: "auto" }}>
+        {/* MESSAGES */}
+        <div style={{ height: "320px", overflowY: "auto" }}>
           {messages.map((m) => (
-            <div key={m.id} style={{ marginBottom: "10px" }}>
-              <b style={{ color: "#22d3ee" }}>{m.sender}</b>
-              <p style={{ margin: 0 }}>{m.text}</p>
+            <div
+              key={m.id}
+              style={{
+                display: "flex",
+                justifyContent:
+                  m.sender === user.email ? "flex-end" : "flex-start",
+                marginBottom: "10px",
+              }}
+            >
+              <div
+                style={{
+                  background:
+                    m.sender === user.email ? "#22d3ee" : "#1f2937",
+                  color: m.sender === user.email ? "#000" : "#fff",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  maxWidth: "60%",
+                }}
+              >
+                <small style={{ display: "block", opacity: 0.7 }}>
+                  {m.sender}
+                </small>
+                {m.text}
+              </div>
             </div>
           ))}
+
+          <div ref={endRef} />
         </div>
 
-        {/* input */}
+        {/* TYPING */}
+        {typingUsers.length > 0 && (
+          <p style={{ color: "#94a3b8", fontSize: "12px" }}>
+            {typingUsers.join(", ")} typing...
+          </p>
+        )}
+
+        {/* INPUT */}
         <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
           <input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
             placeholder="Type message..."
             style={{
               flex: 1,
               padding: "10px",
               borderRadius: "8px",
+              border: "none",
             }}
           />
 
@@ -133,6 +201,7 @@ export default function ProjectChat() {
               background: "#22d3ee",
               border: "none",
               borderRadius: "8px",
+              fontWeight: "bold",
             }}
           >
             Send
@@ -164,6 +233,5 @@ const styles = {
     border: "1px solid #22d3ee",
     borderRadius: "10px",
     background: "#111827",
-    minHeight: "300px",
   },
 };
