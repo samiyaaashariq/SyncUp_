@@ -111,15 +111,37 @@ export default function Dashboard() {
       <div style={styles.main}>
 
         {/* HEADER */}
-        <div style={styles.header}>
-         <h2 style={{ fontSize: "24px", fontWeight: "900", color: "#0f172a" }}>
-  Welcome back 👋
-</h2>
-          <p style={{ fontSize: "14px", color: "#334155", marginTop: "4px" }}>
-  Let’s build something great today.
-</p>
-          <p>{user?.email}</p>
-        </div>
+        {/* HERO SECTION */}
+<div style={styles.hero}>
+  <h1 style={styles.heroTitle}>
+    🚀 Welcome to SyncUp
+  </h1>
+
+  <p style={styles.heroText}>
+    Find teammates, join exciting projects, collaborate with students,
+    and build real-world experience together.
+  </p>
+
+  <p style={{ color: "#475569", marginTop: "10px" }}>
+    Logged in as: {user?.email}
+  </p>
+
+  <div style={{ marginTop: "20px", display: "flex", gap: "12px" }}>
+    <button onClick={createProject} style={styles.btnGreen}>
+      Create Project
+    </button>
+
+    <button
+      onClick={() => window.scrollTo({
+        top: 500,
+        behavior: "smooth"
+      })}
+      style={styles.btn}
+    >
+      Explore Projects
+    </button>
+  </div>
+</div>
 
         {/* PROJECTS */}
         <h3 style={styles.heading}>🔥 Featured Projects</h3>
@@ -127,10 +149,21 @@ export default function Dashboard() {
         {projects.map((p) => (
           <div key={p.id} style={styles.card}>
 
-            <h3>{p.title}</h3>
-            <p>{p.description}</p>
-            <small>{p.tech}</small>
+            <h3 style={{ marginBottom: "10px" }}>
+  {p.title}
+</h3>
 
+<p style={{ marginBottom: "12px" }}>
+  {p.description}
+</p>
+
+<p>
+  <strong>Skills Needed:</strong> {p.tech}
+</p>
+
+<p>
+  <strong>Created By:</strong> {p.createdBy}
+</p>
             {/* ACTIONS */}
             <div style={styles.actions}>
 
@@ -152,7 +185,7 @@ export default function Dashboard() {
                 onClick={() => nav(`/chat/${p.id}`)}
                 style={styles.btnAlt}
               >
-                Discuss
+                View Team Room
               </button>
 
             </div>
@@ -303,4 +336,25 @@ const styles = {
     fontSize: "12px",
     fontWeight: "600",
   },
+  hero: {
+  background: "white",
+  padding: "30px",
+  borderRadius: "20px",
+  marginBottom: "25px",
+  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+},
+
+heroTitle: {
+  fontSize: "34px",
+  fontWeight: "900",
+  marginBottom: "10px",
+  color: "#0f172a",
+},
+
+heroText: {
+  fontSize: "16px",
+  lineHeight: "1.8",
+  color: "#475569",
+  maxWidth: "700px",
+},
 };
