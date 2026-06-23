@@ -32,6 +32,7 @@ export default function Dashboard() {
         }))
       );
     });
+
     return () => unsub();
   }, []);
 
@@ -55,7 +56,7 @@ export default function Dashboard() {
     });
   };
 
-  // LIKE TOGGLE
+  // LIKE
   const toggleLike = async (projectId) => {
     if (!user?.email) return;
 
@@ -174,11 +175,11 @@ export default function Dashboard() {
           </div>
         ) : (
           projects.map((p) => (
-           <div
-  key={p.id}
-  style={{ ...styles.card, cursor: "pointer" }}
-  onClick={() => nav(`/project/${p.id}`)}
->
+            <div
+              key={p.id}
+              style={{ ...styles.card, cursor: "pointer" }}
+              onClick={() => nav(`/project/${p.id}`)}
+            >
 
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#22d3ee" }}>
                 {p.title}
@@ -205,24 +206,41 @@ export default function Dashboard() {
               {/* ACTIONS */}
               <div style={styles.actions}>
 
-                <button onClick={() => e.stopPropagation();
-                toggleLike(p.id)} style={styles.btn}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleLike(p.id);
+                  }}
+                  style={styles.btn}
+                >
                   ❤️ Like
                 </button>
 
-                <button onClick={() => e.stopPropagation();
-             addComment(p.id)} style={styles.btn}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addComment(p.id);
+                  }}
+                  style={styles.btn}
+                >
                   💬 Comment
                 </button>
 
-                <button onClick={() =>e.stopPropagation();
-        applyToProject(p)} style={styles.btn}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    applyToProject(p);
+                  }}
+                  style={styles.btn}
+                >
                   🚀 Apply to Join
                 </button>
 
                 <button
-                  onClick={() => e.stopPropagation();
-      nav(`/chat/${p.id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nav(`/chat/${p.id}`);
+                  }}
                   style={styles.btnAlt}
                 >
                   👥 View Team Room
@@ -233,7 +251,7 @@ export default function Dashboard() {
           ))
         )}
 
-        {/* QUICK */}
+        {/* QUICK ACTIONS */}
         <div style={styles.quick}>
           <h3>⚡ Quick Actions</h3>
 
@@ -251,7 +269,7 @@ export default function Dashboard() {
   );
 }
 
-/* STYLES */
+/* =================== STYLES =================== */
 const styles = {
   page: {
     display: "flex",
