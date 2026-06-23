@@ -39,15 +39,18 @@ export default function Dashboard() {
   const createProject = async () => {
     const title = prompt("Enter project title");
     const description = prompt("Enter project description");
+    const roleNeeded = prompt("Role Needed (Frontend, Backend, UI/UX, AI etc.)");
+    const techStack = prompt("Tech Stack");
 
     if (!title || !description) return;
 
-    await addDoc(collection(db, "projects"), {
-      title,
-      description,
-      tech: "React • Firebase",
-      createdBy: user?.email,
-    });
+   await addDoc(collection(db, "projects"), {
+  title,
+  description,
+  roleNeeded,
+  techStack,
+  createdBy: user?.email,
+});
   };
 
   // LIKE TOGGLE
@@ -146,24 +149,23 @@ export default function Dashboard() {
         {/* PROJECTS */}
         <h3 style={styles.heading}>🔥 Featured Projects</h3>
 
-        {projects.map((p) => (
-          <div key={p.id} style={styles.card}>
+   {projects.map((p) => (
+  <div key={p.id} style={styles.card}>
+    <h3>{p.title}</h3>
 
-            <h3 style={{ marginBottom: "10px" }}>
-  {p.title}
-</h3>
+    <p style={{ color: "#94a3b8" }}>
+      Created By: {p.createdBy}
+    </p>
 
-<p style={{ marginBottom: "12px" }}>
-  {p.description}
-</p>
+    <p style={{ color: "#22d3ee" }}>
+      Looking For: {p.roleNeeded}
+    </p>
 
-<p>
-  <strong>Skills Needed:</strong> {p.tech}
-</p>
+    <p style={{ color: "#cbd5e1" }}>
+      Tech Stack: {p.techStack}
+    </p>
 
-<p>
-  <strong>Created By:</strong> {p.createdBy}
-</p>
+    <p>{p.description}</p>
             {/* ACTIONS */}
             <div style={styles.actions}>
 
