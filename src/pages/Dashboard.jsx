@@ -14,8 +14,10 @@ import {
 export default function Dashboard() {
   const nav = useNavigate();
   const [user, setUser] = useState(null);
+
   const [search, setSearch] = useState("");
-const [selectedTag, setSelectedTag] = useState("");
+  const [selectedTag, setSelectedTag] = useState("");
+
   const [projects, setProjects] = useState([]);
 
   // AUTH
@@ -37,6 +39,22 @@ const [selectedTag, setSelectedTag] = useState("");
 
     return () => unsub();
   }, []);
+
+  // FILTERED PROJECTS (NEW 🔥)
+  const filteredProjects = projects.filter((p) => {
+    const matchSearch =
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase()) ||
+      p.techStack?.toLowerCase().includes(search.toLowerCase()) ||
+      p.roleNeeded?.toLowerCase().includes(search.toLowerCase());
+
+    const matchTag =
+      selectedTag === "" ||
+      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase()) ||
+      p.techStack?.toLowerCase().includes(selectedTag.toLowerCase());
+
+    return matchSearch && matchTag;
+  });
 
   // CREATE PROJECT
   const createProject = async () => {
@@ -68,9 +86,7 @@ const [selectedTag, setSelectedTag] = useState("");
       collection(db, "projects", projectId, "likes")
     );
 
-    const alreadyLiked = likesSnap.docs.some(
-      (d) => d.id === user.email
-    );
+    const alreadyLiked = likesSnap.docs.some((d) => d.id === user.email);
 
     if (alreadyLiked) {
       await deleteDoc(likeRef);
@@ -156,27 +172,49 @@ const [selectedTag, setSelectedTag] = useState("");
             <button onClick={createProject} style={styles.btnGreen}>
               Create Project
             </button>
-
-            <button
-              onClick={() =>
-                window.scrollTo({ top: 500, behavior: "smooth" })
-              }
-              style={styles.btn}
-            >
-              Explore Projects
-            </button>
           </div>
+        </div>
+
+        {/* 🔥 SEARCH + FILTER (NEW) */}
+        <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+          <input
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #22d3ee",
+              flex: 1,
+            }}
+          />
+
+          <select
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #22d3ee",
+            }}
+          >
+            <option value="">All</option>
+            <option value="frontend">Frontend</option>
+            <option value="backend">Backend</option>
+            <option value="ui">UI/UX</option>
+            <option value="ai">AI</option>
+          </select>
         </div>
 
         {/* PROJECTS */}
         <h3 style={styles.heading}>🔥 Featured Projects</h3>
 
-        {projects.length === 0 ? (
+        {filteredProjects.length === 0 ? (
           <div style={{ color: "#94a3b8" }}>
-            No projects yet. Be the first to create one 🚀
+            No matching projects found 🚀
           </div>
         ) : (
-          projects.map((p) => (
+          filteredProjects.map((p) => (
             <div
               key={p.id}
               style={{ ...styles.card, cursor: "pointer" }}
@@ -235,7 +273,7 @@ const [selectedTag, setSelectedTag] = useState("");
                   }}
                   style={styles.btn}
                 >
-                  🚀 Apply to Join
+                  🚀 Apply
                 </button>
 
                 <button
@@ -245,7 +283,7 @@ const [selectedTag, setSelectedTag] = useState("");
                   }}
                   style={styles.btnAlt}
                 >
-                  👥 View Team Room
+                  👥 Team Room
                 </button>
 
               </div>
