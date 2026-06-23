@@ -1,41 +1,21 @@
-import { useEffect, useState } from "react";
-import { db, auth } from "../firebase";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "./firebase";
 
-export default function Notifications() {
-  const [notifs, setNotifs] = useState([]);
-
-  useEffect(() => {
-    const q = query(
-      collection(db, "notifications"),
-      where("owner", "==", auth.currentUser.email)
-    );
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      setNotifs(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-      );
+export const sendNotification = async ({
+  to,
+  text,
+  type,
+  projectId,
+}) => {
+  try {
+    await addDoc(collection(db, "notifications", to, "items"), {
+      text,
+      type,
+      projectId,
+      createdAt: new Date(),
+      read: false,
     });
-
-    return () => unsub();
-  }, []);
-
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Notifications 🔔</h2>
-
-      {notifs.length === 0 ? (
-        <p>No notifications</p>
-      ) : (
-        notifs.map((n) => (
-          <div key={n.id} style={{ padding: "10px", border: "1px solid #ddd" }}>
-            {n.text}
-          </div>
-        ))
-      )}
-    </div>
-  );
-}
+  } catch (err) {
+    console.error(err);
+  }
+};
