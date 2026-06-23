@@ -38,24 +38,54 @@ export default function App() {
       <Routes>
 
         {/* AUTH */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route
+          path="/"
+          element={user ? <Navigate to="/dashboard" /> : <Login />}
+        />
         <Route path="/signup" element={<Signup />} />
 
-        {/* MAIN */}
-        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+        {/* DASHBOARD */}
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard /> : <Navigate to="/" />}
+        />
 
-        {/* CHAT SYSTEM (FIXED 🔥) */}
-        <Route path="/chat" element={user ? <ChatBox /> : <Navigate to="/" />} />
-        <Route path="/chat/:id" element={user ? <ProjectChat /> : <Navigate to="/" />} />
+        {/* CHAT SYSTEM (FIXED) */}
+        <Route
+          path="/chat"
+          element={user ? <ChatBox /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/chat/:id"
+          element={user ? <ProjectChat /> : <Navigate to="/" />}
+        />
 
         {/* PROJECT SYSTEM */}
-        <Route path="/project/:id" element={<ProjectDetails />} />
-        <Route path="/manage/:id" element={<ProjectManage />} />
-        <Route path="/members/:id" element={<ProjectMembers />} />
+        <Route
+          path="/project/:id"
+          element={user ? <ProjectDetails /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/manage/:id"
+          element={user ? <ProjectManage /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/members/:id"
+          element={user ? <ProjectMembers /> : <Navigate to="/" />}
+        />
 
         {/* EXTRA */}
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/notifications"
+          element={user ? <Notifications /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/profile"
+          element={user ? <Profile /> : <Navigate to="/" />}
+        />
 
       </Routes>
     </BrowserRouter>
