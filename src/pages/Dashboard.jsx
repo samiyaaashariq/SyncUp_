@@ -125,10 +125,10 @@ export default function Dashboard() {
     and build real-world experience together.
   </p>
 
-  <p style={{ color: "#475569", marginTop: "10px" }}>
-    Logged in as: {user?.email}
-  </p>
-
+  <p style={{ color: "#94a3b8", marginTop: "10px" }}>
+  Logged in as: {user?.email}
+</p>
+  
   <div style={{ marginTop: "20px", display: "flex", gap: "12px" }}>
     <button onClick={createProject} style={styles.btnGreen}>
       Create Project
@@ -224,26 +224,27 @@ export default function Dashboard() {
 }
 
 /* =================== STYLES (UNCHANGED THEME) =================== */
-
 const styles = {
   page: {
     display: "flex",
     minHeight: "100vh",
     fontFamily: "Inter, sans-serif",
-    background: "linear-gradient(135deg, #ffe4ec, #ffffff, #fff0f5)",
-    color: "#0f172a",
+    background: "#0b1120",
+    color: "#f8fafc",
   },
 
   sidebar: {
     width: "260px",
-    background: "#0f172a",
+    background: "#111827",
     color: "white",
     padding: "20px",
+    borderRight: "1px solid #22d3ee",
   },
 
   logo: {
-    fontSize: "20px",
-    fontWeight: "800",
+    fontSize: "22px",
+    fontWeight: "900",
+    color: "#22d3ee",
   },
 
   email: {
@@ -256,9 +257,10 @@ const styles = {
   },
 
   navItem: {
-    padding: "10px",
+    padding: "12px",
     cursor: "pointer",
     color: "#cbd5e1",
+    borderRadius: "8px",
   },
 
   main: {
@@ -266,63 +268,87 @@ const styles = {
     padding: "30px",
   },
 
-  header: {
-    background: "white",
-    padding: "20px",
-    borderRadius: "14px",
-    marginBottom: "20px",
-  },
-
   heading: {
     fontWeight: "800",
     margin: "20px 0 10px",
+    color: "#22d3ee",
+  },
+
+  hero: {
+    background: "#111827",
+    padding: "30px",
+    borderRadius: "20px",
+    marginBottom: "25px",
+    border: "1px solid #22d3ee",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+  },
+
+  heroTitle: {
+    fontSize: "34px",
+    fontWeight: "900",
+    color: "#22d3ee",
+    marginBottom: "10px",
+  },
+
+  heroText: {
+    fontSize: "16px",
+    lineHeight: "1.8",
+    color: "#cbd5e1",
+    maxWidth: "700px",
   },
 
   card: {
-    background: "white",
-    padding: "16px",
-    borderRadius: "14px",
+    background: "#111827",
+    border: "1px solid #22d3ee",
+    padding: "20px",
+    borderRadius: "16px",
     marginBottom: "15px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
   },
 
   actions: {
     display: "flex",
     gap: "10px",
-    marginTop: "10px",
+    marginTop: "15px",
+    flexWrap: "wrap",
   },
 
   btn: {
-    padding: "8px 12px",
-    background: "#0ea5e9",
-    color: "white",
+    padding: "10px 14px",
+    background: "#22d3ee",
+    color: "#0b1120",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "700",
   },
 
   btnAlt: {
-    padding: "8px 12px",
-    background: "#6366f1",
-    color: "white",
+    padding: "10px 14px",
+    background: "#8b5cf6",
+    color: "#ffffff",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "700",
   },
 
   btnGreen: {
-    padding: "8px 12px",
-    background: "#22c55e",
-    color: "white",
+    padding: "10px 14px",
+    background: "#22d3ee",
+    color: "#0b1120",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "700",
   },
 
   quick: {
     marginTop: "25px",
-    background: "white",
+    background: "#111827",
+    border: "1px solid #22d3ee",
     padding: "20px",
-    borderRadius: "14px",
+    borderRadius: "16px",
   },
 
   tags: {
@@ -332,31 +358,11 @@ const styles = {
   },
 
   tag: {
-    background: "#e0f2fe",
-    padding: "6px 12px",
+    background: "#164e63",
+    color: "#22d3ee",
+    padding: "8px 14px",
     borderRadius: "20px",
     fontSize: "12px",
     fontWeight: "600",
   },
-  hero: {
-  background: "white",
-  padding: "30px",
-  borderRadius: "20px",
-  marginBottom: "25px",
-  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-},
-
-heroTitle: {
-  fontSize: "34px",
-  fontWeight: "900",
-  marginBottom: "10px",
-  color: "#0f172a",
-},
-
-heroText: {
-  fontSize: "16px",
-  lineHeight: "1.8",
-  color: "#475569",
-  maxWidth: "700px",
-},
 };
