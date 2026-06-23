@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
-import { useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
 export default function ProjectChat() {
   const { id } = useParams();
   const nav = useNavigate();
-  const [messages, setMessages] = useState([]);
-const [input, setInput] = useState("");
 
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
   const [allowed, setAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -44,34 +50,38 @@ const [input, setInput] = useState("");
 
     checkAccess();
   }, [id, nav]);
+
+  // REALTIME CHAT
   useEffect(() => {
-  const ref = collection(db, "projects", id, "messages");
-  const q = query(ref, orderBy("createdAt"));
+    const ref = collection(db, "projects", id, "messages");
+    const q = query(ref, orderBy("createdAt"));
 
-  const unsub = onSnapshot(q, (snap) => {
-    setMessages(
-      snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }))
-    );
-  });
+    const unsub = onSnapshot(q, (snap) => {
+      setMessages(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }))
+      );
+    });
 
-  return () => unsub();
-}, [id]);
+    return () => unsub();
+  }, [id]);
+
+  // SEND MESSAGE
   const sendMessage = async () => {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  await addDoc(collection(db, "projects", id, "messages"), {
-    text: input,
-    sender: auth.currentUser.email,
-    createdAt: new Date(),
-  });
+    await addDoc(collection(db, "projects", id, "messages"), {
+      text: input,
+      sender: auth.currentUser.email,
+      createdAt: new Date(),
+    });
 
-  setInput("");
-};
+    setInput("");
+  };
 
-  // LOADING STATE
+  // LOADING
   if (loading) {
     return (
       <div style={styles.page}>
@@ -80,48 +90,57 @@ const [input, setInput] = useState("");
     );
   }
 
-  // BLOCKED STATE
+  // BLOCKED
   if (!allowed) {
     return null;
   }
 
-  // CHAT UI (PLACEHOLDER FOR NOW)
-  <div style={styles.chatBox}>
+  // UI (IMPORTANT FIX: MUST RETURN)
+  return (
+    <div style={styles.page}>
 
-  {/* messages */}
-  <div style={{ height: "300px", overflowY: "auto" }}>
-    {messages.map((m) => (
-      <div key={m.id} style={{ marginBottom: "10px" }}>
-        <b style={{ color: "#22d3ee" }}>{m.sender}</b>
-        <p style={{ margin: 0 }}>{m.text}</p>
+      <h2 style={styles.title}>💬 Project Chat</h2>
+
+      <div style={styles.chatBox}>
+
+        {/* messages */}
+        <div style={{ height: "300px", overflowY: "auto" }}>
+          {messages.map((m) => (
+            <div key={m.id} style={{ marginBottom: "10px" }}>
+              <b style={{ color: "#22d3ee" }}>{m.sender}</b>
+              <p style={{ margin: 0 }}>{m.text}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* input */}
+        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type message..."
+            style={{
+              flex: 1,
+              padding: "10px",
+              borderRadius: "8px",
+            }}
+          />
+
+          <button
+            onClick={sendMessage}
+            style={{
+              padding: "10px",
+              background: "#22d3ee",
+              border: "none",
+              borderRadius: "8px",
+            }}
+          >
+            Send
+          </button>
+        </div>
+
       </div>
-    ))}
-  </div>
-
-  {/* input */}
-  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-    <input
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      placeholder="Type message..."
-      style={{
-        flex: 1,
-        padding: "10px",
-        borderRadius: "8px",
-      }}
-    />
-
-    <button onClick={sendMessage} style={{
-      padding: "10px",
-      background: "#22d3ee",
-      border: "none",
-      borderRadius: "8px"
-    }}>
-      Send
-    </button>
-  </div>
-
-</div>
+    </div>
   );
 }
 
