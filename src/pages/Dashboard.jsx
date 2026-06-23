@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
+import { generateProjectIdea } from "../ai";
 import { sendNotification } from "../notifications";
 import {
   collection,
@@ -59,14 +60,17 @@ export default function Dashboard() {
 
   // CREATE PROJECT
   const createProject = async () => {
+    
     if (!user?.email) return;
 
     const title = prompt("Project title");
     const description = prompt("Project description");
     const roleNeeded = prompt("Role Needed");
     const techStack = prompt("Tech Stack");
+   
 
     if (!title || !description) return;
+     const role = suggestRole(techStack);
 
     await addDoc(collection(db, "projects"), {
       title,
@@ -165,6 +169,15 @@ export default function Dashboard() {
             >
               Open AI Chat
             </button>
+            <button
+  onClick={() => {
+    const idea = generateProjectIdea();
+    alert("💡 AI Suggestion:\n\n" + idea);
+  }}
+  style={styles.btnAlt}
+>
+  🤖 AI Idea
+</button>
           </div>
         </div>
 
