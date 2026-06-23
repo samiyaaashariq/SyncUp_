@@ -80,17 +80,23 @@ export default function Dashboard() {
 
   // APPLY (FIXED + SAFE)
   const applyToProject = async (project) => {
-    if (!user?.email) return;
+  if (!user?.email) return;
 
-    try {
-      await addDoc(
-        collection(db, "projects", project.id, "applications"),
-        {
-          applicant: user.email,
-          status: "pending",
-          createdAt: new Date(),
-        }
-      );
+  await addDoc(collection(db, "projects", project.id, "applications"), {
+    applicant: user.email,
+    status: "pending",
+    createdAt: new Date(),
+  });
+
+  await sendNotification({
+    to: project.createdBy,
+    text: `${user.email} applied to ${project.title}`,
+    type: "apply",
+    projectId: project.id,
+  });
+
+  alert("Applied successfully 🚀");
+};
 
       // notification
       await sendNotification({
