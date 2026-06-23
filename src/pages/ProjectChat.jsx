@@ -1,97 +1,76 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function ProjectChat() {
-  const { id: projectId } = useParams();
-  const [user, setUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const { id } = useParams();
+  const nav = useNavigate();
 
-  // AUTH
+  const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // CHECK ACCESS
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged((u) => setUser(u));
-    return () => unsub();
-  }, []);
+    const checkAccess = async () => {
+      const user = auth.currentUser;
 
-  // REALTIME MESSAGES
-  useEffect(() => {
-    if (!projectId) return;
+      if (!user) {
+        nav("/");
+        return;
+      }
 
-    const q = query(
-      collection(db, "chats", projectId, "messages"),
-      orderBy("createdAt")
+      try {
+        const ref = doc(db, "projects", id, "members", user.email);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          setAllowed(true);
+        } else {
+          alert("❌ You are not a member of this project");
+          nav("/dashboard");
+        }
+      } catch (err) {
+        console.error(err);
+        nav("/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAccess();
+  }, [id, nav]);
+
+  // LOADING STATE
+  if (loading) {
+    return (
+      <div style={styles.page}>
+        <p>Checking access...</p>
+      </div>
     );
+  }
 
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }))
-      );
-    });
+  // BLOCKED STATE
+  if (!allowed) {
+    return null;
+  }
 
-    return () => unsub();
-  }, [projectId]);
-
-  // SEND MESSAGE
-  const sendMessage = async () => {
-    if (!text.trim() || !user) return;
-
-    await addDoc(collection(db, "chats", projectId, "messages"), {
-      text,
-      sender: user.email,
-      createdAt: new Date(),
-    });
-
-    setText("");
-  };
-
+  // CHAT UI (PLACEHOLDER FOR NOW)
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>👥 Project Chat Room</h2>
+
+      <h2 style={styles.title}>💬 Project Chat Room</h2>
+
+      <p style={{ color: "#94a3b8" }}>
+        Welcome to the team chat for project: {id}
+      </p>
 
       <div style={styles.chatBox}>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              ...styles.msg,
-              alignSelf:
-                msg.sender === user?.email ? "flex-end" : "flex-start",
-              background:
-                msg.sender === user?.email ? "#22d3ee" : "#111827",
-              color: msg.sender === user?.email ? "#000" : "#fff",
-            }}
-          >
-            <p style={{ fontSize: "12px", opacity: 0.7 }}>
-              {msg.sender}
-            </p>
-            <p>{msg.text}</p>
-          </div>
-        ))}
+        <p style={{ color: "#94a3b8" }}>
+          🔥 Real-time chat system will be added next step
+        </p>
       </div>
 
-      <div style={styles.inputBox}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type message..."
-          style={styles.input}
-        />
-
-        <button onClick={sendMessage} style={styles.btn}>
-          Send
-        </button>
-      </div>
     </div>
   );
 }
@@ -103,50 +82,19 @@ const styles = {
     minHeight: "100vh",
     background: "#0b1120",
     color: "#fff",
-    display: "flex",
-    flexDirection: "column",
   },
 
   title: {
     color: "#22d3ee",
-    marginBottom: "15px",
-  },
-
-  chatBox: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    padding: "10px",
-    border: "1px solid #22d3ee",
-    borderRadius: "12px",
-    overflowY: "auto",
     marginBottom: "10px",
   },
 
-  msg: {
-    padding: "10px",
-    borderRadius: "10px",
-    maxWidth: "60%",
-  },
-
-  inputBox: {
-    display: "flex",
-    gap: "10px",
-  },
-
-  input: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "8px",
+  chatBox: {
+    marginTop: "20px",
+    padding: "20px",
     border: "1px solid #22d3ee",
-  },
-
-  btn: {
-    padding: "10px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
+    borderRadius: "10px",
+    background: "#111827",
+    minHeight: "300px",
   },
 };
