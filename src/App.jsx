@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -38,14 +38,12 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
         <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
         <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
-        {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute user={user}><Dashboard /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute user={user}><ChatBox /></ProtectedRoute>} />
         <Route path="/chat/:id" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
@@ -55,9 +53,8 @@ export default function App() {
         <Route path="/notifications" element={<ProtectedRoute user={user}><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>} />
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
