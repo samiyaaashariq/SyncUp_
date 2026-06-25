@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
+import Landing from "./pages/Landing";
 
 /* Pages - Only import what you already have */
 import Login from "./pages/Login";
@@ -81,6 +82,10 @@ export default function App() {
           path="/profile"
           element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>}
         />
+        <Route
+  path="/"
+  element={user ? <Navigate to="/dashboard" replace /> : <Landing />}
+/>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
