@@ -13,8 +13,8 @@ import ProjectDetails from "./pages/ProjectDetails";
 import ProjectManage from "./pages/ProjectManage";
 import ProjectMembers from "./pages/ProjectMembers";
 import Notifications from "./pages/Notifications";
-import AIProjectCopilot from "./pages/AIProjectCopilot";
 import Profile from "./pages/Profile";
+import AIProjectCopilot from "./pages/AIProjectCopilot";
 
 const ProtectedRoute = ({ user, children }) => {
   if (!user) return <Navigate to="/" replace />;
@@ -53,14 +53,7 @@ export default function App() {
         <Route path="/members/:id" element={<ProtectedRoute user={user}><ProjectMembers /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute user={user}><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>} />
-        <Route
-  path="/ai-copilot"
-  element={
-    <ProtectedRoute user={user}>
-      <AIProjectCopilot />
-    </ProtectedRoute>
-  }
-/>
+        <Route path="/ai-copilot" element={<ProtectedRoute user={user}><AIProjectCopilot /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
