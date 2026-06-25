@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { auth, db } from "../firebase";
 import {
@@ -16,13 +16,23 @@ export default function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
 
-  // AI states
   const [aiMessages, setAiMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const chatEndRef = useRef(null);
+
   const isProjectChat = Boolean(projectId);
 
-  // ---------------- FIREBASE PROJECT CHAT ----------------
+  // AUTO SCROLL
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [aiMessages, messages]);
+
+  // FIREBASE PROJECT CHAT
   useEffect(() => {
     if (!isProjectChat) return;
 
@@ -42,13 +52,13 @@ export default function ChatBox() {
     return () => unsubscribe();
   }, [projectId, isProjectChat]);
 
-  // ---------------- AR/VR DETECTOR ----------------
+  // AR / VR DETECTOR
   const isARMode = (msg) => {
     const keywords = ["ar", "vr", "visualize", "3d", "virtual", "explain visually"];
     return keywords.some((k) => msg.toLowerCase().includes(k));
   };
 
-  // ---------------- GEMINI AI CALL ----------------
+  // GEMINI AI
   const sendToAI = async (userMessage) => {
     setLoading(true);
 
@@ -63,7 +73,24 @@ export default function ChatBox() {
           body: JSON.stringify({
             contents: [
               {
-                parts: [{ text: userMessage }],
+                parts: [
+                  {
+                    text: `
+You are SyncUp AI Assistant.
+
+You help students understand and build projects.
+
+RULES:
+- If user asks about project → explain step-by-step clearly
+- If user asks AR/VR/visualize → respond in structured visual format
+- Use headings, sections, and bullet points
+- Keep it clean, technical, and structured
+
+USER:
+${userMessage}
+                    `,
+                  },
+                ],
               },
             ],
           }),
@@ -84,22 +111,21 @@ export default function ChatBox() {
     }
   };
 
-  // ---------------- SEND MESSAGE ----------------
+  // SEND MESSAGE
   const sendMessage = async () => {
     if (!text.trim()) return;
 
     const userMessage = text;
     setText("");
 
-    // ================= AI CHAT MODE =================
+    // ================= AI MODE =================
     if (!isProjectChat) {
       let prompt = userMessage;
 
-      // AR / VR MODE ENHANCEMENT
       if (isARMode(userMessage)) {
         prompt =
           userMessage +
-          "\n\nRespond in a structured immersive visual breakdown format with sections, flow, and project architecture style explanation (AR/VR experience).";
+          "\n\nGive structured AR/VR style breakdown with architecture, flow, and components.";
       }
 
       const aiReply = await sendToAI(prompt);
@@ -113,7 +139,7 @@ export default function ChatBox() {
       return;
     }
 
-    // ================= PROJECT CHAT MODE =================
+    // ================= PROJECT CHAT =================
     try {
       await addDoc(collection(db, "projects", projectId, "messages"), {
         text: userMessage,
@@ -125,7 +151,6 @@ export default function ChatBox() {
     }
   };
 
-  // ---------------- UI ----------------
   return (
     <div
       style={{
@@ -135,15 +160,15 @@ export default function ChatBox() {
         fontFamily: "Inter, Arial, sans-serif",
       }}
     >
-      <h2 style={{ color: "#0f172a", fontWeight: "900" }}>
+      <h2 style={{ fontWeight: "900", color: "#0f172a" }}>
         {isProjectChat ? "Project Chat Room" : "SyncUp AI Assistant 🤖"}
       </h2>
 
       <p style={{ color: "#475569" }}>
-        {isProjectChat ? `Project ID: ${projectId}` : "AI Powered Chatbot + AR Mode"}
+        {isProjectChat ? `Project ID: ${projectId}` : "AI + AR Smart Assistant"}
       </p>
 
-      {/* CHAT WINDOW */}
+      {/* CHAT AREA */}
       <div
         style={{
           background: "white",
@@ -155,7 +180,7 @@ export default function ChatBox() {
           marginTop: "15px",
         }}
       >
-        {/* ---------------- PROJECT CHAT ---------------- */}
+        {/* PROJECT CHAT */}
         {isProjectChat ? (
           messages.map((msg) => (
             <div key={msg.id} style={{ marginBottom: "10px" }}>
@@ -163,7 +188,7 @@ export default function ChatBox() {
             </div>
           ))
         ) : (
-          /* ---------------- AI CHAT ---------------- */
+          /* AI CHAT */
           <div>
             {aiMessages.map((msg, index) => (
               <div
@@ -178,11 +203,14 @@ export default function ChatBox() {
                     display: "inline-block",
                     padding: "10px",
                     borderRadius: "10px",
-                    background:
-                      msg.role === "user" ? "#0ea5e9" : "#e2e8f0",
-                    color: msg.role === "user" ? "white" : "black",
                     maxWidth: "75%",
                     whiteSpace: "pre-wrap",
+                    background:
+                      msg.role === "user"
+                        ? "linear-gradient(135deg,#0ea5e9,#2563eb)"
+                        : "#f1f5f9",
+                    color: msg.role === "user" ? "white" : "black",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
                   }}
                 >
                   {msg.text}
@@ -191,12 +219,19 @@ export default function ChatBox() {
             ))}
 
             {loading && (
-              <p style={{ color: "#64748b" }}>AI is thinking...</p>
+              <div style={{ marginTop: "10px", color: "#64748b" }}>
+                AI is thinking...
+                <span className="dot">.</span>
+                <span className="dot">.</span>
+                <span className="dot">.</span>
+              </div>
             )}
+
+            <div ref={chatEndRef} />
 
             {aiMessages.length === 0 && (
               <p style={{ textAlign: "center", marginTop: "150px", color: "#64748b" }}>
-                Ask me anything about your project or say "explain in AR mode" 🚀
+                Ask anything or try "explain in AR mode"
               </p>
             )}
           </div>
@@ -212,13 +247,12 @@ export default function ChatBox() {
         }}
       >
         <input
-          type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={
             isProjectChat
-              ? "Type a project message..."
-              : "Ask AI or try 'explain in AR mode'"
+              ? "Type project message..."
+              : "Ask AI or try AR mode"
           }
           style={{
             flex: 1,
@@ -242,6 +276,23 @@ export default function ChatBox() {
           Send
         </button>
       </div>
+
+      {/* DOT ANIMATION */}
+      <style>
+        {`
+        .dot {
+          animation: blink 1.4s infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+          0% { opacity: 0.2; }
+          20% { opacity: 1; }
+          100% { opacity: 0.2; }
+        }
+        `}
+      </style>
     </div>
   );
 }
