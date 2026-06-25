@@ -10,94 +10,59 @@ export default function Dashboard() {
       background: "linear-gradient(135deg, #0a0a0a, #1a1a1a, #121212)",
       color: "#e0e0e0",
       fontFamily: "system-ui, sans-serif",
-      padding: "40px"
+      display: "flex"
     }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "3.2rem", color: "#ff00aa", marginBottom: "10px" }}>Welcome to SyncUp</h1>
-        <p style={{ color: "#aaa", fontSize: "1.3rem" }}>Your hub for projects, teammates, and collaboration</p>
+      {/* Sidebar */}
+      <div style={{
+        width: "280px",
+        background: "#1f1f1f",
+        padding: "30px 20px",
+        borderRight: "1px solid #333"
+      }}>
+        <div style={{ fontSize: "2.2rem", fontWeight: "900", color: "#ff00aa", marginBottom: "40px" }}>
+          SyncUp
+        </div>
 
-        <div style={{ marginTop: "50px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "25px" }}>
-          {/* AI Project Copilot */}
-          <div onClick={() => navigate("/ai-copilot")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #ff00aa",
-            cursor: "pointer"
-          }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div onClick={() => navigate("/dashboard")} style={{ padding: "12px 20px", background: "#ff00aa", color: "#000", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}>
+            📊 Dashboard
+          </div>
+          <div onClick={() => navigate("/ai-copilot")} style={{ padding: "12px 20px", cursor: "pointer" }}>
+            🚀 AI Project Copilot
+          </div>
+          <div onClick={() => navigate("/chat")} style={{ padding: "12px 20px", cursor: "pointer" }}>
+            💬 Team Chat Room
+          </div>
+          <div onClick={() => navigate("/chat")} style={{ padding: "12px 20px", cursor: "pointer" }}>
+            🌌 AR/VR Visual Explorer
+          </div>
+          <div onClick={() => navigate("/notifications")} style={{ padding: "12px 20px", cursor: "pointer" }}>
+            🔔 Notifications
+          </div>
+          <div onClick={() => navigate("/profile")} style={{ padding: "12px 20px", cursor: "pointer" }}>
+            👤 Profile & Interests
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: "40px" }}>
+        <h1 style={{ fontSize: "3rem", color: "#ff00aa" }}>Welcome to SyncUp</h1>
+        <p style={{ color: "#aaa" }}>Your hub for projects, teammates, and collaboration</p>
+
+        <div style={{ marginTop: "40px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "25px" }}>
+          <div onClick={() => navigate("/ai-copilot")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #ff00aa", cursor: "pointer" }}>
             <h3 style={{ color: "#ff00aa" }}>🚀 AI Project Copilot</h3>
             <p>Describe your idea and get full project plan, tech stack, roadmap, and team roles.</p>
           </div>
 
-          {/* AI Assistant */}
-          <div onClick={() => navigate("/chat")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #00b8d4",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#00b8d4" }}>💬 AI Assistant</h3>
-            <p>Ask anything or request visual/AR architecture explanations.</p>
-          </div>
-
-          {/* My Projects */}
-          <div onClick={() => navigate("/dashboard")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #80cbc4",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#80cbc4" }}>📂 My Projects</h3>
-            <p>View, manage, and track your ongoing projects.</p>
-          </div>
-
-          {/* Team Chat */}
-          <div onClick={() => navigate("/chat")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #ff00aa",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#ff00aa" }}>💬 Team Chat Room</h3>
+          <div onClick={() => navigate("/chat")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #00b8d4", cursor: "pointer" }}>
+            <h3 style={{ color: "#00b8d4" }}>💬 Team Chat Room</h3>
             <p>Real-time communication with your project team.</p>
           </div>
 
-          {/* Notifications */}
-          <div onClick={() => navigate("/notifications")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #ff69b4",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#ff69b4" }}>🔔 Notifications</h3>
-            <p>Stay updated with project activity and matches.</p>
-          </div>
-
-          {/* Profile */}
-          <div onClick={() => navigate("/profile")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #80cbc4",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#80cbc4" }}>👤 Profile & Interests</h3>
-            <p>Update your skills, interests, and portfolio.</p>
-          </div>
-
-          {/* AR/VR Visual Mode */}
-          <div onClick={() => navigate("/chat")} style={{
-            background: "#1f1f1f",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #ff00aa",
-            cursor: "pointer"
-          }}>
-            <h3 style={{ color: "#ff00aa" }}>🌌 AR/VR Visual Explorer</h3>
+          <div onClick={() => navigate("/chat")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #ff69b4", cursor: "pointer" }}>
+            <h3 style={{ color: "#ff69b4" }}>🌌 AR/VR Visual Explorer</h3>
             <p>Visualize project architecture in AR/VR style.</p>
           </div>
         </div>
