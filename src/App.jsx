@@ -41,10 +41,12 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
+        {/* Public Routes - Landing, Login, Signup */}
         <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
         <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
         <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
+        {/* Protected Routes - Only for logged in users */}
         <Route path="/dashboard" element={<ProtectedRoute user={user}><Dashboard /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute user={user}><ChatBox /></ProtectedRoute>} />
         <Route path="/chat/:id" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
