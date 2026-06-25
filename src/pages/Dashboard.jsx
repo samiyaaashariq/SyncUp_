@@ -1,68 +1,144 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [sortOption, setSortOption] = useState("recent");
+
+  // Dummy Data
+  const projects = [
+    {
+      id: 1,
+      name: "Northern Airlines Booking System",
+      description: "Real-time flight booking platform with AI seat recommendations.",
+      techStack: ["React", "Firebase", "Node.js", "Tailwind"],
+      requiredRoles: ["Frontend Dev", "Backend Dev", "UI/UX Designer"],
+      teamSize: 4,
+      creator: "Samiya Shariq",
+      tags: ["Web Dev", "Startup", "AI"],
+      status: "Active",
+      applicants: 12,
+      progress: 68
+    },
+    {
+      id: 2,
+      name: "EcoTrack - Carbon Footprint App",
+      description: "Mobile app to track and reduce personal carbon footprint.",
+      techStack: ["React Native", "Firebase", "Python"],
+      requiredRoles: ["Mobile Dev", "Data Scientist"],
+      teamSize: 3,
+      creator: "Rahul Verma",
+      tags: ["Sustainability", "Mobile", "Research"],
+      status: "Recruiting",
+      applicants: 7,
+      progress: 35
+    }
+  ];
+
+  const teammates = [
+    { id: 1, name: "Priya Sharma", skills: ["React", "UI/UX"], interests: ["AI", "Startups"], match: 92, college: "IIT Delhi" },
+    { id: 2, name: "Arjun Patel", skills: ["Node.js", "Firebase"], interests: ["Web Dev", "Hackathons"], match: 85, college: "NIT Trichy" }
+  ];
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0a, #1a1a1a, #121212)",
-      color: "#e0e0e0",
-      fontFamily: "system-ui, sans-serif",
-      padding: "40px"
-    }}>
-      <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans flex">
+      {/* Sidebar */}
+      <div className="w-72 bg-[#111] border-r border-[#222] p-6 flex-shrink-0">
+        <div className="text-3xl font-bold text-[#ff00aa] mb-10">SyncUp</div>
+        <div className="space-y-1">
+          <div onClick={() => navigate("/dashboard")} className="px-4 py-3 bg-[#ff00aa] text-black rounded-lg font-semibold cursor-pointer">Dashboard</div>
+          <div onClick={() => navigate("/explore")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">Explore Projects</div>
+          <div onClick={() => navigate("/my-projects")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">My Projects</div>
+          <div onClick={() => navigate("/team-finder")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">Team Finder</div>
+          <div onClick={() => navigate("/ai-copilot")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">AI Co-Founder</div>
+          <div onClick={() => navigate("/chat")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">Team Chat</div>
+          <div onClick={() => navigate("/notifications")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">Notifications</div>
+          <div onClick={() => navigate("/profile")} className="px-4 py-3 hover:bg-[#222] rounded-lg cursor-pointer">Profile</div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 p-8 overflow-auto">
+        {/* Top Navbar */}
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 style={{ fontSize: "3.2rem", color: "#ff00aa" }}>SyncUp Dashboard</h1>
-            <p style={{ color: "#aaa" }}>Your hub for projects, teammates, and collaboration</p>
+            <h1 className="text-4xl font-bold">Welcome back, Samiya</h1>
+            <p className="text-gray-400">Let’s build something amazing today.</p>
           </div>
-          <button onClick={() => navigate("/ai-copilot")} style={{ padding: "14px 36px", background: "#ff00aa", color: "#000", border: "none", borderRadius: "50px", fontWeight: "700" }}>
-            + New Project with AI
-          </button>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setShowCreateModal(true)} className="px-6 py-3 bg-[#ff00aa] text-black rounded-full font-semibold">+ Create Project</button>
+            <div onClick={() => navigate("/profile")} className="w-10 h-10 bg-[#ff00aa] rounded-full cursor-pointer"></div>
+          </div>
         </div>
 
-        {/* Projects Table */}
-        <div style={{ background: "#1f1f1f", borderRadius: "16px", padding: "30px", marginBottom: "40px" }}>
-          <h2 style={{ color: "#ff00aa", marginBottom: "20px" }}>My Projects</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid #333" }}>
-                <th style={{ textAlign: "left", padding: "12px 0" }}>Project</th>
-                <th style={{ textAlign: "left", padding: "12px 0" }}>Status</th>
-                <th style={{ textAlign: "left", padding: "12px 0" }}>Team</th>
-                <th style={{ textAlign: "left", padding: "12px 0" }}>Progress</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: "1px solid #333" }}>
-                <td style={{ padding: "16px 0" }}>Northern Airlines Booking System</td>
-                <td><span style={{ color: "#4ade80" }}>Active</span></td>
-                <td>4 members</td>
-                <td>75%</td>
-                <td><button onClick={() => navigate("/project/1")} style={{ padding: "8px 20px", background: "#ff00aa", color: "#000", border: "none", borderRadius: "8px" }}>View</button></td>
-              </tr>
-            </tbody>
-          </table>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <div className="bg-[#111] p-6 rounded-2xl border border-[#222]">Total Projects<br /><span className="text-4xl font-bold">47</span></div>
+          <div className="bg-[#111] p-6 rounded-2xl border border-[#222]">Active Teams<br /><span className="text-4xl font-bold">12</span></div>
+          <div className="bg-[#111] p-6 rounded-2xl border border-[#222]">Pending Requests<br /><span className="text-4xl font-bold">8</span></div>
+          <div className="bg-[#111] p-6 rounded-2xl border border-[#222]">Connections<br /><span className="text-4xl font-bold">134</span></div>
         </div>
 
-        {/* Quick Features */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "25px" }}>
-          <div onClick={() => navigate("/ai-copilot")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #ff00aa", cursor: "pointer" }}>
-            <h3 style={{ color: "#ff00aa" }}>🚀 AI Project Copilot</h3>
-            <p>Generate full project plans, tech stack, and team roles.</p>
+        {/* Projects Section */}
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">My Projects</h2>
+            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-[#111] border border-[#333] px-4 py-2 rounded-lg">
+              <option value="recent">Sort: Recent</option>
+              <option value="popular">Sort: Popular</option>
+              <option value="matching">Sort: Best Match</option>
+            </select>
           </div>
 
-          <div onClick={() => navigate("/chat")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #00b8d4", cursor: "pointer" }}>
-            <h3 style={{ color: "#00b8d4" }}>💬 Team Chat Room</h3>
-            <p>Real-time communication with your project team.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map(project => (
+              <div key={project.id} className="bg-[#111] p-6 rounded-2xl border border-[#333] hover:border-[#ff00aa] transition-all">
+                <div className="flex justify-between mb-4">
+                  <h3 className="font-semibold text-xl">{project.name}</h3>
+                  <span className="text-xs px-3 py-1 bg-green-500/20 text-green-400 rounded-full">{project.status}</span>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">{project.description}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {project.techStack.map((tech, i) => <span key={i} className="text-xs bg-[#222] px-3 py-1 rounded-full">{tech}</span>)}
+                </div>
+                <div className="text-sm text-gray-400 mb-4">Required: {project.requiredRoles.join(", ")}</div>
+                <div className="flex justify-between text-sm mb-4">
+                  <div>Team: {project.teamSize}</div>
+                  <div>Applicants: {project.applicants}</div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => navigate(`/project/${project.id}`)} className="flex-1 py-2 bg-[#ff00aa] text-black rounded-lg font-semibold">View Project</button>
+                  <button className="flex-1 py-2 border border-[#ff00aa] text-[#ff00aa] rounded-lg">View Applicants</button>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div onClick={() => navigate("/chat")} style={{ background: "#1f1f1f", padding: "30px", borderRadius: "16px", border: "1px solid #ff69b4", cursor: "pointer" }}>
-            <h3 style={{ color: "#ff69b4" }}>🌌 AR/VR Visual Explorer</h3>
-            <p>Visualize project architecture in AR/VR style.</p>
+        {/* Team Finder */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold mb-6">Team Finder</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {teammates.map(person => (
+              <div key={person.id} className="bg-[#111] p-6 rounded-2xl border border-[#333]">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-[#ff00aa] rounded-full"></div>
+                  <div>
+                    <div className="font-semibold">{person.name}</div>
+                    <div className="text-sm text-gray-400">{person.college}</div>
+                  </div>
+                  <div className="ml-auto text-[#4ade80] font-bold">{person.match}% Match</div>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {person.skills.map((s, i) => <span key={i} className="text-xs bg-[#222] px-3 py-1 rounded-full">{s}</span>)}
+                </div>
+                <div className="flex gap-3">
+                  <button className="flex-1 py-2 bg-[#ff00aa] text-black rounded-lg font-semibold">Connect</button>
+                  <button onClick={() => navigate("/chat")} className="flex-1 py-2 border border-[#ff00aa] text-[#ff00aa] rounded-lg">Message</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
