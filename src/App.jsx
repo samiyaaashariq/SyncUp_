@@ -95,7 +95,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
+<Route path="/ai-copilot" element={<AIProjectCopilot />} />
         <Route
           path="/manage/:id"
           element={
