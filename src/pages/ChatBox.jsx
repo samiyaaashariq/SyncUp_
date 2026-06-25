@@ -74,57 +74,25 @@ export default function ChatBox() {
     return keywords.some((k) => msg.toLowerCase().includes(k));
   };
 
-  // GEMINI AI
-  const sendToAI = async (userMessage) => {
-    setLoading(true);
+ 
+ // SIMPLE AI 
+const sendToAI = async (userMessage) => {
+  setLoading(true);
 
-    try {
-      const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                  {
-  text: `
-You are SyncUp AI Assistant.
+  try {
+    return `🤖 SyncUp AI
 
-You are also a SYSTEM DESIGN + VISUAL ARCHITECTURE ENGINE.
-
-MODES:
-
-1. NORMAL MODE:
-- Explain normally
-
-2. VISUAL MODE (VERY IMPORTANT):
-If user asks for visualization / architecture / flow:
-Return structured output like:
-
-PROJECT STRUCTURE:
-- Frontend:
-- Backend:
-- Database:
-
-FLOW:
-User → Auth → Dashboard → Features
-
-COMPONENTS:
-- Login
-- Chat System
-- AI Assistant
-
-Keep it clean, structured, and diagram-like.
-
-USER:
+You said:
 ${userMessage}
-`
-},
+
+AI integration is temporarily disabled while deployment is being fixed.`;
+  } catch (err) {
+    console.log(err);
+    return "Error connecting to AI.";
+  } finally {
+    setLoading(false);
+  }
+};
                   },
                 ],
               },
