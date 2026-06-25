@@ -15,28 +15,10 @@ export default function ChatBox() {
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-
   const [aiMessages, setAiMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const isVisualMode = (msg) => {
-  const keywords = [
-    "visualize",
-    "architecture",
-    "system design",
-    "flow",
-    "diagram",
-    "structure",
-    "project map",
-    "explain visually"
-  ];
-
-  return keywords.some((k) =>
-    msg.toLowerCase().includes(k)
-  );
-};
 
   const chatEndRef = useRef(null);
-
   const isProjectChat = Boolean(projectId);
 
   // AUTO SCROLL
@@ -68,31 +50,65 @@ export default function ChatBox() {
     return () => unsubscribe();
   }, [projectId, isProjectChat]);
 
-  // AR / VR DETECTOR
-  const isARMode = (msg) => {
-    const keywords = ["ar", "vr", "visualize", "3d", "virtual", "explain visually"];
+  // DETECT VISUAL / AR REQUEST
+  const isVisualMode = (msg) => {
+    const keywords = [
+      "visualize", "architecture", "system design", "flow", "diagram",
+      "structure", "project map", "explain visually", "ar", "vr", "3d"
+    ];
     return keywords.some((k) => msg.toLowerCase().includes(k));
   };
 
- 
- // SIMPLE AI 
-const sendToAI = async (userMessage) => {
-  setLoading(true);
+  // GEMINI AI
+  const sendToAI = async (userMessage) => {
+    setLoading(true);
 
-  try {
-    return `🤖 SyncUp AI
+    try {
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `
+You are SyncUp AI Assistant.
 
-You said:
+You are also a SYSTEM DESIGN + VISUAL ARCHITECTURE ENGINE.
+
+MODES:
+
+1. NORMAL MODE:
+- Explain normally and helpfully.
+
+2. VISUAL MODE (VERY IMPORTANT):
+If user asks for visualization, architecture, flow, diagram, structure, AR/VR, etc.:
+Return clean, structured output like:
+
+**PROJECT STRUCTURE:**
+- Frontend:
+- Backend:
+- Database:
+- Other Services:
+
+**FLOW:**
+User → Auth → Dashboard → Features
+
+**COMPONENTS:**
+- Login Component
+- Chat System
+- AI Assistant
+
+Keep it clean, use markdown, bullet points, and clear sections.
+
+USER QUERY:
 ${userMessage}
-
-AI integration is temporarily disabled while deployment is being fixed.`;
-  } catch (err) {
-    console.log(err);
-    return "Error connecting to AI.";
-  } finally {
-    setLoading(false);
-  }
-};
+                    `,
                   },
                 ],
               },
@@ -103,13 +119,18 @@ AI integration is temporarily disabled while deployment is being fixed.`;
 
       const data = await res.json();
 
+      if (!res.ok) {
+        console.error("Gemini API Error:", data);
+        return "Sorry, I couldn't process your request. Please try again.";
+      }
+
       return (
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Sorry, I couldn't respond."
+        "Sorry, I couldn't generate a response."
       );
     } catch (err) {
-      console.log(err);
-      return "Error connecting to AI.";
+      console.error("AI Error:", err);
+      return "Error connecting to AI. Please check your connection.";
     } finally {
       setLoading(false);
     }
@@ -119,24 +140,20 @@ AI integration is temporarily disabled while deployment is being fixed.`;
   const sendMessage = async () => {
     if (!text.trim()) return;
 
-    const userMessage = text;
+    const userMessage = text.trim();
     setText("");
-    
 
-    // ================= AI MODE =================
+    // ================= AI MODE (No Project) =================
     if (!isProjectChat) {
-  let prompt = userMessage;
+      const isVisual = isVisualMode(userMessage);
 
-  const visual = isVisualMode(userMessage);
-  const ar = isARMode(userMessage);
+      let prompt = userMessage;
+      if (isVisual) {
+        prompt = userMessage + "\n\nPlease respond in clear visual/system architecture format.";
+      }
 
-  if (ar || visual) {
-    prompt =
-      userMessage +
-      "\n\nReturn structured system architecture / visual breakdown format.";
-  }
+      const aiReply = await sendToAI(prompt);
 
-  const aiReply = await sendToAI(prompt);
       setAiMessages((prev) => [
         ...prev,
         { role: "user", text: userMessage },
@@ -146,7 +163,7 @@ AI integration is temporarily disabled while deployment is being fixed.`;
       return;
     }
 
-    // ================= PROJECT CHAT =================
+    // ================= PROJECT CHAT (Firebase) =================
     try {
       await addDoc(collection(db, "projects", projectId, "messages"), {
         text: userMessage,
@@ -154,7 +171,7 @@ AI integration is temporarily disabled while deployment is being fixed.`;
         createdAt: new Date(),
       });
     } catch (error) {
-      console.log(error);
+      console.error("Firebase Error:", error);
     }
   };
 
@@ -172,7 +189,7 @@ AI integration is temporarily disabled while deployment is being fixed.`;
       </h2>
 
       <p style={{ color: "#475569" }}>
-        {isProjectChat ? `Project ID: ${projectId}` : "AI + AR Smart Assistant"}
+        {isProjectChat ? `Project ID: ${projectId}` : "AI + Visual Architecture Assistant"}
       </p>
 
       {/* CHAT AREA */}
@@ -187,15 +204,15 @@ AI integration is temporarily disabled while deployment is being fixed.`;
           marginTop: "15px",
         }}
       >
-        {/* PROJECT CHAT */}
         {isProjectChat ? (
+          // PROJECT CHAT
           messages.map((msg) => (
             <div key={msg.id} style={{ marginBottom: "10px" }}>
-              <strong>{msg.user}</strong>: {msg.text}
+              <strong>{msg.user}:</strong> {msg.text}
             </div>
           ))
         ) : (
-          /* AI CHAT */
+          // AI CHAT
           <div>
             {aiMessages.map((msg, index) => (
               <div
@@ -227,8 +244,7 @@ AI integration is temporarily disabled while deployment is being fixed.`;
 
             {loading && (
               <div style={{ marginTop: "10px", color: "#64748b" }}>
-                AI is thinking...
-                <span className="dot">.</span>
+                AI is thinking<span className="dot">.</span>
                 <span className="dot">.</span>
                 <span className="dot">.</span>
               </div>
@@ -238,14 +254,14 @@ AI integration is temporarily disabled while deployment is being fixed.`;
 
             {aiMessages.length === 0 && (
               <p style={{ textAlign: "center", marginTop: "150px", color: "#64748b" }}>
-                Ask anything or try "explain in AR mode"
+                Ask anything or try: "visualize the system architecture" or "explain in AR mode"
               </p>
             )}
           </div>
         )}
       </div>
 
-      {/* INPUT */}
+      {/* INPUT AREA */}
       <div
         style={{
           display: "flex",
@@ -259,7 +275,7 @@ AI integration is temporarily disabled while deployment is being fixed.`;
           placeholder={
             isProjectChat
               ? "Type project message..."
-              : "Ask AI or try AR mode"
+              : "Ask AI (try visual architecture...)"
           }
           style={{
             flex: 1,
@@ -267,37 +283,39 @@ AI integration is temporarily disabled while deployment is being fixed.`;
             borderRadius: "8px",
             border: "1px solid #d1d5db",
           }}
+          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
         />
 
         <button
           onClick={sendMessage}
+          disabled={loading}
           style={{
-            padding: "10px 16px",
+            padding: "10px 20px",
             border: "none",
             borderRadius: "8px",
-            background: "#0ea5e9",
+            background: loading ? "#94a3b8" : "#0ea5e9",
             color: "white",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          Send
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
 
       {/* DOT ANIMATION */}
       <style>
         {`
-        .dot {
-          animation: blink 1.4s infinite;
-        }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
+          .dot {
+            animation: blink 1.4s infinite;
+          }
+          .dot:nth-child(2) { animation-delay: 0.2s; }
+          .dot:nth-child(3) { animation-delay: 0.4s; }
 
-        @keyframes blink {
-          0% { opacity: 0.2; }
-          20% { opacity: 1; }
-          100% { opacity: 0.2; }
-        }
+          @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+          }
         `}
       </style>
     </div>
