@@ -54,7 +54,7 @@ export default function Login() {
           SyncUp
         </h1>
         <p style={{ textAlign: "center", color: "#aaa", marginBottom: "30px" }}>
-          Welcome back
+          Welcome back, builder!
         </p>
 
         <form onSubmit={handleLogin}>
