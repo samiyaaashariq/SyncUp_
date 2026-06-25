@@ -5,69 +5,47 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0a0a0a",
-      color: "#e0e0e0",
-      fontFamily: "system-ui, sans-serif",
-      padding: "20px"
+    <div style={{ 
+      minHeight: "100vh", 
+      background: "#000", 
+      color: "#fff", 
+      padding: "50px", 
+      textAlign: "center" 
     }}>
-      <nav style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "20px 5%"
-      }}>
-        <h1 style={{ 
-          fontSize: "2.8rem", 
-          fontWeight: "900",
-          background: "linear-gradient(90deg, #ff00aa, #ff69b4)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent"
-        }}>
-          SyncUp
-        </h1>
+      <h1 style={{ fontSize: "3rem" }}>SyncUp</h1>
+      <p style={{ fontSize: "1.5rem", margin: "20px 0" }}>
+        Find Projects. Find Teammates. Build Together.
+      </p>
 
-        <div>
-          <button 
-            onClick={() => navigate("/login")}
-            style={{ marginRight: "15px", padding: "12px 24px", background: "transparent", border: "2px solid #ff00aa", color: "#fff", borderRadius: "50px" }}
-          >
-            Login
-          </button>
-          <button 
-            onClick={() => navigate("/signup")}
-            style={{ padding: "12px 32px", background: "#ff00aa", color: "#000", border: "none", borderRadius: "50px", fontWeight: "bold" }}
-          >
-            Get Started
-          </button>
-        </div>
-      </nav>
+      <button 
+        onClick={() => navigate("/login")}
+        style={{ 
+          padding: "15px 40px", 
+          margin: "10px", 
+          background: "#ff00aa", 
+          color: "#000", 
+          border: "none", 
+          fontSize: "1.2rem" 
+        }}
+      >
+        Login
+      </button>
 
-      <div style={{ textAlign: "center", marginTop: "180px" }}>
-        <h1 style={{ fontSize: "4.2rem", marginBottom: "20px" }}>
-          Find Projects.<br />
-          Find Teammates.<br />
-          Build Together.
-        </h1>
-        <p style={{ fontSize: "1.3rem", color: "#aaa", maxWidth: "600px", margin: "0 auto 40px" }}>
-          Premium platform for students to collaborate and build real projects.
-        </p>
-        <button 
-          onClick={() => navigate("/signup")}
-          style={{
-            padding: "18px 50px",
-            fontSize: "1.3rem",
-            background: "#ff00aa",
-            color: "#000",
-            border: "none",
-            borderRadius: "50px",
-            fontWeight: "700"
-          }}
-        >
-          Start Your Project
-        </button>
-      </div>
+      <button 
+        onClick={() => navigate("/signup")}
+        style={{ 
+          padding: "15px 40px", 
+          margin: "10px", 
+          background: "#ff00aa", 
+          color: "#000", 
+          border: "none", 
+          fontSize: "1.2rem" 
+        }}
+      >
+        Signup
+      </button>
+
+      <p style={{ marginTop: "50px" }}>If buttons work, the app is running.</p>
     </div>
   );
 }
