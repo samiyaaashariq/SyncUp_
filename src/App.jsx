@@ -123,6 +123,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/" element={<Landing />} />
 
         <Route
           path="/profile"
