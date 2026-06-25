@@ -4,17 +4,20 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 
 /* Pages */
-import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
-import ProjectMembers from "./pages/ProjectMembers";
-import ProjectChat from "./pages/ProjectChat";
-import ProjectManage from "./pages/ProjectManage";
-import ProjectDetails from "./pages/ProjectDetails";
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import ChatBox from "./pages/ChatBox";
+import ProjectChat from "./pages/ProjectChat";
+import ProjectDetails from "./pages/ProjectDetails";
+import ProjectManage from "./pages/ProjectManage";
+import ProjectMembers from "./pages/ProjectMembers";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
+
+// NEW PAGES - Make sure these files exist
+import AIProjectCopilot from "./pages/AIProjectCopilot";
+import Landing from "./pages/Landing";   // ← Create this if not exists
 
 /* 🔐 Protected Route Wrapper */
 const ProtectedRoute = ({ user, children }) => {
@@ -37,7 +40,15 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <div style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #0a0a0a, #001a14)",
+        color: "#e0f2f1",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "1.5rem"
+      }}>
         Loading SyncUp...
       </div>
     );
@@ -46,23 +57,36 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* AUTH */}
+        {/* PUBLIC ROUTES */}
         <Route
           path="/"
-          element={user ? <Navigate to="/dashboard" /> : <Login />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Landing />}
+        />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
         />
         <Route
           path="/signup"
-          element={user ? <Navigate to="/dashboard" /> : <Signup />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Signup />}
         />
 
-        {/* DASHBOARD */}
+        {/* PROTECTED ROUTES */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute user={user}>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AI COPILOT */}
+        <Route
+          path="/ai-copilot"
+          element={
+            <ProtectedRoute user={user}>
+              <AIProjectCopilot />
             </ProtectedRoute>
           }
         />
@@ -76,9 +100,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
-          path="/chat/:id"
+          path="/chat/:projectId"
           element={
             <ProtectedRoute user={user}>
               <ProjectChat />
@@ -95,7 +118,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-<Route path="/ai-copilot" element={<AIProjectCopilot />} />
+
         <Route
           path="/manage/:id"
           element={
@@ -114,7 +137,7 @@ export default function App() {
           }
         />
 
-        {/* EXTRA */}
+        {/* OTHER PAGES */}
         <Route
           path="/notifications"
           element={
@@ -123,7 +146,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Landing />} />
 
         <Route
           path="/profile"
@@ -134,6 +156,8 @@ export default function App() {
           }
         />
 
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
