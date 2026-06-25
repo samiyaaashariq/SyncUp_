@@ -18,6 +18,22 @@ export default function ChatBox() {
 
   const [aiMessages, setAiMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const isVisualMode = (msg) => {
+  const keywords = [
+    "visualize",
+    "architecture",
+    "system design",
+    "flow",
+    "diagram",
+    "structure",
+    "project map",
+    "explain visually"
+  ];
+
+  return keywords.some((k) =>
+    msg.toLowerCase().includes(k)
+  );
+};
 
   const chatEndRef = useRef(null);
 
@@ -64,7 +80,7 @@ export default function ChatBox() {
 
     try {
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_API_KEY",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AQ.Ab8RN6IN-anUefcDZHJ178R5rxwZlhcxNjY4hyVtY0IPlv9HQg",
         {
           method: "POST",
           headers: {
@@ -75,19 +91,38 @@ export default function ChatBox() {
               {
                 parts: [
                   {
-                    text: `
+                   text: `
 You are SyncUp AI Assistant.
 
-You help students understand and build projects.
+You are also a SYSTEM DESIGN + VISUAL ARCHITECTURE ENGINE.
 
-RULES:
-- If user asks about project → explain step-by-step clearly
-- If user asks AR/VR/visualize → respond in structured visual format
-- Use headings, sections, and bullet points
-- Keep it clean, technical, and structured
+MODES:
+
+1. NORMAL MODE:
+- Explain normally
+
+2. VISUAL MODE (VERY IMPORTANT):
+If user asks for visualization / architecture / flow:
+Return structured output like:
+
+PROJECT STRUCTURE:
+- Frontend:
+- Backend:
+- Database:
+
+FLOW:
+User → Auth → Dashboard → Features
+
+COMPONENTS:
+- Login
+- Chat System
+- AI Assistant
+
+Keep it clean, structured, and diagram-like.
 
 USER:
 ${userMessage}
+`
                     `,
                   },
                 ],
@@ -117,19 +152,22 @@ ${userMessage}
 
     const userMessage = text;
     setText("");
+    
 
     // ================= AI MODE =================
     if (!isProjectChat) {
-      let prompt = userMessage;
+  let prompt = userMessage;
 
-      if (isARMode(userMessage)) {
-        prompt =
-          userMessage +
-          "\n\nGive structured AR/VR style breakdown with architecture, flow, and components.";
-      }
+  const visual = isVisualMode(userMessage);
+  const ar = isARMode(userMessage);
 
-      const aiReply = await sendToAI(prompt);
+  if (ar || visual) {
+    prompt =
+      userMessage +
+      "\n\nReturn structured system architecture / visual breakdown format.";
+  }
 
+  const aiReply = await sendToAI(prompt);
       setAiMessages((prev) => [
         ...prev,
         { role: "user", text: userMessage },
