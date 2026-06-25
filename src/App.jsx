@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
-import Landing from "./pages/Landing";
 
-/* Pages - Only import what you already have */
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -41,54 +40,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
+        {/* Public Routes */}
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
+        <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
-        <Route
-          path="/dashboard"
-          element={<ProtectedRoute user={user}><Dashboard /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/chat"
-          element={<ProtectedRoute user={user}><ChatBox /></ProtectedRoute>}
-        />
-        <Route
-          path="/chat/:id"
-          element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/project/:id"
-          element={<ProtectedRoute user={user}><ProjectDetails /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/manage/:id"
-          element={<ProtectedRoute user={user}><ProjectManage /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/members/:id"
-          element={<ProtectedRoute user={user}><ProjectMembers /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/notifications"
-          element={<ProtectedRoute user={user}><Notifications /></ProtectedRoute>}
-        />
-
-        <Route
-          path="/profile"
-          element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>}
-        />
-        <Route
-  path="/"
-  element={user ? <Navigate to="/dashboard" replace /> : <Landing />}
-/>
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute user={user}><Dashboard /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute user={user}><ChatBox /></ProtectedRoute>} />
+        <Route path="/chat/:id" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
+        <Route path="/project/:id" element={<ProtectedRoute user={user}><ProjectDetails /></ProtectedRoute>} />
+        <Route path="/manage/:id" element={<ProtectedRoute user={user}><ProjectManage /></ProtectedRoute>} />
+        <Route path="/members/:id" element={<ProtectedRoute user={user}><ProjectMembers /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute user={user}><Notifications /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>} />
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
