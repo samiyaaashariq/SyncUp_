@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
+import TeamMatcher from "../components/TeamMatcher";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function ProjectDetails() {
@@ -37,8 +38,10 @@ export default function ProjectDetails() {
       <p>👤 {project.createdBy}</p>
       <p>🎯 {project.roleNeeded}</p>
       <p>⚙️ {project.techStack}</p>
+      
 
       <p style={{ marginTop: 10 }}>{project.description}</p>
+      {project && <TeamMatcher project={project} />}
 
     </div>
   );
