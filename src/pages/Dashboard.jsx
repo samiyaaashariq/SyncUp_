@@ -9,20 +9,25 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  getDocs,
+  getDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 export default function Dashboard() {
   const nav = useNavigate();
 
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
 
   /* ================= AUTH ================= */
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged((u) => setUser(u));
+    const unsub = auth.onAuthStateChanged((u) => {
+      setUser(u);
+      setLoading(false);
+    });
     return () => unsub();
   }, []);
 
@@ -57,24 +62,32 @@ export default function Dashboard() {
       roleNeeded,
       techStack,
       createdBy: user.email,
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
     });
   };
 
-  /* ================= LIKE ================= */
+  /* ================= LIKE (FIXED) ================= */
   const toggleLike = async (projectId) => {
     if (!user?.email) return;
 
-    const likeRef = doc(db, "projects", projectId, "likes", user.email);
-    const snap = await getDocs(collection(db, "projects", projectId, "likes"));
+    const safeEmail = user.email.replace(/\./g, "_");
 
-    const alreadyLiked = snap.docs.some((d) => d.id === user.email);
+    const likeRef = doc(
+      db,
+      "projects",
+      projectId,
+      "likes",
+      safeEmail
+    );
 
-    if (alreadyLiked) {
+    const snap = await getDoc(likeRef);
+
+    if (snap.exists()) {
       await deleteDoc(likeRef);
     } else {
       await setDoc(likeRef, {
         user: user.email,
+        createdAt: serverTimestamp(),
       });
     }
   };
@@ -86,25 +99,30 @@ export default function Dashboard() {
     const text = prompt("Write comment");
     if (!text) return;
 
-    await addDoc(collection(db, "projects", projectId, "comments"), {
-      text,
-      user: user.email,
-      createdAt: new Date(),
-    });
+    await addDoc(
+      collection(db, "projects", projectId, "comments"),
+      {
+        text,
+        user: user.email,
+        createdAt: serverTimestamp(),
+      }
+    );
   };
 
-  /* ================= APPLY (FIXED + NOTIFICATION) ================= */
+  /* ================= APPLY ================= */
   const applyToProject = async (project) => {
     if (!user?.email) return;
 
     try {
-      await addDoc(collection(db, "projects", project.id, "applications"), {
-        applicant: user.email,
-        status: "pending",
-        createdAt: new Date(),
-      });
+      await addDoc(
+        collection(db, "projects", project.id, "applications"),
+        {
+          applicant: user.email,
+          status: "pending",
+          createdAt: serverTimestamp(),
+        }
+      );
 
-      // ✅ FIXED: now safely inside async function
       await sendNotification({
         to: project.createdBy,
         text: `${user.email} applied to ${project.title}`,
@@ -121,17 +139,29 @@ export default function Dashboard() {
 
   /* ================= FILTER ================= */
   const filteredProjects = projects.filter((p) => {
+    const q = search.toLowerCase();
+
     const matchSearch =
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase()) ||
-      p.techStack?.toLowerCase().includes(search.toLowerCase());
+      (p.title || "").toLowerCase().includes(q) ||
+      (p.description || "").toLowerCase().includes(q) ||
+      (p.techStack || "").toLowerCase().includes(q);
 
     const matchTag =
       selectedTag === "" ||
-      p.roleNeeded?.toLowerCase().includes(selectedTag.toLowerCase());
+      (p.roleNeeded || "")
+        .toLowerCase()
+        .includes(selectedTag.toLowerCase());
 
     return matchSearch && matchTag;
   });
+
+  if (loading) {
+    return (
+      <div style={{ color: "white", padding: "20px" }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -150,7 +180,10 @@ export default function Dashboard() {
           <div style={styles.navItem} onClick={() => nav("/profile")}>
             Profile
           </div>
-          <div style={styles.navItem} onClick={() => nav("/notifications")}>
+          <div
+            style={styles.navItem}
+            onClick={() => nav("/notifications")}
+          >
             Notifications
           </div>
         </div>
