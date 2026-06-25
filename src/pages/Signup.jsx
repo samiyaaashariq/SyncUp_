@@ -1,57 +1,125 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
-function Signup({ onSignupSuccess }) {
+export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      alert("Account Created Successfully 🚀");
-      console.log(userCredential.user);
-      if (onSignupSuccess) {
-        onSignupSuccess();
-      }
-    }catch (error) {
-      alert(error.message);
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Failed to create account. Try a stronger password.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h2>Create Account</h2>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0a0a0a, #001a14, #002b24)",
+      color: "#e0f2f1",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "Inter, sans-serif"
+    }}>
+      <div style={{
+        background: "rgba(15, 23, 42, 0.95)",
+        padding: "40px 30px",
+        borderRadius: "16px",
+        border: "1px solid #334155",
+        width: "100%",
+        maxWidth: "420px"
+      }}>
+        <h1 style={{
+          textAlign: "center",
+          fontSize: "2.8rem",
+          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          marginBottom: "10px"
+        }}>
+          SyncUp
+        </h1>
+        <p style={{ textAlign: "center", color: "#80cbc4", marginBottom: "30px" }}>
+          Join the builder community
+        </p>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <form onSubmit={handleSignup}>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "16px",
+              marginBottom: "15px",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "12px",
+              color: "#e0f2f1",
+              fontSize: "1.05rem"
+            }}
+            required
+          />
 
-      <br /><br />
+          <input
+            type="password"
+            placeholder="Create password (min 6 chars)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "16px",
+              marginBottom: "20px",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "12px",
+              color: "#e0f2f1",
+              fontSize: "1.05rem"
+            }}
+            required
+          />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          {error && <p style={{ color: "#ff6b6b", textAlign: "center" }}>{error}</p>}
 
-      <br /><br />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "16px",
+              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+              color: "#0a0a0a",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "1.1rem",
+              fontWeight: "700",
+              cursor: loading ? "not-allowed" : "pointer",
+              marginBottom: "20px"
+            }}
+          >
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
+        </form>
 
-      <button onClick={handleSignup}>
-        Create Account
-      </button>
+        <p style={{ textAlign: "center", color: "#80cbc4" }}>
+          Already have an account? <Link to="/login" style={{ color: "#00ff9f" }}>Login</Link>
+        </p>
+      </div>
     </div>
   );
 }
-
-export default Signup;
