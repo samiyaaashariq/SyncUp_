@@ -7,9 +7,9 @@ export default function Landing() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0a 0%, #001a14 50%, #002b24 100%)",
-      color: "#e0f2f1",
-      fontFamily: "Inter, system-ui, sans-serif",
+      background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #121212 100%)",
+      color: "#e0e0e0",
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     }}>
       {/* Navbar */}
       <nav style={{
@@ -17,26 +17,27 @@ export default function Landing() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        borderBottom: "1px solid rgba(0, 255, 159, 0.15)"
+        borderBottom: "1px solid #333"
       }}>
         <div style={{ 
-          fontSize: "2.2rem", 
+          fontSize: "2.6rem", 
           fontWeight: "900",
-          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+          letterSpacing: "-2px",
+          background: "linear-gradient(90deg, #ff00aa, #ff69b4)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent"
         }}>
           SyncUp
         </div>
 
-        <div style={{ display: "flex", gap: "15px" }}>
+        <div style={{ display: "flex", gap: "16px" }}>
           <button 
             onClick={() => navigate("/login")}
             style={{
-              padding: "10px 24px",
+              padding: "12px 28px",
               background: "transparent",
-              color: "#e0f2f1",
-              border: "2px solid #00ff9f",
+              color: "#e0e0e0",
+              border: "2px solid #ff00aa",
               borderRadius: "50px",
               cursor: "pointer",
               fontWeight: "500"
@@ -47,117 +48,100 @@ export default function Landing() {
           <button 
             onClick={() => navigate("/signup")}
             style={{
-              padding: "10px 28px",
-              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
-              color: "#0a0a0a",
+              padding: "12px 32px",
+              background: "linear-gradient(90deg, #ff00aa, #ff1493)",
+              color: "#000",
               border: "none",
               borderRadius: "50px",
               fontWeight: "700",
               cursor: "pointer"
             }}
           >
-            Get Started
+            Get Started Free
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
       <div style={{ 
-        maxWidth: "1100px", 
-        margin: "0 auto", 
-        padding: "140px 20px 100px",
-        textAlign: "center" 
+        maxWidth: "1000px", 
+        margin: "140px auto 0", 
+        textAlign: "center",
+        padding: "0 20px"
       }}>
         <h1 style={{
-          fontSize: "4.5rem",
-          lineHeight: "1.1",
-          marginBottom: "20px",
-          background: "linear-gradient(90deg, #00ff9f, #00e5d4, #00b8d4)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent"
+          fontSize: "4.8rem",
+          lineHeight: "1.05",
+          fontWeight: "900",
+          letterSpacing: "-3px",
+          marginBottom: "24px"
         }}>
           Find Projects.<br />
           Find Teammates.<br />
-          Build Together.
+          <span style={{ background: "linear-gradient(90deg, #ff00aa, #ff69b4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Build Together.
+          </span>
         </h1>
 
         <p style={{ 
-          fontSize: "1.35rem", 
-          maxWidth: "700px", 
-          margin: "0 auto 40px",
-          color: "#b2dfdb"
+          fontSize: "1.45rem", 
+          maxWidth: "680px", 
+          margin: "0 auto 50px",
+          color: "#aaaaaa"
         }}>
-          The AI-powered platform where students turn ideas into real projects with the right teammates.
+          The premium platform for ambitious students to discover projects, 
+          match with talented teammates, and ship standout work.
         </p>
 
-        <div style={{ display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
           <button 
             onClick={() => navigate("/signup")}
             style={{
               padding: "18px 52px",
-              fontSize: "1.25rem",
-              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
-              color: "#0a0a0a",
+              fontSize: "1.3rem",
+              background: "linear-gradient(90deg, #ff00aa, #ff1493)",
+              color: "#000",
               border: "none",
               borderRadius: "9999px",
               fontWeight: "700",
               cursor: "pointer",
-              boxShadow: "0 10px 30px rgba(0,255,159,0.25)"
+              boxShadow: "0 10px 40px rgba(255, 0, 170, 0.4)"
             }}
           >
-            Start Your Project
-          </button>
-
-          <button 
-            onClick={() => navigate("/login")}
-            style={{
-              padding: "18px 40px",
-              fontSize: "1.25rem",
-              background: "transparent",
-              color: "#e0f2f1",
-              border: "2px solid #80cbc4",
-              borderRadius: "9999px",
-              cursor: "pointer"
-            }}
-          >
-            Login
+            Start Your Journey
           </button>
         </div>
       </div>
 
       {/* Features */}
       <div style={{ 
-        background: "rgba(15, 23, 42, 0.7)", 
-        padding: "80px 20px",
-        textAlign: "center"
+        background: "#111", 
+        padding: "100px 20px",
+        marginTop: "120px"
       }}>
-        <h2 style={{ fontSize: "2.6rem", marginBottom: "50px" }}>Why Students Choose SyncUp</h2>
+        <h2 style={{ textAlign: "center", fontSize: "2.8rem", marginBottom: "60px" }}>Built for Builders</h2>
 
         <div style={{ 
           display: "grid", 
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", 
           gap: "30px",
           maxWidth: "1100px",
           margin: "0 auto"
         }}>
-          <div style={{ background: "rgba(0,255,159,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(0,255,159,0.2)" }}>
-            <h3 style={{ color: "#00ff9f" }}>🤖 AI Copilot</h3>
-            <p>Turn your idea into a complete project plan instantly.</p>
+          <div style={{ background: "#1a1a1a", padding: "32px", borderRadius: "16px" }}>
+            <h3 style={{ color: "#ff00aa" }}>🤖 AI Copilot</h3>
+            <p style={{ color: "#bbb" }}>Turn ideas into complete project plans instantly.</p>
           </div>
-          <div style={{ background: "rgba(0,184,212,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(0,184,212,0.2)" }}>
-            <h3 style={{ color: "#00b8d4" }}>🤝 Smart Matching</h3>
-            <p>Find teammates with matching skills and interests.</p>
+          <div style={{ background: "#1a1a1a", padding: "32px", borderRadius: "16px" }}>
+            <h3 style={{ color: "#ff00aa" }}>🤝 Smart Matching</h3>
+            <p style={{ color: "#bbb" }}>Find teammates who actually match your vision.</p>
           </div>
-          <div style={{ background: "rgba(128,203,196,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(128,203,196,0.2)" }}>
-            <h3 style={{ color: "#80cbc4" }}>💬 Real-time Chat</h3>
-            <p>Collaborate seamlessly with your team.</p>
+          <div style={{ background: "#1a1a1a", padding: "32px", borderRadius: "16px" }}>
+            <h3 style={{ color: "#ff00aa" }}>💼 Portfolio Ready</h3>
+            <p style={{ color: "#bbb" }}>Generate professional portfolio entries automatically.</p>
           </div>
         </div>
       </div>
-
-      <footer style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-        © 2026 SyncUp • Made for Student Builders
-      </footer>
     </div>
   );
 }
