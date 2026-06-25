@@ -10,7 +10,7 @@ export default function AIProjectCopilot() {
   const navigate = useNavigate();
   const user = auth.currentUser;
 
-  const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg"; // ← Your key
+  const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg";
 
   const generateProject = async () => {
     if (!idea.trim()) return;
@@ -27,38 +27,34 @@ export default function AIProjectCopilot() {
               parts: [{
                 text: `You are SyncUp AI Project Copilot.
 
-User has this idea: "${idea}"
+User Idea: "${idea}"
 
-Generate a complete project brief in this exact format:
+Generate a professional, exciting project brief in this exact format:
 
 **🚀 Project Title**
-(One catchy title)
+(A catchy, professional title)
 
 **📝 Description**
-(2-3 engaging paragraphs)
+(2-3 strong paragraphs)
 
-**🛠 Tech Stack**
+**🛠 Recommended Tech Stack**
 - Frontend:
 - Backend:
 - Database:
-- Other:
+- Others:
 
-**✨ Key Features**
+**✨ Core Features**
 - Feature 1
 - Feature 2
 - etc.
 
-**👥 Suggested Team Roles** (3-5 roles with why they are needed)
+**👥 Ideal Team Roles** (4-5 roles with why needed)
 
-**📅 Development Roadmap**
+**📅 Suggested Roadmap**
 1. Week 1-2: ...
 2. Week 3-4: ...
 
-**🎯 Success Metrics**
-- Metric 1
-- Metric 2
-
-Make it exciting and realistic for students. Use emojis.`
+Make it realistic and inspiring for students. Use emojis.`
               }]
             }]
           })
@@ -66,14 +62,13 @@ Make it exciting and realistic for students. Use emojis.`
       );
 
       const data = await res.json();
-      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate.";
+      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate project.";
 
       setGeneratedProject({
-        title: idea.split(" ").slice(0, 6).join(" ") + "...",
+        title: idea.slice(0, 60) + (idea.length > 60 ? "..." : ""),
         fullBrief: aiText,
         idea: idea,
         createdBy: user?.email,
-        createdAt: new Date(),
         members: [user?.uid],
         status: "planning"
       });
@@ -95,7 +90,7 @@ Make it exciting and realistic for students. Use emojis.`
         createdAt: serverTimestamp(),
       });
 
-      alert("Project created successfully! 🎉");
+      alert("✅ Project Created Successfully!");
       navigate(`/project/${docRef.id}`);
     } catch (e) {
       console.error(e);
@@ -106,14 +101,15 @@ Make it exciting and realistic for students. Use emojis.`
   return (
     <div style={{
       minHeight: "100vh",
-      padding: "30px",
       background: "linear-gradient(135deg, #0a0a0a, #001a14, #002b24)",
       color: "#e0f2f1",
+      padding: "40px 20px",
       fontFamily: "Inter, sans-serif"
     }}>
       <div style={{ maxWidth: "900px", margin: "0 auto" }}>
         <h1 style={{
-          fontSize: "2.8rem",
+          fontSize: "3rem",
+          textAlign: "center",
           background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
@@ -121,24 +117,24 @@ Make it exciting and realistic for students. Use emojis.`
         }}>
           AI Project Copilot 🌌
         </h1>
-        <p style={{ color: "#80cbc4", fontSize: "1.2rem" }}>
-          Describe your idea → AI builds the full project plan
+        <p style={{ textAlign: "center", color: "#80cbc4", fontSize: "1.2rem" }}>
+          Describe your idea → AI builds complete project plan
         </p>
 
-        <div style={{ marginTop: "30px" }}>
+        <div style={{ marginTop: "40px" }}>
           <textarea
             value={idea}
             onChange={(e) => setIdea(e.target.value)}
-            placeholder="I want to build a food delivery app for college students..."
+            placeholder="I want to build a platform where students can find teammates for hackathons..."
             style={{
               width: "100%",
-              height: "140px",
+              minHeight: "160px",
               padding: "20px",
-              borderRadius: "16px",
-              border: "1px solid #334155",
-              background: "#0f172a",
-              color: "#e0f2f1",
               fontSize: "1.1rem",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "16px",
+              color: "#e0f2f1",
               resize: "vertical"
             }}
           />
@@ -147,60 +143,68 @@ Make it exciting and realistic for students. Use emojis.`
             onClick={generateProject}
             disabled={loading || !idea.trim()}
             style={{
-              marginTop: "16px",
-              padding: "14px 32px",
+              marginTop: "20px",
+              padding: "16px 40px",
               background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
               color: "#0a0a0a",
               border: "none",
-              borderRadius: "9999px",
+              borderRadius: "50px",
+              fontSize: "1.15rem",
               fontWeight: "700",
-              fontSize: "1.1rem",
-              cursor: loading ? "not-allowed" : "pointer"
+              cursor: loading ? "not-allowed" : "pointer",
+              width: "100%"
             }}
           >
-            {loading ? "Generating Magic..." : "Generate Full Project Brief"}
+            {loading ? "Generating Project Brief..." : "Generate Project with AI"}
           </button>
         </div>
 
         {generatedProject && (
           <div style={{
-            marginTop: "40px",
+            marginTop: "50px",
             background: "rgba(15, 23, 42, 0.95)",
-            border: "1px solid #334155",
+            padding: "30px",
             borderRadius: "16px",
-            padding: "30px"
+            border: "1px solid #334155"
           }}>
             <h2 style={{ color: "#00ff9f" }}>AI Generated Project</h2>
-            <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.7", marginTop: "20px" }}>
+            <div style={{ 
+              whiteSpace: "pre-wrap", 
+              lineHeight: "1.8", 
+              marginTop: "20px",
+              background: "#0f172a",
+              padding: "25px",
+              borderRadius: "12px"
+            }}>
               {generatedProject.fullBrief}
             </div>
 
-            <div style={{ marginTop: "30px", display: "flex", gap: "15px" }}>
+            <div style={{ marginTop: "30px", display: "flex", gap: "15px", flexWrap: "wrap" }}>
               <button
                 onClick={saveProject}
                 style={{
-                  padding: "14px 28px",
+                  padding: "16px 36px",
                   background: "#00ff9f",
                   color: "#0a0a0a",
                   border: "none",
-                  borderRadius: "9999px",
+                  borderRadius: "50px",
                   fontWeight: "700"
                 }}
               >
-                ✅ Save & Go to Project
+                ✅ Save Project & Continue
               </button>
 
               <button
                 onClick={() => setGeneratedProject(null)}
                 style={{
-                  padding: "14px 28px",
+                  padding: "16px 36px",
                   background: "transparent",
                   color: "#80cbc4",
-                  border: "1px solid #334155",
-                  borderRadius: "9999px"
+                  border: "2px solid #334155",
+                  borderRadius: "50px"
                 }}
               >
-                Generate New Idea
+                Generate Another Idea
               </button>
             </div>
           </div>
