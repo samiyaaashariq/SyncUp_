@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 
+/* Pages */
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import ProjectMembers from "./pages/ProjectMembers";
@@ -14,7 +16,11 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import ChatBox from "./pages/ChatBox";
 
-import { auth } from "./firebase";
+/* 🔐 Protected Route Wrapper */
+const ProtectedRoute = ({ user, children }) => {
+  if (!user) return <Navigate to="/" replace />;
+  return children;
+};
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -30,7 +36,11 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        Loading SyncUp...
+      </div>
+    );
   }
 
   return (
@@ -42,49 +52,85 @@ export default function App() {
           path="/"
           element={user ? <Navigate to="/dashboard" /> : <Login />}
         />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/signup"
+          element={user ? <Navigate to="/dashboard" /> : <Signup />}
+        />
 
         {/* DASHBOARD */}
         <Route
           path="/dashboard"
-          element={user ? <Dashboard /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
-        {/* CHAT SYSTEM (FIXED) */}
+        {/* CHAT SYSTEM */}
         <Route
           path="/chat"
-          element={user ? <ChatBox /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ChatBox />
+            </ProtectedRoute>
+          }
         />
+
         <Route
           path="/chat/:id"
-          element={user ? <ProjectChat /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ProjectChat />
+            </ProtectedRoute>
+          }
         />
 
         {/* PROJECT SYSTEM */}
         <Route
           path="/project/:id"
-          element={user ? <ProjectDetails /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ProjectDetails />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/manage/:id"
-          element={user ? <ProjectManage /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ProjectManage />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/members/:id"
-          element={user ? <ProjectMembers /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <ProjectMembers />
+            </ProtectedRoute>
+          }
         />
 
         {/* EXTRA */}
         <Route
           path="/notifications"
-          element={user ? <Notifications /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <Notifications />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/profile"
-          element={user ? <Profile /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute user={user}>
+              <Profile />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>
