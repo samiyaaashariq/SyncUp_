@@ -1,337 +1,163 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase";
-import { sendNotification } from "../notifications";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  setDoc,
-  deleteDoc,
-  getDoc,
-  serverTimestamp,
-} from "firebase/firestore";
 
-export default function Dashboard() {
-  const nav = useNavigate();
-
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState([]);
-  const [search, setSearch] = useState("");
-  const [selectedTag, setSelectedTag] = useState("");
-
-  /* ================= AUTH ================= */
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged((u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
-
-  /* ================= PROJECTS ================= */
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "projects"), (snap) => {
-      setProjects(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }))
-      );
-    });
-
-    return () => unsub();
-  }, []);
-
-  /* ================= CREATE PROJECT ================= */
-  const createProject = async () => {
-    if (!user?.email) return;
-
-    const title = prompt("Enter project title");
-    const description = prompt("Enter project description");
-    const roleNeeded = prompt("Role Needed");
-    const techStack = prompt("Tech Stack");
-
-    if (!title || !description) return;
-
-    await addDoc(collection(db, "projects"), {
-      title,
-      description,
-      roleNeeded,
-      techStack,
-      createdBy: user.email,
-      createdAt: serverTimestamp(),
-    });
-  };
-
-  /* ================= LIKE (FIXED) ================= */
-  const toggleLike = async (projectId) => {
-    if (!user?.email) return;
-
-    const safeEmail = user.email.replace(/\./g, "_");
-
-    const likeRef = doc(
-      db,
-      "projects",
-      projectId,
-      "likes",
-      safeEmail
-    );
-
-    const snap = await getDoc(likeRef);
-
-    if (snap.exists()) {
-      await deleteDoc(likeRef);
-    } else {
-      await setDoc(likeRef, {
-        user: user.email,
-        createdAt: serverTimestamp(),
-      });
-    }
-  };
-
-  /* ================= COMMENT ================= */
-  const addComment = async (projectId) => {
-    if (!user?.email) return;
-
-    const text = prompt("Write comment");
-    if (!text) return;
-
-    await addDoc(
-      collection(db, "projects", projectId, "comments"),
-      {
-        text,
-        user: user.email,
-        createdAt: serverTimestamp(),
-      }
-    );
-  };
-
-  /* ================= APPLY ================= */
-  const applyToProject = async (project) => {
-    if (!user?.email) return;
-
-    try {
-      await addDoc(
-        collection(db, "projects", project.id, "applications"),
-        {
-          applicant: user.email,
-          status: "pending",
-          createdAt: serverTimestamp(),
-        }
-      );
-
-      await sendNotification({
-        to: project.createdBy,
-        text: `${user.email} applied to ${project.title}`,
-        type: "apply",
-        projectId: project.id,
-      });
-
-      alert("Application sent!");
-    } catch (err) {
-      console.error(err);
-      alert("Error applying");
-    }
-  };
-
-  /* ================= FILTER ================= */
-  const filteredProjects = projects.filter((p) => {
-    const q = search.toLowerCase();
-
-    const matchSearch =
-      (p.title || "").toLowerCase().includes(q) ||
-      (p.description || "").toLowerCase().includes(q) ||
-      (p.techStack || "").toLowerCase().includes(q);
-
-    const matchTag =
-      selectedTag === "" ||
-      (p.roleNeeded || "")
-        .toLowerCase()
-        .includes(selectedTag.toLowerCase());
-
-    return matchSearch && matchTag;
-  });
-
-  if (loading) {
-    return (
-      <div style={{ color: "white", padding: "20px" }}>
-        Loading...
-      </div>
-    );
-  }
+export default function Landing() {
+  const navigate = useNavigate();
 
   return (
-    <div style={styles.page}>
-      {/* SIDEBAR */}
-      <div style={styles.sidebar}>
-        <h2 style={styles.logo}>📊 SyncUp</h2>
-        <p style={styles.email}>{user?.email}</p>
-
-        <div style={styles.nav}>
-          <div style={styles.navItem} onClick={() => nav("/dashboard")}>
-            Dashboard
-          </div>
-          <div style={styles.navItem} onClick={() => nav("/chat")}>
-            AI Chat
-          </div>
-          <div style={styles.navItem} onClick={() => nav("/profile")}>
-            Profile
-          </div>
-          <div
-            style={styles.navItem}
-            onClick={() => nav("/notifications")}
-          >
-            Notifications
-          </div>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0a0a0a 0%, #001a14 50%, #002b24 100%)",
+      color: "#e0f2f1",
+      fontFamily: "Inter, system-ui, sans-serif",
+    }}>
+      {/* Navbar */}
+      <nav style={{
+        padding: "20px 5%",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        borderBottom: "1px solid rgba(0, 255, 159, 0.15)"
+      }}>
+        <div style={{ 
+          fontSize: "2.2rem", 
+          fontWeight: "900",
+          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent"
+        }}>
+          SyncUp
         </div>
-      </div>
 
-      {/* MAIN */}
-      <div style={styles.main}>
-        {/* HERO */}
-        <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>🚀 SyncUp Dashboard</h1>
-
-          <button onClick={createProject} style={styles.btn}>
-            Create Project
+        <div style={{ display: "flex", gap: "15px" }}>
+          <button 
+            onClick={() => navigate("/login")}
+            style={{
+              padding: "10px 24px",
+              background: "transparent",
+              color: "#e0f2f1",
+              border: "2px solid #00ff9f",
+              borderRadius: "50px",
+              cursor: "pointer",
+              fontWeight: "500"
+            }}
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => navigate("/signup")}
+            style={{
+              padding: "10px 28px",
+              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+              color: "#0a0a0a",
+              border: "none",
+              borderRadius: "50px",
+              fontWeight: "700",
+              cursor: "pointer"
+            }}
+          >
+            Get Started
           </button>
         </div>
+      </nav>
 
-        {/* SEARCH + FILTER */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          <input
-            placeholder="Search projects..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={styles.input}
-          />
+      {/* Hero Section */}
+      <div style={{ 
+        maxWidth: "1100px", 
+        margin: "0 auto", 
+        padding: "140px 20px 100px",
+        textAlign: "center" 
+      }}>
+        <h1 style={{
+          fontSize: "4.5rem",
+          lineHeight: "1.1",
+          marginBottom: "20px",
+          background: "linear-gradient(90deg, #00ff9f, #00e5d4, #00b8d4)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent"
+        }}>
+          Find Projects.<br />
+          Find Teammates.<br />
+          Build Together.
+        </h1>
 
-          <select
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
-            style={styles.input}
+        <p style={{ 
+          fontSize: "1.35rem", 
+          maxWidth: "700px", 
+          margin: "0 auto 40px",
+          color: "#b2dfdb"
+        }}>
+          The AI-powered platform where students turn ideas into real projects with the right teammates.
+        </p>
+
+        <div style={{ display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
+          <button 
+            onClick={() => navigate("/signup")}
+            style={{
+              padding: "18px 52px",
+              fontSize: "1.25rem",
+              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+              color: "#0a0a0a",
+              border: "none",
+              borderRadius: "9999px",
+              fontWeight: "700",
+              cursor: "pointer",
+              boxShadow: "0 10px 30px rgba(0,255,159,0.25)"
+            }}
           >
-            <option value="">All</option>
-            <option value="frontend">Frontend</option>
-            <option value="backend">Backend</option>
-            <option value="ui">UI/UX</option>
-            <option value="ai">AI</option>
-          </select>
+            Start Your Project
+          </button>
+
+          <button 
+            onClick={() => navigate("/login")}
+            style={{
+              padding: "18px 40px",
+              fontSize: "1.25rem",
+              background: "transparent",
+              color: "#e0f2f1",
+              border: "2px solid #80cbc4",
+              borderRadius: "9999px",
+              cursor: "pointer"
+            }}
+          >
+            Login
+          </button>
         </div>
-
-        {/* PROJECTS */}
-        {filteredProjects.map((p) => (
-          <div key={p.id} style={styles.card}>
-            <h3>{p.title}</h3>
-            <p>{p.description}</p>
-
-            <p style={{ color: "#94a3b8" }}>
-              👥 Members: {p.membersCount || 0}
-            </p>
-
-            <div style={styles.actions}>
-              <button onClick={() => toggleLike(p.id)} style={styles.btn}>
-                ❤️ Like
-              </button>
-
-              <button onClick={() => addComment(p.id)} style={styles.btn}>
-                💬 Comment
-              </button>
-
-              <button
-                onClick={() => applyToProject(p)}
-                style={styles.btn}
-              >
-                🚀 Apply
-              </button>
-
-              <button
-                onClick={() => nav(`/project/${p.id}`)}
-                style={styles.btnAlt}
-              >
-                Open
-              </button>
-
-              <button
-                onClick={() => nav(`/members/${p.id}`)}
-                style={styles.btnAlt}
-              >
-                Members
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
+
+      {/* Features */}
+      <div style={{ 
+        background: "rgba(15, 23, 42, 0.7)", 
+        padding: "80px 20px",
+        textAlign: "center"
+      }}>
+        <h2 style={{ fontSize: "2.6rem", marginBottom: "50px" }}>Why Students Choose SyncUp</h2>
+
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
+          gap: "30px",
+          maxWidth: "1100px",
+          margin: "0 auto"
+        }}>
+          <div style={{ background: "rgba(0,255,159,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(0,255,159,0.2)" }}>
+            <h3 style={{ color: "#00ff9f" }}>🤖 AI Copilot</h3>
+            <p>Turn your idea into a complete project plan instantly.</p>
+          </div>
+          <div style={{ background: "rgba(0,184,212,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(0,184,212,0.2)" }}>
+            <h3 style={{ color: "#00b8d4" }}>🤝 Smart Matching</h3>
+            <p>Find teammates with matching skills and interests.</p>
+          </div>
+          <div style={{ background: "rgba(128,203,196,0.08)", padding: "32px", borderRadius: "16px", border: "1px solid rgba(128,203,196,0.2)" }}>
+            <h3 style={{ color: "#80cbc4" }}>💬 Real-time Chat</h3>
+            <p>Collaborate seamlessly with your team.</p>
+          </div>
+        </div>
+      </div>
+
+      <footer style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+        © 2026 SyncUp • Made for Student Builders
+      </footer>
     </div>
   );
 }
-
-/* ================= STYLES ================= */
-const styles = {
-  page: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "#0b1120",
-    color: "#fff",
-  },
-  sidebar: {
-    width: "250px",
-    background: "#111827",
-    padding: "20px",
-  },
-  logo: { color: "#22d3ee" },
-  email: { fontSize: "12px", color: "#94a3b8" },
-  nav: { marginTop: "20px" },
-  navItem: { padding: "10px", cursor: "pointer", color: "#cbd5e1" },
-
-  main: { flex: 1, padding: "20px" },
-
-  hero: {
-    padding: "20px",
-    border: "1px solid #22d3ee",
-    borderRadius: "10px",
-    marginBottom: "20px",
-  },
-
-  heroTitle: { color: "#22d3ee" },
-
-  input: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #22d3ee",
-    flex: 1,
-  },
-
-  card: {
-    padding: "15px",
-    border: "1px solid #22d3ee",
-    marginBottom: "10px",
-    borderRadius: "10px",
-  },
-
-  actions: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "10px",
-    flexWrap: "wrap",
-  },
-
-  btn: {
-    padding: "8px",
-    background: "#22d3ee",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-  },
-
-  btnAlt: {
-    padding: "8px",
-    background: "#8b5cf6",
-    border: "none",
-    borderRadius: "6px",
-    color: "white",
-  },
-};
