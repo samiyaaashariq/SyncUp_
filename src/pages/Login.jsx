@@ -1,53 +1,125 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const login = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      nav("/dashboard");
+      navigate("/dashboard");
     } catch (err) {
-      alert(err.message);
+      setError("Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>SyncUp Login</h1>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0a0a0a, #001a14, #002b24)",
+      color: "#e0f2f1",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "Inter, sans-serif"
+    }}>
+      <div style={{
+        background: "rgba(15, 23, 42, 0.95)",
+        padding: "40px 30px",
+        borderRadius: "16px",
+        border: "1px solid #334155",
+        width: "100%",
+        maxWidth: "420px"
+      }}>
+        <h1 style={{
+          textAlign: "center",
+          fontSize: "2.8rem",
+          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          marginBottom: "10px"
+        }}>
+          SyncUp
+        </h1>
+        <p style={{ textAlign: "center", color: "#80cbc4", marginBottom: "30px" }}>
+          Welcome back, Builder
+        </p>
 
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "16px",
+              marginBottom: "15px",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "12px",
+              color: "#e0f2f1",
+              fontSize: "1.05rem"
+            }}
+            required
+          />
 
-      <br />
-      <br />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "16px",
+              marginBottom: "20px",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "12px",
+              color: "#e0f2f1",
+              fontSize: "1.05rem"
+            }}
+            required
+          />
 
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          {error && <p style={{ color: "#ff6b6b", textAlign: "center" }}>{error}</p>}
 
-      <br />
-      <br />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "16px",
+              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
+              color: "#0a0a0a",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "1.1rem",
+              fontWeight: "700",
+              cursor: loading ? "not-allowed" : "pointer",
+              marginBottom: "20px"
+            }}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-      <button onClick={login}>Login</button>
-
-      <p
-        style={{ cursor: "pointer" }}
-        onClick={() => nav("/signup")}
-      >
-        New user? Sign up
-      </p>
+        <p style={{ textAlign: "center", color: "#80cbc4" }}>
+          Don't have an account? <Link to="/signup" style={{ color: "#00ff9f" }}>Sign up</Link>
+        </p>
+      </div>
     </div>
   );
 }
