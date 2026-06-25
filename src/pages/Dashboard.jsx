@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import ProjectDiscovery from "../components/ProjectDiscovery";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -154,6 +155,7 @@ export default function Landing() {
           </div>
         </div>
       </div>
+      <ProjectDiscovery />
 
       <footer style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
         © 2026 SyncUp • Made for Student Builders
