@@ -80,7 +80,7 @@ export default function ChatBox() {
 
     try {
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AQ.Ab8RN6IN-anUefcDZHJ178R5rxwZlhcxNjY4hyVtY0IPlv9HQg",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg,
         {
           method: "POST",
           headers: {
@@ -91,7 +91,8 @@ export default function ChatBox() {
               {
                 parts: [
                   {
-                   text: `
+                  {
+  text: `
 You are SyncUp AI Assistant.
 
 You are also a SYSTEM DESIGN + VISUAL ARCHITECTURE ENGINE.
@@ -123,7 +124,7 @@ Keep it clean, structured, and diagram-like.
 USER:
 ${userMessage}
 `
-                    `,
+},
                   },
                 ],
               },
