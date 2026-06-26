@@ -1,303 +1,164 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 
 export default function Profile() {
-  const user = auth.currentUser;
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [projectsCount, setProjectsCount] = useState(0);
 
-  const [skills, setSkills] = useState([
-    "React",
-    "Firebase",
-    "JavaScript",
-    "Python",
-    "AI",
-    "Web Development",
-    "UI/UX",
-    "GitHub",
-  ]);
-
-  const [newSkill, setNewSkill] = useState("");
-
-  const addSkill = () => {
-    if (!newSkill.trim()) return;
-
-    setSkills([...skills, newSkill]);
-    setNewSkill("");
-  };
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+    } else {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "30px",
-        fontFamily: "Inter, sans-serif",
-        background: "#0b1120",
-        color: "#f8fafc",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1000px",
-          margin: "0 auto",
-          background: "#111827",
-          padding: "30px",
-          borderRadius: "20px",
-          border: "1px solid #1e293b",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-        }}
-      >
-        {/* PROFILE HEADER */}
+    <div style={styles.container}>
+      <div style={styles.glow} />
 
-        <h1
-          style={{
-            fontSize: "36px",
-            fontWeight: "900",
-            background: "linear-gradient(90deg, #22d3ee, #8b5cf6)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            marginBottom: "10px",
-          }}
-        >
-          👤 Samiya Shariq
-        </h1>
-
-        <h3
-          style={{
-            color: "#22d3ee",
-            marginBottom: "10px",
-          }}
-        >
-          🎓 B.Tech CSE Student
-        </h3>
-
-        <p
-          style={{
-            color: "#cbd5e1",
-            lineHeight: "1.8",
-            marginBottom: "15px",
-          }}
-        >
-          💡 Passionate about AI, Web Development, Startups,
-          Innovation, and Product Building.
-        </p>
-
-        <p
-          style={{
-            fontSize: "15px",
-            color: "#94a3b8",
-            marginBottom: "25px",
-          }}
-        >
-          📧 {user?.email}
-        </p>
-
-        {/* ACTIVITY OVERVIEW */}
-
-        <h2
-          style={{
-            marginBottom: "15px",
-            fontWeight: "800",
-            color: "#22d3ee",
-          }}
-        >
-          Activity Overview
-        </h2>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "15px",
-            flexWrap: "wrap",
-            marginBottom: "30px",
-          }}
-        >
-          <div
-            style={{
-              background: "#0f172a",
-              border: "1px solid #22d3ee",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px",
-            }}
-          >
-            <h2 style={{ color: "#22d3ee" }}>5</h2>
-            <p>🚀 Projects Created</p>
+      <div style={styles.content}>
+        <div style={styles.header}>
+          <div style={styles.avatar}>
+            {user?.email?.[0].toUpperCase() || "👤"}
           </div>
-
-          <div
-            style={{
-              background: "#0f172a",
-              border: "1px solid #22d3ee",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px",
-            }}
-          >
-            <h2 style={{ color: "#22d3ee" }}>3</h2>
-            <p>👥 Collaborations</p>
-          </div>
-
-          <div
-            style={{
-              background: "#0f172a",
-              border: "1px solid #22d3ee",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px",
-            }}
-          >
-            <h2 style={{ color: "#22d3ee" }}>8</h2>
-            <p>🛠 Skills</p>
-          </div>
-
-          <div
-            style={{
-              background: "#0f172a",
-              border: "1px solid #22d3ee",
-              padding: "20px",
-              borderRadius: "14px",
-              minWidth: "180px",
-            }}
-          >
-            <h2 style={{ color: "#22d3ee" }}>4</h2>
-            <p>🏆 Achievements</p>
+          <div>
+            <h1 style={styles.name}>{user?.email?.split('@')[0] || "Builder"}</h1>
+            <p style={styles.email}>{user?.email}</p>
           </div>
         </div>
 
-        {/* SKILLS */}
-
-        <h2
-          style={{
-            marginBottom: "15px",
-            fontWeight: "800",
-            color: "#22d3ee",
-          }}
-        >
-          Skills
-        </h2>
-
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
-          {skills.map((skill, index) => (
-            <span
-              key={index}
-              style={{
-                background: "#164e63",
-                color: "#22d3ee",
-                padding: "8px 14px",
-                borderRadius: "20px",
-                fontWeight: "600",
-              }}
-            >
-              {skill}
-            </span>
-          ))}
+        <div style={styles.stats}>
+          <div style={styles.statItem}>
+            <h3>Projects Joined</h3>
+            <p style={styles.statNumber}>{projectsCount}</p>
+          </div>
+          <div style={styles.statItem}>
+            <h3>Connections</h3>
+            <p style={styles.statNumber}>12</p>
+          </div>
+          <div style={styles.statItem}>
+            <h3>Badges Earned</h3>
+            <p style={styles.statNumber}>5</p>
+          </div>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
-          <input
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="Add skill"
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #334155",
-              background: "#0f172a",
-              color: "#ffffff",
-              marginRight: "10px",
-            }}
-          />
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>My Projects</h2>
+          <p style={{ color: "#b7c0d1", textAlign: "center" }}>No projects yet. Start one from the dashboard!</p>
+        </div>
 
-          <button
-            onClick={addSkill}
-            style={{
-              padding: "10px 16px",
-              background: "#22d3ee",
-              color: "#0f172a",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "700",
-              cursor: "pointer",
-            }}
-          >
-            Add Skill
+        <div style={styles.actions}>
+          <button style={styles.primaryBtn} onClick={() => navigate("/dashboard")}>
+            Back to Dashboard
+          </button>
+          <button style={styles.secondaryBtn} onClick={() => auth.signOut().then(() => navigate("/"))}>
+            Logout
           </button>
         </div>
-
-        {/* PORTFOLIO */}
-
-        <h2
-          style={{
-            marginTop: "30px",
-            marginBottom: "15px",
-            fontWeight: "800",
-            color: "#22d3ee",
-          }}
-        >
-          Portfolio
-        </h2>
-
-        <ul style={{ lineHeight: "2", color: "#cbd5e1" }}>
-          <li>GitHub: github.com/your-profile</li>
-          <li>LinkedIn: linkedin.com/in/your-profile</li>
-          <li>Portfolio Website: Coming Soon</li>
-        </ul>
-
-        {/* CURRENT PROJECT */}
-
-        <h2
-          style={{
-            marginTop: "30px",
-            marginBottom: "15px",
-            fontWeight: "800",
-            color: "#22d3ee",
-          }}
-        >
-          📌 Current Project
-        </h2>
-
-        <div
-          style={{
-            background: "#0f172a",
-            border: "1px solid #22d3ee",
-            padding: "20px",
-            borderRadius: "14px",
-          }}
-        >
-          <h3 style={{ color: "#22d3ee" }}>SyncUp</h3>
-
-          <p style={{ color: "#cbd5e1" }}>
-            A student collaboration platform that helps students
-            find teammates, discover projects, and build real-world
-            experience together.
-          </p>
-        </div>
-
-        {/* ACHIEVEMENTS */}
-
-        <h2
-          style={{
-            marginTop: "30px",
-            marginBottom: "15px",
-            fontWeight: "800",
-            color: "#22d3ee",
-          }}
-        >
-          Achievements
-        </h2>
-
-        <ul style={{ lineHeight: "2", color: "#cbd5e1" }}>
-          <li>CodeAlpha Python Intern</li>
-          <li>MLSA Community Member</li>
-          <li>Building SyncUp Platform</li>
-          <li>Open Source Learner</li>
-        </ul>
       </div>
     </div>
   );
 }
+
+/* ====================== PREMIUM STYLES ====================== */
+const styles = {
+  container: {
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "Inter, system-ui, sans-serif",
+    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)",
+    color: "#fff",
+    padding: "40px 20px",
+    position: "relative",
+  },
+  glow: {
+    position: "absolute",
+    inset: 0,
+    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.15), transparent 60%), 
+                 radial-gradient(circle at 80% 30%, rgba(79,140,255,0.12), transparent 70%)`,
+    zIndex: 0,
+  },
+  content: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    position: "relative",
+    zIndex: 1,
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "24px",
+    marginBottom: "48px",
+  },
+  avatar: {
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "32px",
+    fontWeight: 700,
+  },
+  name: {
+    fontSize: "28px",
+    fontWeight: 700,
+  },
+  email: {
+    color: "#b7c0d1",
+    fontSize: "15px",
+  },
+  stats: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "20px",
+    marginBottom: "60px",
+  },
+  statItem: {
+    background: "rgba(15,23,42,0.85)",
+    border: "1px solid rgba(79,140,255,0.25)",
+    borderRadius: "20px",
+    padding: "24px",
+    textAlign: "center",
+  },
+  statNumber: {
+    fontSize: "32px",
+    fontWeight: 700,
+    color: "#ec4899",
+    margin: "8px 0 0",
+  },
+  section: {
+    marginBottom: "60px",
+  },
+  sectionTitle: {
+    fontSize: "24px",
+    marginBottom: "20px",
+  },
+  actions: {
+    display: "flex",
+    gap: "16px",
+    flexWrap: "wrap",
+  },
+  primaryBtn: {
+    padding: "14px 32px",
+    borderRadius: "999px",
+    border: "none",
+    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
+    color: "#fff",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  secondaryBtn: {
+    padding: "14px 28px",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.3)",
+    background: "transparent",
+    color: "#fff",
+    cursor: "pointer",
+  },
+};
