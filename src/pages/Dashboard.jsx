@@ -13,6 +13,7 @@ export default function DashboardV2() {
   const [projects, setProjects] = useState([]);
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
+  const [isLightMode, setIsLightMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -144,6 +145,15 @@ export default function DashboardV2() {
           <button className="menu-btn" onClick={() => navigate("/notifications")}>Notifications</button>
           <button className="menu-btn" onClick={() => navigate("/ai-copilot")}>AI Copilot</button>
           <button className="menu-btn" onClick={() => navigate("/profile")}>Profile</button>
+          <button 
+  className="toggle-btn"
+  onClick={() => {
+    setIsLightMode(!isLightMode);
+    document.querySelector('.dashboard-container').classList.toggle('light');
+  }}
+>
+  {isLightMode ? "🌙 Dark" : "☀️ Light"}
+</button>
         </div>
       </aside>
 
