@@ -12,11 +12,11 @@ export default function DashboardV2() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const projectsRef = useRef(null);
   const teamRef = useRef(null);
 
-  // Fetch projects
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "projects"), (snapshot) => {
       setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -38,28 +38,30 @@ export default function DashboardV2() {
     setShowCreateModal(false);
   };
 
-  const handleApply = (id) => {
-    alert("Application sent to project " + id);
-  };
+  const handleApply = (id) => alert("Application sent to project " + id);
 
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="logo">SyncUp</div>
         <div className="sidebar-menu">
-          <button className="menu-btn" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>🏠 Dashboard</button>
-          <button className="menu-btn" onClick={() => projectsRef.current?.scrollIntoView({behavior:'smooth'})}>🔍 Explore Projects</button>
-          <button className="menu-btn" onClick={() => teamRef.current?.scrollIntoView({behavior:'smooth'})}>🤝 Team Finder</button>
+          <button className="menu-btn" onClick={() => { window.scrollTo({top:0, behavior:'smooth'}); setSidebarOpen(false); }}>🏠 Dashboard</button>
+          <button className="menu-btn" onClick={() => { projectsRef.current?.scrollIntoView({behavior:'smooth'}); setSidebarOpen(false); }}>🔍 Explore Projects</button>
+          <button className="menu-btn" onClick={() => { teamRef.current?.scrollIntoView({behavior:'smooth'}); setSidebarOpen(false); }}>🤝 Team Finder</button>
           <button className="menu-btn" onClick={() => navigate("/chat")}>💬 Messages</button>
           <button className="menu-btn" onClick={() => navigate("/ai-copilot")}>🤖 AI Copilot</button>
           <button className="menu-btn" onClick={() => navigate("/profile")}>👤 Profile</button>
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && <div style={{position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:15}} onClick={() => setSidebarOpen(false)} />}
+
       {/* Main Content */}
       <main className="main-content">
         <div className="topbar">
+          <button className="hamburger" onClick={() => setSidebarOpen(!sidebarOpen)} style={{fontSize:"28px", background:"none", border:"none", color:"white", cursor:"pointer"}}>☰</button>
           <h1>Welcome back 👋</h1>
           <button onClick={() => setShowCreateModal(true)}>+ Create Project</button>
         </div>
@@ -70,6 +72,7 @@ export default function DashboardV2() {
           <div className="projects-grid">
             <div className="stat-card">Total Projects: {projects.length}</div>
             <div className="stat-card">Active Teams: 12</div>
+            <div className="stat-card">Connections: 8</div>
           </div>
         </div>
 
@@ -77,7 +80,7 @@ export default function DashboardV2() {
         <div className="section">
           <h2>Recommended Projects</h2>
           <div className="projects-grid">
-            {["AI Resume Analyzer", "Hackathon Finder", "AR Learning Hub"].map((name, i) => (
+            {["AI Resume Analyzer", "Hackathon Finder", "AR/VR Learning Hub"].map((name, i) => (
               <div key={i} className="recommended-card">
                 <h3>{name}</h3>
                 <button onClick={() => alert("Launching " + name)}>Launch Idea</button>
@@ -91,8 +94,8 @@ export default function DashboardV2() {
           <h2>Find Teammates</h2>
           <div className="projects-grid">
             {[
-              {name: "Sarah Khan", role: "Designer"},
-              {name: "Ali Ahmed", role: "Developer"}
+              {name: "Sarah Khan", role: "UI/UX Designer"},
+              {name: "Ali Ahmed", role: "Frontend Developer"}
             ].map((t, i) => (
               <div key={i} className="team-card">
                 <h3>{t.name}</h3>
@@ -123,9 +126,9 @@ export default function DashboardV2() {
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>Create Project</h2>
-            <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Project Name" />
-            <textarea value={projectDesc} onChange={(e) => setProjectDesc(e.target.value)} placeholder="Description" />
+            <h2>Create New Project</h2>
+            <input value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="Project Name" />
+            <textarea value={projectDesc} onChange={e => setProjectDesc(e.target.value)} placeholder="Description" />
             <button onClick={handleCreateProject}>Create</button>
             <button onClick={() => setShowCreateModal(false)}>Cancel</button>
           </div>
