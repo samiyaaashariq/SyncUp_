@@ -1,8 +1,8 @@
 /* =========================
-   FULL-SCREEN FIX + GLOBAL
+   FULL-SCREEN FIX + LANDING-STYLE THEME
 ========================= */
 
-html, body, #root {
+html, body, #root, .dashboard-container {
   margin: 0 !important;
   padding: 0 !important;
   width: 100% !important;
@@ -15,66 +15,48 @@ html, body, #root {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: linear-gradient(135deg, #0f0519 0%, #1a0f2e 45%, #0c0a1f 100%);
+  background: linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%);
+  color: #fff;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
-
+/* Sidebar */
 .sidebar {
   width: 260px;
-  background: rgba(10, 6, 22, 0.95);
+  background: rgba(5, 8, 20, 0.95);
   backdrop-filter: blur(16px);
   padding: 32px 20px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(167, 139, 250, 0.18);
-  z-index: 10;
+  border-right: 1px solid rgba(79, 140, 255, 0.2);
 }
 
 .logo {
-  font-size: 24px;
-  font-weight: 700;
-  color: #c4b5fd;
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ec4899, #4f8cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 48px;
-  text-shadow: 0 0 12px rgba(167, 139, 250, 0.5);
-}
-
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .menu-btn {
-  background: transparent;
-  border: none;
-  color: #ddd6fe;
-  text-align: left;
   padding: 14px 18px;
+  margin-bottom: 6px;
   border-radius: 12px;
-  cursor: pointer;
-  font-size: 15px;
+  font-size: 15.5px;
   transition: all 0.25s;
 }
 
-.menu-btn:hover,
-.menu-btn.active {
-  background: rgba(167, 139, 250, 0.18);
+.menu-btn:hover {
+  background: rgba(236, 72, 153, 0.15);
   color: white;
-  transform: translateX(6px);
 }
 
-/* =========================
-   MAIN CONTENT – VERY SPACIOUS
-========================= */
-
+/* Main Content – Very Spacious */
 .main-content {
   flex: 1;
-  padding: 52px 44px 80px;
+  padding: 52px 44px 100px;
   overflow-y: auto;
-  background: transparent;
 }
 
 /* Topbar */
@@ -83,28 +65,27 @@ html, body, #root {
 }
 
 .welcome-title {
-  font-size: 29px;
+  font-size: 30px;
   font-weight: 800;
-  color: #c4b5fd;
+  line-height: 1.1;
 }
 
 .welcome-subtitle {
-  color: #e0d0ff;
-  font-size: 15.5px;
+  font-size: 16px;
+  color: #b7c0d1;
+  margin-top: 8px;
 }
 
-/* Sections with generous spacing */
+/* Sections with lots of space */
 .section {
-  margin-bottom: 96px;   /* ← Lots of space after each section */
+  margin-bottom: 100px;
 }
 
 .section h2 {
-  font-size: 26px;
+  font-size: 27px;
   font-weight: 700;
-  color: #c4b5fd;
   margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(167,139,250,0.15);
+  color: #fff;
 }
 
 /* Grids */
@@ -115,49 +96,71 @@ html, body, #root {
   gap: 32px;
 }
 
-/* Cards – Airy & Clean */
+/* Cards */
 .stat-card, .project-card, .recommended-card, .team-card {
   padding: 28px;
   border-radius: 22px;
   transition: all 0.3s;
 }
 
-.stat-card:hover, .project-card:hover, .recommended-card:hover, .team-card:hover {
-  transform: translateY(-6px);
+.project-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(79, 140, 255, 0.25);
 }
 
-/* Other styles (keep your existing button, tag, modal styles or add them here) */
+.recommended-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.team-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(79, 140, 255, 0.25);
+}
+
+/* Enhanced Fonts & Elements */
+h1, h2, h3 {
+  font-family: "Inter", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
 .tag {
   padding: 6px 13px;
   font-size: 13px;
+  background: rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  color: #ec4899;
 }
 
 .primary-btn {
-  padding: 12px 22px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #ec4899, #4f8cff);
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-weight: 600;
 }
 
 .secondary-btn {
-  padding: 12px 22px;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 13px 24px;
+  border-radius: 999px;
 }
 
 /* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.65);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .modal {
-  background: rgba(10, 6, 22, 0.97);
-  border: 1px solid rgba(167,139,250,0.4);
+  background: rgba(15, 23, 42, 0.95);
   padding: 40px;
   border-radius: 24px;
-  width: 90%;
-  max-width: 480px;
+  max-width: 460px;
+  border: 1px solid rgba(79,140,255,0.3);
 }
