@@ -1,12 +1,12 @@
 /* =========================
-   FULL-SCREEN FIX + LANDING-STYLE THEME
+   FULL-SCREEN + MOBILE RESPONSIVE
 ========================= */
 
 html, body, #root, .dashboard-container {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-  overflow-x: hidden !important;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -16,7 +16,6 @@ html, body, #root, .dashboard-container {
   width: 100vw;
   overflow: hidden;
   background: linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%);
-  color: #fff;
 }
 
 /* Sidebar */
@@ -28,139 +27,116 @@ html, body, #root, .dashboard-container {
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(79, 140, 255, 0.2);
+  transition: all 0.3s;
+  z-index: 20;
 }
 
-.logo {
-  font-size: 26px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #ec4899, #4f8cff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 48px;
+/* Mobile Sidebar */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    height: 100vh;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+  }
+  .sidebar.open {
+    left: 0;
+  }
 }
 
-.menu-btn {
-  padding: 14px 18px;
-  margin-bottom: 6px;
-  border-radius: 12px;
-  font-size: 15.5px;
-  transition: all 0.25s;
-}
-
-.menu-btn:hover {
-  background: rgba(236, 72, 153, 0.15);
-  color: white;
-}
-
-/* Main Content – Very Spacious */
+/* Main Content */
 .main-content {
   flex: 1;
-  padding: 52px 44px 100px;
+  padding: 52px 44px 80px;
   overflow-y: auto;
+  transition: padding 0.3s;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 24px 20px;
+  }
 }
 
 /* Topbar */
 .topbar {
-  margin-bottom: 64px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.welcome-title {
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1.1;
+@media (max-width: 768px) {
+  .topbar {
+    margin-bottom: 32px;
+  }
+  .search-box {
+    width: 100%;
+  }
 }
 
-.welcome-subtitle {
-  font-size: 16px;
-  color: #b7c0d1;
-  margin-top: 8px;
-}
-
-/* Sections with lots of space */
+/* Sections & Grids */
 .section {
-  margin-bottom: 100px;
+  margin-bottom: 80px;
 }
 
-.section h2 {
-  font-size: 27px;
-  font-weight: 700;
-  margin-bottom: 32px;
-  color: #fff;
+@media (max-width: 768px) {
+  .section {
+    margin-bottom: 60px;
+  }
 }
 
-/* Grids */
 .projects-grid,
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .projects-grid,
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 /* Cards */
 .stat-card, .project-card, .recommended-card, .team-card {
-  padding: 28px;
-  border-radius: 22px;
-  transition: all 0.3s;
+  padding: 24px;
+  border-radius: 20px;
 }
 
-.project-card {
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(79, 140, 255, 0.25);
+@media (max-width: 768px) {
+  .stat-card, .project-card, .recommended-card, .team-card {
+    padding: 20px;
+  }
 }
 
-.recommended-card {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(236, 72, 153, 0.3);
+/* Buttons */
+.primary-btn, .secondary-btn {
+  padding: 12px 20px;
+  font-size: 14.5px;
 }
 
-.team-card {
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(79, 140, 255, 0.25);
+/* Hamburger Button (for mobile) */
+.hamburger {
+  display: none;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
 }
 
-/* Enhanced Fonts & Elements */
-h1, h2, h3 {
-  font-family: "Inter", system-ui, sans-serif;
-  letter-spacing: -0.02em;
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
 }
 
-.tag {
-  padding: 6px 13px;
-  font-size: 13px;
-  background: rgba(236, 72, 153, 0.2);
-  border: 1px solid rgba(236, 72, 153, 0.4);
-  color: #ec4899;
-}
-
-.primary-btn {
-  background: linear-gradient(135deg, #ec4899, #4f8cff);
-  padding: 13px 24px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.secondary-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.3);
-  padding: 13px 24px;
-  border-radius: 999px;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
+/* Modal remains the same */
 .modal {
-  background: rgba(15, 23, 42, 0.95);
-  padding: 40px;
-  border-radius: 24px;
-  max-width: 460px;
-  border: 1px solid rgba(79,140,255,0.3);
+  padding: 32px;
+  max-width: 90%;
 }
