@@ -25,11 +25,12 @@ export default function Landing() {
           Build Together.
         </h1>
         <p style={styles.subtitle}>
-          The premium platform where students and builders discover real projects, match with perfect teammates, and ship amazing products.
+          The premium collaboration platform where students and builders discover real projects, 
+          match with perfect teammates, and ship portfolio-worthy products.
         </p>
         <div style={{ marginTop: "48px", display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
           <button style={styles.primaryBtn} onClick={() => navigate("/signup")}>
-            Start Your First Project
+            Start Building Now
           </button>
           <button style={styles.secondaryBtn} onClick={() => navigate("/login")}>
             I already have an account
@@ -37,20 +38,20 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Features */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Why builders choose SyncUp</h2>
+        <h2 style={styles.sectionTitle}>Why builders love SyncUp</h2>
         <div style={styles.featuresGrid}>
           {[
-            { icon: "🚀", title: "Discover Real Projects", desc: "Browse live startup and hackathon ideas from students worldwide." },
-            { icon: "🤝", title: "Smart Team Matching", desc: "AI-powered suggestions based on skills, interests, and availability." },
-            { icon: "💬", title: "Seamless Collaboration", desc: "Chat, share code, tasks, and files in one place." },
-            { icon: "📈", title: "Build Your Portfolio", desc: "Every project becomes a verified achievement." }
+            { icon: "🚀", title: "Discover Real Projects", desc: "Browse live startup and hackathon ideas." },
+            { icon: "🤝", title: "Smart Matching", desc: "AI-powered teammate suggestions." },
+            { icon: "💬", title: "Seamless Collaboration", desc: "Chat, tasks, and file sharing in one place." },
+            { icon: "📈", title: "Build Portfolio", desc: "Every project becomes a verified achievement." }
           ].map((f, i) => (
             <div key={i} style={styles.featureCard}>
-              <div style={{ fontSize: "36px", marginBottom: "16px" }}>{f.icon}</div>
-              <h3 style={styles.featureTitle}>{f.title}</h3>
-              <p style={styles.featureDesc}>{f.desc}</p>
+              <div style={{ fontSize: "38px", marginBottom: "16px" }}>{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
             </div>
           ))}
         </div>
@@ -59,14 +60,14 @@ export default function Landing() {
       {/* Final CTA */}
       <div style={styles.finalCta}>
         <button style={styles.primaryBtn} onClick={() => navigate("/signup")}>
-          Join the movement — Start building today →
+          Join 1000+ builders today →
         </button>
       </div>
     </div>
   );
 }
 
-/* ====================== STYLES ====================== */
+/* ====================== PREMIUM STYLES ====================== */
 const styles = {
   container: {
     minHeight: "100vh",
@@ -80,7 +81,8 @@ const styles = {
   glow: {
     position: "absolute",
     inset: 0,
-    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.2), transparent 60%), radial-gradient(circle at 80% 30%, rgba(79,140,255,0.18), transparent 70%)`,
+    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.18), transparent 60%), 
+                 radial-gradient(circle at 80% 30%, rgba(79,140,255,0.12), transparent 70%)`,
     zIndex: 0,
   },
   navbar: {
@@ -149,13 +151,12 @@ const styles = {
     zIndex: 2,
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "0 5% 80px",
+    padding: "0 5% 100px",
   },
   sectionTitle: {
     fontSize: "27px",
     textAlign: "center",
     marginBottom: "48px",
-    color: "#fff",
   },
   featuresGrid: {
     display: "grid",
@@ -168,14 +169,6 @@ const styles = {
     borderRadius: "20px",
     padding: "36px 28px",
     textAlign: "center",
-  },
-  featureTitle: {
-    fontSize: "20px",
-    marginBottom: "12px",
-  },
-  featureDesc: {
-    color: "#b7c0d1",
-    fontSize: "15px",
   },
   finalCta: {
     textAlign: "center",
