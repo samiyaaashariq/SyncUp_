@@ -1,20 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 
 export default function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [projectsCount, setProjectsCount] = useState(0);
+  const [stats, setStats] = useState({
+    projects: 0,
+    connections: 0,
+    applications: 0,
+  });
 
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (currentUser) {
       setUser(currentUser);
+
+      // Projects
+      const projectsQuery = query(
+        collection(db, "projects"),
+        where("members", "array-contains", currentUser.email)
+      );
+      const unsubscribeProjects = onSnapshot(projectsQuery, (snapshot) => {
+        setStats(prev => ({ ...prev, projects: snapshot.size }));
+      });
+
+      // Applications
+      const applicationsQuery = query(
+        collection(db, "applications"),
+        where("userEmail", "==", currentUser.email)
+      );
+      const unsubscribeApplications = onSnapshot(applicationsQuery, (snapshot) => {
+        setStats(prev => ({ ...prev, applications: snapshot.size }));
+      });
+
+      // Connections (real-time)
+      const connectionsQuery = query(
+        collection(db, "connections"),
+        where("from", "==", currentUser.email)
+      );
+      const unsubscribeConnections = onSnapshot(connectionsQuery, (snapshot) => {
+        setStats(prev => ({ ...prev, connections: snapshot.size }));
+      });
+
+      return () => {
+        unsubscribeProjects();
+        unsubscribeApplications();
+        unsubscribeConnections();
+      };
     } else {
       navigate("/login");
     }
   }, [navigate]);
+
+  const handleLogout = () => {
+    auth.signOut().then(() => navigate("/"));
+  };
 
   return (
     <div style={styles.container}>
@@ -34,28 +76,28 @@ export default function Profile() {
         <div style={styles.stats}>
           <div style={styles.statItem}>
             <h3>Projects Joined</h3>
-            <p style={styles.statNumber}>{projectsCount}</p>
+            <p style={styles.statNumber}>{stats.projects}</p>
           </div>
           <div style={styles.statItem}>
             <h3>Connections</h3>
-            <p style={styles.statNumber}>12</p>
+            <p style={styles.statNumber}>{stats.connections}</p>
           </div>
           <div style={styles.statItem}>
-            <h3>Badges Earned</h3>
-            <p style={styles.statNumber}>5</p>
+            <h3>Applications Sent</h3>
+            <p style={styles.statNumber}>{stats.applications}</p>
           </div>
         </div>
 
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>My Projects</h2>
-          <p style={{ color: "#b7c0d1", textAlign: "center" }}>No projects yet. Start one from the dashboard!</p>
+          <h2 style={styles.sectionTitle}>My Activity</h2>
+          <p style={{ color: "#b7c0d1", textAlign: "center" }}>Your recent contributions will appear here.</p>
         </div>
 
         <div style={styles.actions}>
           <button style={styles.primaryBtn} onClick={() => navigate("/dashboard")}>
             Back to Dashboard
           </button>
-          <button style={styles.secondaryBtn} onClick={() => auth.signOut().then(() => navigate("/"))}>
+          <button style={styles.secondaryBtn} onClick={handleLogout}>
             Logout
           </button>
         </div>
@@ -64,7 +106,7 @@ export default function Profile() {
   );
 }
 
-/* ====================== PREMIUM STYLES ====================== */
+/* ====================== STYLES ====================== */
 const styles = {
   container: {
     minHeight: "100vh",
