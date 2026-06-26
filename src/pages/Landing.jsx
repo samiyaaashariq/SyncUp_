@@ -1,402 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncUp • Build Together</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap');
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { 
-  Rocket, Users, MessageSquare, Award, 
-  ArrowRight, Sparkles, Zap, Target 
-} from 'lucide-react';
+        :root {
+            --cyan: #67e8f9;
+            --pink: #ec4899;
+            --lime: #a3e635;
+        }
 
-export default function ImmersiveLanding() {
-  const navigate = useNavigate();
-  const heroRef = useRef(null);
-  const [statsInView, setStatsInView] = useState(false);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  // Scroll-based transforms for parallax
-  const { scrollYProgress } = useScroll();
-  const heroBgY = useTransform(scrollYProgress, [0, 0.5], [0, -150]);
-  const floatingY1 = useTransform(scrollYProgress, [0, 1], [0, -80]);
-  const floatingY2 = useTransform(scrollYProgress, [0, 1], [0, -120]);
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
 
-  // Count-up animation for stats
-  const AnimatedCounter = ({ end, suffix = '' }) => {
-    const [count, setCount] = useState(0);
-    const ref = useRef(null);
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
 
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
+        .hero-bg {
+            background: radial-gradient(circle at 50% 30%, rgba(103, 232, 249, 0.18) 0%, transparent 70%);
+        }
+
+        .neon-text {
+            background: linear-gradient(90deg, var(--cyan), var(--pink), var(--lime));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .floating-orb {
+            animation: floatOrb 25s ease-in-out infinite;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(60px, -60px) rotate(8deg); }
+        }
+
+        .card {
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            background: #111111;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card:hover {
+            transform: translateY(-16px);
+            border-color: #67e8f9;
+            box-shadow: 0 30px 60px -15px rgba(103, 232, 249, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #67e8f9, #ec4899);
+            color: black;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(103, 232, 249, 0.6);
+        }
+
+        .section-header {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(to right, #67e8f9, #ec4899);
+            z-index: 100;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+
+    <!-- NAV -->
+    <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(10,10,10,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #67e8f9, #ec4899, #a3e635); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: black; font-size: 1.4rem;">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+                <span style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.05em;" class="title-font">SyncUp</span>
+            </div>
+            
+            <div style="display: none; gap: 2rem; font-size: 0.95rem; font-weight: 500;" class="md-flex">
+                <a href="#features" style="color: white; text-decoration: none;">Features</a>
+                <a href="#how" style="color: white; text-decoration: none;">How it Works</a>
+                <a href="#stats" style="color: white; text-decoration: none;">Impact</a>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button onclick="document.getElementById('login').scrollIntoView({ behavior: 'smooth' })" 
+                        style="padding: 10px 24px; color: white; border: none; background: transparent; font-weight: 500; cursor: pointer;">
+                    Log in
+                </button>
+                <button onclick="document.getElementById('cta').scrollIntoView({ behavior: 'smooth' })" 
+                        class="btn-primary" 
+                        style="padding: 12px 28px; border-radius: 9999px; display: flex; align-items: center; gap: 10px; border: none; cursor: pointer;">
+                    Start Building Now 
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section style="min-height: 100vh; padding-top: 80px; position: relative; display: flex; align-items: center; overflow: hidden;" class="hero-bg">
+        <!-- Orbs -->
+        <div style="position: absolute; top: 15%; left: 8%; width: 380px; height: 380px; background: #67e8f9; border-radius: 50%; filter: blur(80px); opacity: 0.12;" class="floating-orb"></div>
+        <div style="position: absolute; bottom: 20%; right: 10%; width: 520px; height: 520px; background: #ec4899; border-radius: 50%; filter: blur(90px); opacity: 0.1;" class="floating-orb" id="orb2"></div>
+
+        <div style="max-width: 1100px; margin: 0 auto; padding: 0 24px; text-align: center; position: relative; z-index: 10;">
+            <div style="display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 8px 24px; border-radius: 9999px; margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">
+                <div style="width: 8px; height: 8px; background: #a3e635; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                BETA LIVE
+            </div>
+
+            <h1 style="font-size: 4.8rem; line-height: 1.05; font-weight: 700; letter-spacing: -0.06em;" class="title-font">
+                BUILD<br>
+                <span class="neon-text">TOGETHER</span>
+            </h1>
+
+            <p style="font-size: 1.65rem; max-width: 720px; margin: 1.5rem auto; color: #ddd; font-weight: 300;">
+                The premium collaboration platform where students and builders discover real projects, match with perfect teammates, and ship portfolio-worthy products.
+            </p>
+
+            <div style="margin-top: 3rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; justify-content: center;">
+                <button onclick="document.getElementById('cta').scrollIntoView({ behavior: 'smooth' })" 
+                        class="btn-primary" 
+                        style="font-size: 1.25rem; padding: 22px 52px; border-radius: 9999px;">
+                    Start Building Now
+                </button>
+                <button onclick="document.getElementById('login').scrollIntoView({ behavior: 'smooth' })" 
+                        style="font-size: 1.1rem; padding: 18px 42px; background: transparent; border: 2px solid rgba(255,255,255,0.3); border-radius: 9999px; color: white; cursor: pointer;">
+                    I already have an account
+                </button>
+            </div>
+        </div>
+
+        <div style="position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.4); font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+            Scroll to explore <span style="animation: bounce 1.8s infinite;">↓</span>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" style="padding: 7rem 0; background: #0a0a0a;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <div style="color: #67e8f9; font-size: 0.95rem; letter-spacing: 3px; margin-bottom: 1rem;">POWERFUL TOOLS FOR BUILDERS</div>
+                <h2 style="font-size: 3.2rem;" class="title-font">Why builders love SyncUp</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <div class="card" style="padding: 2.5rem; border-radius: 28px;">
+                    <div style="width: 78px; height: 78px; background: rgba(103,232,249,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-rocket" style="font-size: 2.6rem; color: #67e8f9;"></i>
+                    </div>
+                    <h3 style="font-size: 1.65rem; margin-bottom: 1rem;">Discover Real Projects</h3>
+                    <p style="color: #aaa; font-size: 1.1rem;">Browse live startup and hackathon ideas.</p>
+                </div>
+
+                <div class="card" style="padding: 2.5rem; border-radius: 28px;">
+                    <div style="width: 78px; height: 78px; background: rgba(236,72,153,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-users" style="font-size: 2.6rem; color: #ec4899;"></i>
+                    </div>
+                    <h3 style="font-size: 1.65rem; margin-bottom: 1rem;">Smart Matching</h3>
+                    <p style="color: #aaa; font-size: 1.1rem;">AI-powered teammate suggestions.</p>
+                </div>
+
+                <div class="card" style="padding: 2.5rem; border-radius: 28px;">
+                    <div style="width: 78px; height: 78px; background: rgba(163,230,53,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-comments" style="font-size: 2.6rem; color: #a3e635;"></i>
+                    </div>
+                    <h3 style="font-size: 1.65rem; margin-bottom: 1rem;">Seamless Collaboration</h3>
+                    <p style="color: #aaa; font-size: 1.1rem;">Chat, tasks, and file sharing in one place.</p>
+                </div>
+
+                <div class="card" style="padding: 2.5rem; border-radius: 28px;">
+                    <div style="width: 78px; height: 78px; background: rgba(103,232,249,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-trophy" style="font-size: 2.6rem; color: #67e8f9;"></i>
+                    </div>
+                    <h3 style="font-size: 1.65rem; margin-bottom: 1rem;">Build Portfolio</h3>
+                    <p style="color: #aaa; font-size: 1.1rem;">Every project becomes a verified achievement.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" style="padding: 7rem 0; background: #111;">
+        <div style="max-width: 1100px; margin: 0 auto; padding: 0 24px; text-align: center;">
+            <h2 style="font-size: 3.2rem; margin-bottom: 1.5rem;" class="title-font">How SyncUp Works</h2>
+            <p style="font-size: 1.3rem; color: #bbb; max-width: 500px; margin: 0 auto 4rem;">From idea to shipped product — beautifully simple.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2.5rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 5.5rem; font-weight: 700; color: rgba(255,255,255,0.08); margin-bottom: 1rem;">01</div>
+                    <div style="width: 90px; height: 90px; margin: 0 auto 1.5rem; background: rgba(103,232,249,0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-bullseye" style="font-size: 3rem; color: #67e8f9;"></i>
+                    </div>
+                    <h3 style="font-size: 1.7rem; margin-bottom: 0.8rem;">Discover</h3>
+                    <p style="color: #aaa;">Browse exciting projects and hackathon challenges.</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 5.5rem; font-weight: 700; color: rgba(255,255,255,0.08); margin-bottom: 1rem;">02</div>
+                    <div style="width: 90px; height: 90px; margin: 0 auto 1.5rem; background: rgba(236,72,153,0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-users" style="font-size: 3rem; color: #ec4899;"></i>
+                    </div>
+                    <h3 style="font-size: 1.7rem; margin-bottom: 0.8rem;">Match</h3>
+                    <p style="color: #aaa;">AI finds your perfect teammates.</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 5.5rem; font-weight: 700; color: rgba(255,255,255,0.08); margin-bottom: 1rem;">03</div>
+                    <div style="width: 90px; height: 90px; margin: 0 auto 1.5rem; background: rgba(163,230,53,0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-handshake" style="font-size: 3rem; color: #a3e635;"></i>
+                    </div>
+                    <h3 style="font-size: 1.7rem; margin-bottom: 0.8rem;">Collaborate</h3>
+                    <p style="color: #aaa;">Real-time chat, tasks &amp; files.</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 5.5rem; font-weight: 700; color: rgba(255,255,255,0.08); margin-bottom: 1rem;">04</div>
+                    <div style="width: 90px; height: 90px; margin: 0 auto 1.5rem; background: rgba(103,232,249,0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-trophy" style="font-size: 3rem; color: #67e8f9;"></i>
+                    </div>
+                    <h3 style="font-size: 1.7rem; margin-bottom: 0.8rem;">Ship &amp; Showcase</h3>
+                    <p style="color: #aaa;">Launch and build your verified portfolio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="stats" style="padding: 5rem 0; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div style="max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 3rem; text-align: center;">
+            <div>
+                <div id="count1" style="font-size: 4.2rem; font-weight: 700; letter-spacing: -2px;">1240</div>
+                <div style="color: #888; margin-top: 8px;">Projects Discovered</div>
+            </div>
+            <div>
+                <div id="count2" style="font-size: 4.2rem; font-weight: 700; letter-spacing: -2px;">8750</div>
+                <div style="color: #888; margin-top: 8px;">Teammates Matched</div>
+            </div>
+            <div>
+                <div id="count3" style="font-size: 4.2rem; font-weight: 700; letter-spacing: -2px;">420</div>
+                <div style="color: #888; margin-top: 8px;">Products Shipped</div>
+            </div>
+            <div>
+                <div id="count4" style="font-size: 4.2rem; font-weight: 700; letter-spacing: -2px;">98</div>
+                <div style="color: #888; margin-top: 8px;">Success Rate %</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section id="cta" style="padding: 9rem 0; text-align: center; position: relative;">
+        <div style="max-width: 800px; margin: 0 auto; padding: 0 24px;">
+            <h2 style="font-size: 3.8rem; line-height: 1.1;" class="title-font">Ready to build something amazing?</h2>
+            <p style="font-size: 1.5rem; color: #bbb; margin: 1.5rem 0 3rem;">Join 1000+ builders turning ideas into reality.</p>
+            
+            <button onclick="alert('Welcome to SyncUp! 🎉 (Connect your signup flow here)')" 
+                    class="btn-primary" 
+                    style="font-size: 1.4rem; padding: 24px 60px; border-radius: 9999px;">
+                Join 1000+ builders today →
+            </button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="border-top: 1px solid rgba(255,255,255,0.08); padding: 3rem 0; text-align: center; color: #666; font-size: 0.95rem;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div>© 2026 SyncUp. All rights reserved.</div>
+            <div style="display: flex; gap: 2rem;">
+                <a href="#" style="color: #666; text-decoration: none;">Privacy</a>
+                <a href="#" style="color: #666; text-decoration: none;">Terms</a>
+                <a href="#" style="color: #666; text-decoration: none;">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Progress bar
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.getElementById('progressBar').style.width = scrollPercent + '%';
+        });
+
+        // Counter Animation
+        function animateCounter(id, target, duration = 1800) {
             let start = 0;
-            const duration = 1800;
-            const increment = Math.ceil(end / (duration / 16));
+            const increment = target / (duration / 16);
+            const el = document.getElementById(id);
             
             const timer = setInterval(() => {
-              start += increment;
-              if (start >= end) {
-                setCount(end);
-                clearInterval(timer);
-              } else {
-                setCount(start);
-              }
-            }, 16);
-            
-            return () => clearInterval(timer);
-          }
-        },
-        { threshold: 0.6 }
-      );
-
-      if (ref.current) observer.observe(ref.current);
-      return () => observer.disconnect();
-    }, [end]);
-
-    return <span ref={ref}>{count}{suffix}</span>;
-  };
-
-  const handleStartBuilding = () => {
-    navigate('/signup'); // Adjust route as per your app
-  };
-
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
-  return (
-    <div className="bg-[#0a0a0a] text-white overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#67e8f9] via-[#ec4899] to-[#a3e635] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-black" />
-            </div>
-            <span className="text-2xl font-bold tracking-tighter">SyncUp</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-            <a href="#features" className="hover:text-[#67e8f9] transition-colors">Features</a>
-            <a href="#how" className="hover:text-[#67e8f9] transition-colors">How it Works</a>
-            <a href="#stats" className="hover:text-[#67e8f9] transition-colors">Impact</a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleLogin}
-              className="px-6 py-2.5 text-sm font-medium hover:text-[#67e8f9] transition-colors"
-            >
-              Log in
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleStartBuilding}
-              className="px-6 py-2.5 bg-white text-black rounded-full font-semibold flex items-center gap-2 hover:bg-[#67e8f9] transition-colors"
-            >
-              Start Building <ArrowRight className="w-4 h-4" />
-            </motion.button>
-          </div>
-        </div>
-      </nav>
-
-      {/* HERO SECTION */}
-      <section ref={heroRef} className="min-h-screen pt-20 relative flex items-center justify-center overflow-hidden">
-        {/* Animated Background Elements */}
-        <motion.div 
-          style={{ y: heroBgY }}
-          className="absolute inset-0 bg-[radial-gradient(at_50%_30%,rgba(103,232,249,0.15)_0%,transparent_50%)]"
-        />
-        
-        {/* Floating Orbs */}
-        <motion.div 
-          style={{ y: floatingY1 }}
-          className="absolute top-20 left-10 w-72 h-72 rounded-full bg-[#67e8f9] opacity-10 blur-3xl"
-          animate={{ 
-            x: [0, 40, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 25, repeat: Infinity }}
-        />
-        <motion.div 
-          style={{ y: floatingY2 }}
-          className="absolute bottom-40 right-20 w-96 h-96 rounded-full bg-[#ec4899] opacity-10 blur-3xl"
-          animate={{ 
-            x: [0, -60, 0],
-            scale: [1, 0.95, 1]
-          }}
-          transition={{ duration: 30, repeat: Infinity }}
-        />
-
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8">
-            <div className="w-2 h-2 bg-[#a3e635] rounded-full animate-pulse" />
-            <span className="text-sm uppercase tracking-[3px] font-mono">Now in Beta</span>
-          </div>
-
-          <motion.h1 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-7xl md:text-8xl font-bold tracking-tighter leading-none mb-6"
-          >
-            BUILD<br />
-            <span className="bg-gradient-to-r from-[#67e8f9] via-[#ec4899] to-[#a3e635] bg-clip-text text-transparent">TOGETHER</span>
-          </motion.h1>
-
-          <motion.p 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-2xl md:text-3xl text-white/70 max-w-2xl mx-auto mb-4 font-light"
-          >
-            The premium collaboration platform where students and builders discover real projects, match with perfect teammates, and ship portfolio-worthy products.
-          </motion.p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(103,232,249,0.5)" }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleStartBuilding}
-              className="group px-10 py-5 bg-gradient-to-r from-[#67e8f9] to-[#ec4899] text-black font-semibold text-lg rounded-2xl flex items-center justify-center gap-3 hover:brightness-110 transition-all"
-            >
-              Start Building Now
-              <ArrowRight className="group-hover:translate-x-1 transition" />
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleLogin}
-              className="px-10 py-5 border border-white/30 hover:border-white/60 rounded-2xl text-lg font-medium transition-all"
-            >
-              I already have an account
-            </motion.button>
-          </div>
-
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="mt-20 flex justify-center"
-          >
-            <div className="text-white/40 text-sm flex items-center gap-2">
-              Scroll to explore <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}>↓</motion.div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
-      </section>
-
-      {/* FEATURES SECTION */}
-      <section id="features" className="py-24 relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <div className="inline text-[#67e8f9] uppercase tracking-widest text-sm font-mono mb-3 block">POWERFUL TOOLS</div>
-            <h2 className="text-6xl font-bold tracking-tighter">Why builders love SyncUp</h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Rocket,
-                title: "Discover Real Projects",
-                desc: "Browse live startup and hackathon ideas.",
-                accent: "#67e8f9"
-              },
-              {
-                icon: Users,
-                title: "Smart Matching",
-                desc: "AI-powered teammate suggestions.",
-                accent: "#ec4899"
-              },
-              {
-                icon: MessageSquare,
-                title: "Seamless Collaboration",
-                desc: "Chat, tasks, and file sharing in one place.",
-                accent: "#a3e635"
-              },
-              {
-                icon: Award,
-                title: "Build Portfolio",
-                desc: "Every project becomes a verified achievement.",
-                accent: "#67e8f9"
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -12, transition: { duration: 0.2 } }}
-                className="group bg-zinc-950 border border-white/10 rounded-3xl p-8 hover:border-[#67e8f9]/50 transition-all duration-300 relative overflow-hidden"
-              >
-                <div className="mb-8">
-                  <div 
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-                    style={{ background: `linear-gradient(135deg, ${feature.accent}20, transparent)` }}
-                  >
-                    <feature.icon className="w-9 h-9" style={{ color: feature.accent }} />
-                  </div>
-                </div>
-                
-                <h3 className="text-2xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-white/70 leading-relaxed">{feature.desc}</p>
-                
-                {/* Glow on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW SYNCUP WORKS */}
-      <section id="how" className="py-24 bg-black/60 relative">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-6xl font-bold tracking-tighter mb-4">How SyncUp Works</h2>
-            <p className="text-xl text-white/60 max-w-md mx-auto">From idea to shipped product in four delightful steps</p>
-          </motion.div>
-
-          <div className="relative">
-            {/* Connecting Line */}
-            <div className="absolute left-1/2 top-12 bottom-12 w-px bg-gradient-to-b from-transparent via-[#67e8f9]/40 to-transparent hidden lg:block" />
-            
-            <div className="grid lg:grid-cols-4 gap-12 relative">
-              {[
-                { 
-                  step: "01", 
-                  icon: Target, 
-                  title: "Discover", 
-                  desc: "Browse exciting projects and hackathon challenges from real builders." 
-                },
-                { 
-                  step: "02", 
-                  icon: Users, 
-                  title: "Match", 
-                  desc: "Get AI suggestions for teammates whose skills perfectly complement yours." 
-                },
-                { 
-                  step: "03", 
-                  icon: MessageSquare, 
-                  title: "Collaborate", 
-                  desc: "Work together in real-time with integrated chat, tasks, and file sharing." 
-                },
-                { 
-                  step: "04", 
-                  icon: Award, 
-                  title: "Ship & Showcase", 
-                  desc: "Launch your product and earn verified portfolio entries." 
+                start += increment;
+                if (start >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(start);
                 }
-              ].map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: idx % 2 === 0 ? -60 : 60 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15 }}
-                  className="relative bg-zinc-950/80 border border-white/10 p-8 rounded-3xl group"
-                >
-                  <div className="text-7xl font-mono text-white/10 mb-6 group-hover:text-[#67e8f9]/20 transition-colors">{item.step}</div>
-                  
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#67e8f9]/10 to-[#ec4899]/10 flex items-center justify-center">
-                      <item.icon className="w-7 h-7 text-[#67e8f9]" />
-                    </div>
-                    <h3 className="text-3xl font-semibold">{item.title}</h3>
-                  </div>
-                  
-                  <p className="text-white/70">{item.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+            }, 16);
+        }
 
-      {/* STATS / TRUST BAR */}
-      <section id="stats" className="py-20 border-y border-white/10">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-          {[
-            { number: 1240, label: "Projects Discovered", suffix: "+" },
-            { number: 8750, label: "Teammates Matched", suffix: "" },
-            { number: 420, label: "Products Shipped", suffix: "" },
-            { number: 98, label: "Success Rate", suffix: "%" }
-          ].map((stat, index) => (
-            <motion.div 
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="space-y-2"
-            >
-              <div className="text-6xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
-                <AnimatedCounter end={stat.number} suffix={stat.suffix} />
-              </div>
-              <div className="text-white/60 font-medium">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+        // Trigger stats on scroll
+        let animated = false;
+        window.addEventListener('scroll', () => {
+            if (animated) return;
+            const stats = document.getElementById('stats');
+            const rect = stats.getBoundingClientRect();
+            if (rect.top < window.innerHeight * 0.75) {
+                animated = true;
+                animateCounter('count1', 1240);
+                animateCounter('count2', 8750);
+                animateCounter('count3', 420);
+                animateCounter('count4', 98);
+            }
+        });
 
-      {/* FINAL CTA */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <div className="inline-flex items-center gap-2 mb-6 text-[#a3e635]">
-              <Zap className="w-6 h-6" /> Join the movement
-            </div>
-            
-            <h2 className="text-6xl md:text-7xl font-bold tracking-tighter leading-none mb-8">
-              Ready to build<br />something amazing?
-            </h2>
-            
-            <p className="text-2xl text-white/70 mb-12">Join 1000+ builders turning ideas into reality.</p>
-            
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleStartBuilding}
-              className="px-16 py-7 text-xl font-semibold bg-white text-black rounded-3xl flex items-center gap-4 mx-auto hover:bg-gradient-to-r hover:from-[#67e8f9] hover:to-[#ec4899] hover:text-white group transition-all duration-300"
-            >
-              Join 1000+ builders today
-              <ArrowRight className="group-hover:translate-x-2 transition" />
-            </motion.button>
-          </motion.div>
-        </div>
-
-        {/* Decorative background */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#67e8f930_0%,transparent_70%)] pointer-events-none" />
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 text-center text-white/40 text-sm">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>© 2026 SyncUp. All rights reserved.</div>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-white">Privacy</a>
-            <a href="#" className="hover:text-white">Terms</a>
-            <a href="#" className="hover:text-white">Contact</a>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+        // Orb subtle movement
+        setTimeout(() => {
+            const orb2 = document.getElementById('orb2');
+            if (orb2) orb2.style.animation = 'floatOrb 32s ease-in-out infinite';
+        }, 1200);
+    </script>
+</body>
+</html>
