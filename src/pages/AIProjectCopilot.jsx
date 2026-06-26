@@ -12,7 +12,7 @@ export default function AIProjectCopilot() {
   const navigate = useNavigate();
   const textareaRef = useRef(null);
 
-  const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg";
+  const GEMINI_API_KEY = "AQ.Ab8RN6LNrYOk5ZmkfFq7dYzfRfDupZUJCiCt_rRe9zBr-kAhJQ";
 
   const improvedPrompt = (userIdea, extraRefine = "") => `
 You are SyncUp AI Project Copilot — a futuristic mentor for student builders.
