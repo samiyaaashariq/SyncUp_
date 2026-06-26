@@ -50,9 +50,9 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
-        <Route path="/auth" element={user ? <Navigate to="/home" /> : <Auth />} />
-        <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/home" /> : <Signup />} />
+        <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
+        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
 
         {/* Protected Routes */}
         <Route path="/home" element={
@@ -64,6 +64,7 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute user={user}><Profile /></ProtectedRoute>
         } />
+        <Route path="/chatbox" element={<ChatBox />} />
         <Route path="/profile/:uid" element={
           <ProtectedRoute user={user}><Profile /></ProtectedRoute>
         } />
