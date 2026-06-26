@@ -304,12 +304,13 @@ export default function DashboardV2() {
       )}
       
     </div>
-    {/* Decorative top gradient line */}
+   
+  );
+}
+ {/* Decorative top gradient line */}
 <div style={{
   height: "1px",
   background: "linear-gradient(to right, transparent, #ec4899, transparent)",
   marginBottom: "40px",
   opacity: 0.6
 }} />
-  );
-}
