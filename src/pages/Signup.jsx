@@ -19,7 +19,7 @@ export default function Signup() {
       await createUserWithEmailAndPassword(auth, email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError("Failed to create account. Try again.");
+      setError("Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -27,18 +27,13 @@ export default function Signup() {
 
   return (
     <div style={styles.container}>
-
-      {/* glow background */}
       <div style={styles.glow} />
 
-      {/* CARD */}
       <div style={styles.card}>
-
-        <h1 style={styles.logo}>SyncUp</h1>
+        <div style={styles.logo}>SyncUp</div>
         <p style={styles.subtitle}>Create your builder account</p>
 
         <form onSubmit={handleSignup}>
-
           <input
             type="email"
             placeholder="Email address"
@@ -47,10 +42,9 @@ export default function Signup() {
             style={styles.input}
             required
           />
-
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 6 characters)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
@@ -59,126 +53,104 @@ export default function Signup() {
 
           {error && <p style={styles.error}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={styles.button}
-          >
-            {loading ? "Creating account..." : "Sign Up"}
+          <button type="submit" disabled={loading} style={styles.primaryBtn}>
+            {loading ? "Creating account..." : "Create Account"}
           </button>
-
         </form>
 
         <p style={styles.bottomText}>
           Already have an account?{" "}
           <Link to="/login" style={styles.link}>Login</Link>
         </p>
-
       </div>
-
     </div>
   );
 }
 
-/* =========================
-   STYLES
-========================= */
-
+/* ====================== STYLES (same premium theme) ====================== */
 const styles = {
   container: {
-    height: "100vh",
-    width: "100vw",
-    fontFamily: "system-ui, sans-serif",
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "Inter, system-ui, sans-serif",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
     overflow: "hidden",
-
-    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)"
+    background: "linear-gradient(135deg, #0f0519 0%, #1a0f2e 45%, #0c0a1f 100%)",
+    color: "#f3e8ff",
   },
-
   glow: {
     position: "absolute",
     inset: 0,
     background: `
-      radial-gradient(circle at 20% 20%, rgba(79,140,255,0.25), transparent 55%),
-      radial-gradient(circle at 80% 30%, rgba(236,72,153,0.15), transparent 60%),
-      radial-gradient(circle at 50% 80%, rgba(99,102,241,0.12), transparent 60%)
-    `
+      radial-gradient(circle at 20% 20%, rgba(167,139,250,0.18), transparent 60%),
+      radial-gradient(circle at 80% 30%, rgba(103,232,249,0.12), transparent 70%)
+    `,
+    zIndex: 0,
   },
-
   card: {
     position: "relative",
     zIndex: 2,
     width: "100%",
     maxWidth: "420px",
-    padding: "40px 30px",
-    borderRadius: "16px",
-
-    background: "rgba(15, 23, 42, 0.85)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    backdropFilter: "blur(12px)",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.35)"
+    padding: "48px 36px",
+    borderRadius: "24px",
+    background: "rgba(15, 10, 35, 0.92)",
+    border: "1px solid rgba(167,139,250,0.3)",
+    backdropFilter: "blur(16px)",
+    boxShadow: "0 25px 70px rgba(0,0,0,0.4)",
   },
-
   logo: {
     textAlign: "center",
-    fontSize: "2.5rem",
-    fontWeight: "800",
-    marginBottom: "6px",
-
-    background: "linear-gradient(90deg, #ec4899, #4f8cff)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent"
+    fontSize: "28px",
+    fontWeight: 700,
+    color: "#c4b5fd",
+    marginBottom: "8px",
   },
-
   subtitle: {
     textAlign: "center",
-    color: "#aab2c0",
-    marginBottom: "25px"
+    color: "#e0d0ff",
+    marginBottom: "32px",
+    fontSize: "15px",
   },
-
   input: {
     width: "100%",
-    padding: "14px",
-    marginBottom: "14px",
-    borderRadius: "10px",
-
-    border: "1px solid rgba(255,255,255,0.1)",
-    background: "rgba(255,255,255,0.05)",
-    color: "#fff",
-    outline: "none"
+    padding: "16px",
+    marginBottom: "16px",
+    borderRadius: "12px",
+    border: "1px solid rgba(167,139,250,0.3)",
+    background: "rgba(26,15,46,0.8)",
+    color: "#f3e8ff",
+    fontSize: "15px",
+    outline: "none",
   },
-
-  button: {
+  primaryBtn: {
     width: "100%",
-    padding: "14px",
-    borderRadius: "10px",
+    padding: "16px",
+    borderRadius: "12px",
     border: "none",
+    background: "linear-gradient(135deg, #67e8f9, #a78bfa)",
+    color: "#0f0519",
+    fontWeight: 600,
+    fontSize: "15px",
     cursor: "pointer",
-
-    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
-    color: "#fff",
-    fontWeight: "600",
-
-    boxShadow: "0 10px 30px rgba(79,140,255,0.25)"
+    marginTop: "8px",
   },
-
   error: {
     color: "#ff6b6b",
     textAlign: "center",
-    marginBottom: "10px"
+    margin: "12px 0",
   },
-
   bottomText: {
     textAlign: "center",
-    marginTop: "18px",
-    color: "#aab2c0"
+    marginTop: "28px",
+    color: "#e0d0ff",
   },
-
   link: {
-    color: "#4f8cff",
-    textDecoration: "none"
-  }
+    color: "#67e8f9",
+    textDecoration: "none",
+    fontWeight: 500,
+  },
 };
