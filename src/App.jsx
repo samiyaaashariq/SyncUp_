@@ -25,7 +25,7 @@ import TeamMatcher from "./components/TeamMatcher";
 // Styles
 import "./App.css";
 
-// Protected Route wrapper
+// Protected Route
 const ProtectedRoute = ({ user, children }) => {
   if (!user) return <Navigate to="/login" replace />;
   return children;
@@ -43,7 +43,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Loading SyncUp...</div>;
 
   return (
     <Router>
@@ -55,43 +55,25 @@ function App() {
         <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
 
         {/* Protected Routes */}
-        <Route path="/home" element={
-          <ProtectedRoute user={user}><Home /></ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute user={user}><Dashboard /></ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute user={user}><Profile /></ProtectedRoute>
-        } />
+        <Route path="/home" element={<ProtectedRoute user={user}><Home /></ProtectedRoute>} />
         
-        <Route path="/profile/:uid" element={
-          <ProtectedRoute user={user}><Profile /></ProtectedRoute>
-        } />
-        <Route path="/project/:id" element={
-          <ProtectedRoute user={user}><ProjectDetails /></ProtectedRoute>
-        } />
-        <Route path="/project/:id/chat" element={
-          <ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>
-        } />
-        <Route path="/project/:id/manage" element={
-          <ProtectedRoute user={user}><ProjectManage /></ProtectedRoute>
-        } />
-        <Route path="/project/:id/members" element={
-          <ProtectedRoute user={user}><ProjectMembers /></ProtectedRoute>
-        } />
-        <Route path="/notifications" element={
-          <ProtectedRoute user={user}><Notifications /></ProtectedRoute>
-        } />
-        <Route path="/ai-copilot" element={
-          <ProtectedRoute user={user}><AIProjectCopilot /></ProtectedRoute>
-        } />
-        <Route path="/discover" element={
-          <ProtectedRoute user={user}><ProjectDiscovery /></ProtectedRoute>
-        } />
-        <Route path="/team-match" element={
-          <ProtectedRoute user={user}><TeamMatcher /></ProtectedRoute>
-        } />
+        <Route path="/dashboard" element={<ProtectedRoute user={user}><Dashboard /></ProtectedRoute>} />
+        
+        <Route path="/profile" element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>} />
+        <Route path="/profile/:uid" element={<ProtectedRoute user={user}><Profile /></ProtectedRoute>} />
+
+        <Route path="/project/:id" element={<ProtectedRoute user={user}><ProjectDetails /></ProtectedRoute>} />
+        <Route path="/project/:id/chat" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
+        <Route path="/project/:id/manage" element={<ProtectedRoute user={user}><ProjectManage /></ProtectedRoute>} />
+        <Route path="/project/:id/members" element={<ProtectedRoute user={user}><ProjectMembers /></ProtectedRoute>} />
+
+        <Route path="/notifications" element={<ProtectedRoute user={user}><Notifications /></ProtectedRoute>} />
+        
+        <Route path="/ai-copilot" element={<ProtectedRoute user={user}><AIProjectCopilot /></ProtectedRoute>} />
+
+        {/* New Routes */}
+        <Route path="/discover" element={<ProtectedRoute user={user}><ProjectDiscovery /></ProtectedRoute>} />
+        <Route path="/team-match" element={<ProtectedRoute user={user}><TeamMatcher /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
