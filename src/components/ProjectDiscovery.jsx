@@ -1,116 +1,104 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 export default function ProjectDiscovery() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const q = query(
-          collection(db, "projects"),
-          orderBy("createdAt", "desc"),
-          limit(12)
-        );
-        const snapshot = await getDocs(q);
-        
-        const allProjects = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-        setProjects(allProjects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setProjects(data);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProjects();
   }, []);
 
+  const filteredProjects = projects.filter(p => 
+    p.title?.toLowerCase().includes(search.toLowerCase()) ||
+    p.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div style={{ marginTop: "40px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "25px" }}>
-        <h2 style={{ color: "#00ff9f", margin: 0 }}>🔍 Discover Projects</h2>
-        <button 
-          onClick={() => window.location.reload()}
-          style={{
-            padding: "8px 20px",
-            background: "transparent",
-            color: "#80cbc4",
-            border: "1px solid #80cbc4",
-            borderRadius: "50px",
-            cursor: "pointer"
-          }}
-        >
-          Refresh
-        </button>
-      </div>
+    <div style={styles.container}>
+      <h1 style={styles.title}>Explore Projects</h1>
+
+      <input
+        type="text"
+        placeholder="Search projects..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={styles.search}
+      />
 
       {loading ? (
-        <p style={{ color: "#80cbc4" }}>Loading exciting projects...</p>
-      ) : projects.length > 0 ? (
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", 
-          gap: "20px" 
-        }}>
-          {projects.map(project => (
-            <div 
-              key={project.id}
-              onClick={() => navigate(`/project/${project.id}`)}
-              style={{
-                background: "rgba(15, 23, 42, 0.95)",
-                border: "1px solid #334155",
-                borderRadius: "16px",
-                padding: "24px",
-                cursor: "pointer",
-                transition: "transform 0.2s",
-              }}
-            >
-              <h3 style={{ margin: "0 0 12px 0", color: "#00ff9f" }}>
-                {project.title || "Untitled Project"}
-              </h3>
-              
-              <p style={{ 
-                color: "#b2dfdb", 
-                fontSize: "0.95rem", 
-                marginBottom: "16px",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden"
-              }}>
-                {project.idea || project.description || "No description available"}
-              </p>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "#80cbc4", fontSize: "0.9rem" }}>
-                  👥 {project.members?.length || 1} member{project.members?.length !== 1 ? 's' : ''}
-                </span>
-                <span style={{ 
-                  background: "#00ff9f", 
-                  color: "#0a0a0a", 
-                  padding: "4px 14px", 
-                  borderRadius: "9999px",
-                  fontSize: "0.85rem",
-                  fontWeight: "600"
-                }}>
-                  Join
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <p>Loading projects...</p>
       ) : (
-        <p>No public projects yet. Be the first to create one!</p>
+        <div style={styles.grid}>
+          {filteredProjects.length === 0 ? (
+            <p>No projects found.</p>
+          ) : (
+            filteredProjects.map(project => (
+              <div key={project.id} style={styles.card}>
+                <h3 style={styles.cardTitle}>{project.title}</h3>
+                <p style={styles.desc}>{project.fullBrief?.substring(0, 120)}...</p>
+                
+                <div style={styles.tags}>
+                  {project.tags?.map((tag, i) => <span key={i} style={styles.tag}>{tag}</span>) || "No tags"}
+                </div>
+
+                <button style={styles.joinBtn} onClick={() => alert("Joined project! (connect logic coming soon)")}>
+                  Join Project
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       )}
     </div>
   );
 }
+
+const styles = {
+  container: { padding: "30px 20px", maxWidth: "1200px", margin: "0 auto" },
+  title: { fontSize: "2.2rem", marginBottom: "20px", background: "linear-gradient(90deg, #67e8f9, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
+  search: {
+    width: "100%",
+    padding: "14px",
+    marginBottom: "30px",
+    background: "rgba(15,23,42,0.9)",
+    border: "1px solid #67e8f9",
+    borderRadius: "12px",
+    color: "#fff",
+    fontSize: "1.1rem",
+  },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "20px" },
+  card: {
+    background: "rgba(15,23,42,0.95)",
+    border: "1px solid rgba(103,232,249,0.3)",
+    borderRadius: "20px",
+    padding: "24px",
+  },
+  cardTitle: { color: "#c084fc", marginBottom: "12px" },
+  desc: { color: "#cbd5e1", marginBottom: "20px", lineHeight: "1.6" },
+  tags: { display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "20px" },
+  tag: { background: "rgba(103,232,249,0.15)", color: "#67e8f9", padding: "4px 12px", borderRadius: "999px", fontSize: "0.85rem" },
+  joinBtn: {
+    width: "100%",
+    padding: "14px",
+    background: "linear-gradient(135deg, #ec4899, #c084fc)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+};
