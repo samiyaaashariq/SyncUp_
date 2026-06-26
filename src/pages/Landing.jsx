@@ -1,10 +1,15 @@
+
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 export default function Landing() {
+  const navigate = useNavigate();
+
   return (
     <div className="landing">
 
+      {/* Navbar */}
       <nav className="navbar">
         <div className="logo">
           Sync<span>Up</span>
@@ -15,10 +20,23 @@ export default function Landing() {
           <a href="#about">About</a>
           <a href="#contact">Contact</a>
 
-          <button className="login-btn">Login</button>
+          <button
+            className="login-btn"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </button>
+
+          <button
+            className="signup-btn"
+            onClick={() => navigate("/signup")}
+          >
+            Sign Up
+          </button>
         </div>
       </nav>
 
+      {/* Hero Section */}
       <section className="hero">
 
         <div className="hero-left">
@@ -37,11 +55,17 @@ export default function Landing() {
           </p>
 
           <div className="hero-buttons">
-            <button className="primary-btn">
+            <button
+              className="primary-btn"
+              onClick={() => navigate("/signup")}
+            >
               Get Started
             </button>
 
-            <button className="secondary-btn">
+            <button
+              className="secondary-btn"
+              onClick={() => navigate("/projects")}
+            >
               Explore Projects
             </button>
           </div>
@@ -75,6 +99,7 @@ export default function Landing() {
 
       </section>
 
+      {/* Features */}
       <section className="features" id="features">
 
         <h2>Why SyncUp?</h2>
