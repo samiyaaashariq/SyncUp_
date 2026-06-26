@@ -291,6 +291,22 @@ line-height:1.7;
 
 color:#cbd5e1;
 }
+.signup-btn{
+    padding:12px 28px;
+    border:none;
+    border-radius:50px;
+    background:transparent;
+    border:2px solid #5eead4;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.signup-btn:hover{
+    background:#5eead4;
+    color:#08111f;
+}
 
 /* RESPONSIVE */
 
