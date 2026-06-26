@@ -1,187 +1,148 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { auth, db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 export default function ChatBox() {
-  const { projectId } = useParams();
-  const user = auth.currentUser;
-
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  const [aiMessages, setAiMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-
   const chatEndRef = useRef(null);
-  const isProjectChat = Boolean(projectId);
 
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [aiMessages, messages]);
-
-  // Firebase Project Chat
-  useEffect(() => {
-    if (!isProjectChat) return;
-
-    const q = query(
-      collection(db, "projects", projectId, "messages"),
-      orderBy("createdAt")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
-
-    return () => unsubscribe();
-  }, [projectId]);
-
-  const isVisualRequest = (msg) => {
-    const keywords = ["visualize", "architecture", "diagram", "flow", "ar", "vr", "3d"];
-    return keywords.some(k => msg.toLowerCase().includes(k));
-  };
-
-  const sendToAI = async (userMessage) => {
-    setLoading(true);
-    const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg";
-
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ 
-              text: `You are SyncUp AI. Be helpful and encouraging.
-${isVisualRequest(userMessage) ? "Give structured visual architecture response using markdown." : ""}
-User: ${userMessage}` 
-            }]}]
-          })
-        }
-      );
-
-      const data = await res.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't respond.";
-    } catch (err) {
-      console.error(err);
-      return "AI is temporarily unavailable.";
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!text.trim()) return;
-    const userMessage = text.trim();
+    setMessages([...messages, { text, isUser: true }]);
     setText("");
 
-    if (!isProjectChat) {
-      const aiReply = await sendToAI(userMessage);
-      setAiMessages(prev => [...prev, { role: "user", text: userMessage }, { role: "ai", text: aiReply }]);
-    } else {
-      try {
-        await addDoc(collection(db, "projects", projectId, "messages"), {
-          text: userMessage,
-          user: user?.email || "Anonymous",
-          createdAt: new Date(),
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    // Simulate AI reply
+    setTimeout(() => {
+      setMessages(prev => [...prev, { text: "That's a great idea! How can I help you with the project?", isUser: false }]);
+    }, 800);
   };
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
-    <div style={{
-      minHeight: "100vh",
-      padding: "20px",
-      background: "linear-gradient(135deg, #0a0a0a, #001a14, #002b24)",
-      color: "#e0f2f1",
-      fontFamily: "Inter, sans-serif"
-    }}>
-      <h2 style={{ color: "#00ff9f", textAlign: "center" }}>
-        {isProjectChat ? "Team Chat" : "SyncUp AI Assistant"}
-      </h2>
+    <div style={styles.container}>
+      <div style={styles.glow} />
 
-      <div style={{
-        maxWidth: "800px",
-        margin: "30px auto",
-        background: "rgba(15, 23, 42, 0.95)",
-        borderRadius: "16px",
-        padding: "20px",
-        border: "1px solid #334155",
-        height: "520px",
-        overflowY: "auto"
-      }}>
-        {!isProjectChat && aiMessages.length === 0 && (
-          <p style={{ textAlign: "center", marginTop: "180px", color: "#80cbc4" }}>
-            Describe your project idea or ask for visual architecture
-          </p>
-        )}
+      <div style={styles.chatContainer}>
+        <h1 style={styles.title}>💬 Messages</h1>
 
-        {isProjectChat ? (
-          messages.map(msg => (
-            <div key={msg.id} style={{ marginBottom: "15px" }}>
-              <strong style={{ color: "#00ff9f" }}>{msg.user}:</strong> {msg.text}
+        <div style={styles.chatBox}>
+          {messages.length === 0 && (
+            <p style={styles.empty}>Start a conversation with teammates or AI</p>
+          )}
+
+          {messages.map((msg, i) => (
+            <div key={i} style={msg.isUser ? styles.userMessage : styles.aiMessage}>
+              {msg.text}
             </div>
-          ))
-        ) : (
-          aiMessages.map((msg, i) => (
-            <div key={i} style={{ textAlign: msg.role === "user" ? "right" : "left", margin: "15px 0" }}>
-              <span style={{
-                padding: "12px 18px",
-                borderRadius: "18px",
-                background: msg.role === "user" ? "linear-gradient(135deg, #00ff9f, #00b8d4)" : "#1e2937",
-                color: msg.role === "user" ? "#0a0a0a" : "#e0f2f1",
-                display: "inline-block",
-                maxWidth: "75%"
-              }}>
-                {msg.text}
-              </span>
-            </div>
-          ))
-        )}
+          ))}
+          <div ref={chatEndRef} />
+        </div>
 
-        {loading && <p style={{ color: "#80cbc4" }}>AI is thinking...</p>}
-        <div ref={chatEndRef} />
-      </div>
-
-      <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", gap: "10px" }}>
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyPress={e => e.key === "Enter" && sendMessage()}
-          placeholder={isProjectChat ? "Type message..." : "Ask AI anything..."}
-          style={{
-            flex: 1,
-            padding: "15px",
-            borderRadius: "9999px",
-            border: "1px solid #334155",
-            background: "#0f172a",
-            color: "#e0f2f1"
-          }}
-        />
-        <button onClick={sendMessage} disabled={loading} style={{
-          padding: "15px 30px",
-          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
-          color: "#0a0a0a",
-          border: "none",
-          borderRadius: "9999px",
-          fontWeight: "bold"
-        }}>
-          Send
-        </button>
+        <div style={styles.inputArea}>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type a message..."
+            style={styles.input}
+          />
+          <button onClick={sendMessage} style={styles.sendBtn}>Send</button>
+        </div>
       </div>
     </div>
   );
 }
+
+/* ====================== STYLES ====================== */
+const styles = {
+  container: {
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "Inter, system-ui, sans-serif",
+    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)",
+    color: "#fff",
+    padding: "40px 20px",
+    position: "relative",
+  },
+  glow: {
+    position: "absolute",
+    inset: 0,
+    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.15), transparent 60%), 
+                 radial-gradient(circle at 80% 30%, rgba(79,140,255,0.12), transparent 70%)`,
+    zIndex: 0,
+  },
+  chatContainer: {
+    maxWidth: "800px",
+    margin: "0 auto",
+    position: "relative",
+    zIndex: 1,
+  },
+  title: {
+    fontSize: "28px",
+    textAlign: "center",
+    marginBottom: "32px",
+    background: "linear-gradient(90deg, #ec4899, #4f8cff)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  },
+  chatBox: {
+    background: "rgba(15,23,42,0.85)",
+    border: "1px solid rgba(79,140,255,0.25)",
+    borderRadius: "20px",
+    height: "520px",
+    padding: "24px",
+    overflowY: "auto",
+    marginBottom: "20px",
+  },
+  userMessage: {
+    textAlign: "right",
+    margin: "12px 0",
+    background: "#ec4899",
+    color: "white",
+    padding: "12px 18px",
+    borderRadius: "18px 18px 4px 18px",
+    display: "inline-block",
+    maxWidth: "70%",
+  },
+  aiMessage: {
+    textAlign: "left",
+    margin: "12px 0",
+    background: "rgba(79,140,255,0.2)",
+    padding: "12px 18px",
+    borderRadius: "18px 18px 18px 4px",
+    display: "inline-block",
+    maxWidth: "70%",
+  },
+  empty: {
+    textAlign: "center",
+    color: "#94a3b8",
+    marginTop: "180px",
+  },
+  inputArea: {
+    display: "flex",
+    gap: "12px",
+  },
+  input: {
+    flex: 1,
+    padding: "16px",
+    borderRadius: "999px",
+    border: "1px solid rgba(79,140,255,0.3)",
+    background: "rgba(15,23,42,0.8)",
+    color: "#fff",
+    fontSize: "15px",
+  },
+  sendBtn: {
+    padding: "16px 32px",
+    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
+    color: "white",
+    border: "none",
+    borderRadius: "999px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+};
