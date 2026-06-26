@@ -7,7 +7,7 @@ export default function Landing() {
   return (
     <div style={styles.container}>
 
-      {/* glow background */}
+      {/* background glow */}
       <div style={styles.glow} />
 
       {/* NAVBAR */}
@@ -55,12 +55,15 @@ export default function Landing() {
 
 const styles = {
   container: {
+    height: "100vh",
     minHeight: "100vh",
+    width: "100vw",
     fontFamily: "system-ui, sans-serif",
     position: "relative",
     overflow: "hidden",
     color: "#fff",
-    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)"
+    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)",
+    paddingBottom: "80px"
   },
 
   glow: {
@@ -113,8 +116,8 @@ const styles = {
     zIndex: 2,
     textAlign: "center",
     maxWidth: "900px",
-    margin: "150px auto 0",
-    padding: "0 20px"
+    margin: "140px auto 0",
+    padding: "0 20px 80px"
   },
 
   title: {
