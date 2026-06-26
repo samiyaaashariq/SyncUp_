@@ -1,84 +1,48 @@
-/* =========================
-   PREMIUM STARTUP SIDEBAR
-========================= */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #1e2937 50%, #0f172a 100%);
+}
 
 .sidebar {
   width: 260px;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
-  padding: 32px 20px;
+  padding: 32px 22px;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
-  display: flex;
-  flex-direction: column;
+  flex-shrink: 0;
   z-index: 10;
-  transition: all 0.3s;
 }
 
-.logo {
-  font-size: 26px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #ec4899, #4f8cff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 48px;
-  padding-left: 4px;
-}
-
-/* Menu Items */
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.menu-btn {
-  padding: 14px 18px;
-  border-radius: 12px;
-  font-size: 15px;
-  color: #cbd5e1;
-  text-align: left;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.menu-btn:hover {
-  background: rgba(236, 72, 153, 0.12);
-  color: white;
-  transform: translateX(6px);
-}
-
-.menu-btn.active {
-  background: rgba(236, 72, 153, 0.2);
-  color: white;
-  font-weight: 600;
-}
-
-/* Icons (using emoji for now - you can replace with SVG later) */
-.menu-btn::before {
-  content: "•";
-  font-size: 18px;
-  opacity: 0.6;
-}
-
-/* Main Content */
 .main-content {
   flex: 1;
   padding: 48px 42px 80px;
   overflow-y: auto;
+  background: transparent;
 }
 
-/* Rest of your previous styles (cards, buttons, etc.) can stay the same or keep the last version you liked */
+/* Rest of styles (cards, buttons, etc.) */
+.section {
+  margin-bottom: 80px;
+}
 
-.toggle-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  cursor: pointer;
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.project-card, .stat-card, .recommended-card, .team-card {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.4s;
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+  border-color: #60a5fa;
 }
