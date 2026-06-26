@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardV2.css";
+import { collection, addDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 import { db } from "../firebase";
 import {
@@ -67,6 +69,28 @@ export default function DashboardV2() {
 
   return (
     <div className="dashboard-container">
+      const handleApply = async (projectId) => {
+  try {
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
+
+    await addDoc(collection(db, "applications"), {
+      projectId: projectId,
+      userEmail: user.email,
+      status: "pending",
+      createdAt: Date.now()
+    });
+
+    alert("Application sent!");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to apply");
+  }
+};
 
       {/* SIDEBAR */}
       <aside className="sidebar">
@@ -190,6 +214,12 @@ export default function DashboardV2() {
                   >
                     View
                   </button>
+                  <button
+  className="secondary-btn"
+  onClick={() => handleApply(project.id)}
+>
+  Apply to Join
+</button>
                 </div>
 
               </div>
