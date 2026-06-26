@@ -2,15 +2,12 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-// Optional: npm install lucide-react
-import { Copy, RefreshCw, Save, Sparkles } from "lucide-react";
 
 export default function AIProjectCopilot() {
   const [idea, setIdea] = useState("");
   const [generatedProject, setGeneratedProject] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refinePrompt, setRefinePrompt] = useState("");
-  const [history, setHistory] = useState([]);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const textareaRef = useRef(null);
@@ -82,7 +79,6 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
       };
 
       setGeneratedProject(newProject);
-      if (!isRefine) setHistory(prev => [newProject, ...prev].slice(0, 5));
 
       setTimeout(() => document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" }), 150);
     } catch (err) {
@@ -96,7 +92,7 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const saveProject = async () => {
@@ -106,10 +102,10 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
         ...generatedProject,
         createdAt: serverTimestamp(),
       });
-      alert("🚀 Project saved!");
+      alert("🚀 Project saved successfully!");
       navigate(`/project/${docRef.id}`);
     } catch (e) {
-      alert("Save failed. Check Firebase.");
+      alert("Failed to save project.");
     }
   };
 
@@ -119,10 +115,9 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
       <div style={styles.content}>
         <div style={styles.header}>
           <div>
-            <h1 style={styles.title}>AI Project Copilot <span style={{ color: '#22d3ee' }}>🌌</span></h1>
+            <h1 style={styles.title}>AI Project Copilot 🌌</h1>
             <p style={styles.subtitle}>Describe your idea → Get a full professional project plan instantly.</p>
           </div>
-          <Sparkles size={36} style={{ color: '#a855f7' }} />
         </div>
 
         {/* Input */}
@@ -139,10 +134,10 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
           disabled={loading || !idea.trim()}
           style={styles.generateBtn}
         >
-          {loading ? <>Generating Magic... <RefreshCw size={18} style={{ animation: "spin 1s linear infinite", marginLeft: 8 }} /></> : "✨ Generate Project with AI"}
+          {loading ? "Generating Magic..." : "✨ Generate Project with AI"}
         </button>
 
-        {/* Examples */}
+        {/* Quick Examples */}
         <div style={styles.examples}>
           <p style={{ color: '#64748b', marginBottom: 10 }}>Quick ideas:</p>
           {["Hackathon teammate matcher", "AI study buddy with flashcards", "Campus lost & found QR system", "Student freelance gig board"].map((ex, i) => (
@@ -158,7 +153,7 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
             <div style={styles.resultHeader}>
               <h2 style={styles.resultTitle}>✨ Your AI Project Brief</h2>
               <button onClick={() => copyToClipboard(generatedProject.fullBrief)} style={styles.copyBtn}>
-                <Copy size={18} /> {copied ? "Copied!" : "Copy"}
+                📋 {copied ? "Copied!" : "Copy Brief"}
               </button>
             </div>
 
@@ -171,18 +166,18 @@ Make it exciting, realistic, and portfolio-worthy for students.`;
                 <input
                   value={refinePrompt}
                   onChange={(e) => setRefinePrompt(e.target.value)}
-                  placeholder="Add mobile-first design, include AR feature..."
+                  placeholder="Make it more mobile friendly or add AR features..."
                   style={styles.refineInput}
                 />
                 <button onClick={() => generateProject(true)} disabled={loading} style={styles.refineBtn}>
-                  <RefreshCw size={18} /> Refine
+                  🔄 Refine
                 </button>
               </div>
             </div>
 
             <div style={styles.actions}>
               <button onClick={saveProject} style={styles.saveBtn}>
-                <Save size={18} style={{ marginRight: 8 }} /> Save to SyncUp
+                ✅ Save to SyncUp
               </button>
               <button onClick={() => { setGeneratedProject(null); setRefinePrompt(""); }} style={styles.newBtn}>
                 New Idea
@@ -212,7 +207,7 @@ const styles = {
     zIndex: 0,
   },
   content: { maxWidth: "980px", margin: "0 auto", position: "relative", zIndex: 1 },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" },
+  header: { marginBottom: "32px" },
   title: {
     fontSize: "2.9rem",
     fontWeight: 700,
@@ -263,7 +258,14 @@ const styles = {
   },
   resultHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
   resultTitle: { color: "#c084fc", fontSize: "1.8rem" },
-  copyBtn: { display: "flex", alignItems: "center", gap: "8px", padding: "10px 22px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "9999px", cursor: "pointer" },
+  copyBtn: { 
+    padding: "10px 22px", 
+    background: "transparent", 
+    border: "1px solid #67e8f9", 
+    color: "#67e8f9", 
+    borderRadius: "9999px", 
+    cursor: "pointer" 
+  },
   brief: {
     whiteSpace: "pre-wrap",
     lineHeight: "1.85",
@@ -297,9 +299,6 @@ const styles = {
     border: "none",
     borderRadius: "9999px",
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
   },
   actions: { display: "flex", gap: "16px", flexWrap: "wrap" },
   saveBtn: {
@@ -310,8 +309,6 @@ const styles = {
     borderRadius: "9999px",
     fontWeight: 700,
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
   },
   newBtn: {
     padding: "16px 40px",
