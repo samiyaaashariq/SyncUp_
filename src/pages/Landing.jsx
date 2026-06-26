@@ -1,110 +1,230 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "./Landing.css";
 
 export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #1a1a1a, #0a0a0a, #121212)",
-      color: "#ffffff",
-      fontFamily: "system-ui, sans-serif",
-      position: "relative",
-      overflow: "hidden"
-    }}>
-      {/* Background Accent */}
-      <div style={{
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        background: "radial-gradient(circle at 30% 20%, rgba(255,0,170,0.15), transparent 60%)",
-        zIndex: "0"
-      }} />
+    <div className="landing-container">
 
-      {/* Navbar */}
-      <nav style={{
-        padding: "20px 5%",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "relative",
-        zIndex: "1"
-      }}>
-        <h1 style={{ 
-          fontSize: "2.8rem", 
-          fontWeight: "900",
-          background: "linear-gradient(90deg, #ff00aa, #ff69b4)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent"
-        }}>
-          SyncUp
-        </h1>
+      {/* background glow */}
+      <div className="bg-glow" />
 
-        <div>
-          <button 
+      {/* NAVBAR */}
+      <nav className="navbar">
+        <h1 className="logo">SyncUp</h1>
+
+        <div className="nav-buttons">
+          <button
+            className="login-btn"
             onClick={() => navigate("/login")}
-            style={{ marginRight: "15px", padding: "12px 28px", background: "transparent", border: "2px solid #ff00aa", color: "#fff", borderRadius: "50px" }}
           >
             Login
           </button>
-          <button 
+
+          <button
+            className="signup-btn"
             onClick={() => navigate("/signup")}
-            style={{ padding: "12px 32px", background: "#ff00aa", color: "#000", border: "none", borderRadius: "50px", fontWeight: "bold" }}
           >
             Get Started
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <div style={{ 
-        position: "relative",
-        zIndex: "1",
-        maxWidth: "1000px", 
-        margin: "160px auto 0", 
-        textAlign: "center",
-        padding: "0 20px"
-      }}>
-        <h1 style={{
-          fontSize: "4.8rem",
-          lineHeight: "1.05",
-          fontWeight: "900",
-          marginBottom: "24px"
-        }}>
+      {/* HERO */}
+      <div className="hero">
+
+        <h1 className="hero-title">
           Find Projects.<br />
           Find Teammates.<br />
           Build Together.
         </h1>
 
-        <p style={{ 
-          fontSize: "1.45rem", 
-          maxWidth: "680px", 
-          margin: "0 auto 50px",
-          color: "#bbbbbb"
-        }}>
-          The premium platform for students to discover exciting projects, connect with the right teammates, and create portfolio-worthy work with AI assistance.
+        <p className="hero-subtitle">
+          A premium student collaboration platform to discover projects,
+          form teams, and build real-world products with clarity and speed.
         </p>
 
-        <button 
+        <button
+          className="hero-btn"
           onClick={() => navigate("/signup")}
-          style={{
-            padding: "18px 52px",
-            fontSize: "1.3rem",
-            background: "linear-gradient(90deg, #ff00aa, #ff1493)",
-            color: "#000",
-            border: "none",
-            borderRadius: "50px",
-            fontWeight: "700",
-            cursor: "pointer",
-            boxShadow: "0 10px 40px rgba(255, 0, 170, 0.4)"
-          }}
         >
           Start Your Project Now
         </button>
+
       </div>
+
     </div>
   );
+}
+/* =========================
+   GLOBAL BACKGROUND
+========================= */
+
+.landing-container {
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+
+  background: linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%);
+}
+
+/* =========================
+   BACKGROUND GLOW (SUBTLE AURORA)
+========================= */
+
+.bg-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(79, 140, 255, 0.25), transparent 55%),
+    radial-gradient(circle at 80% 30%, rgba(236, 72, 153, 0.18), transparent 60%),
+    radial-gradient(circle at 50% 80%, rgba(99, 102, 241, 0.12), transparent 60%);
+  z-index: 0;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+  padding: 20px 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  font-size: 2.2rem;
+  font-weight: 800;
+
+  background: linear-gradient(90deg, #ec4899, #4f8cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* =========================
+   NAV BUTTONS
+========================= */
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.login-btn {
+  padding: 12px 26px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.login-btn:hover {
+  border-color: #4f8cff;
+  box-shadow: 0 0 12px rgba(79, 140, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.signup-btn {
+  padding: 12px 30px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, #ec4899, #4f8cff);
+  color: white;
+  font-weight: 600;
+
+  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.25);
+  transition: 0.25s;
+}
+
+.signup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(79, 140, 255, 0.25);
+}
+
+/* =========================
+   HERO SECTION
+========================= */
+
+.hero {
+  position: relative;
+  z-index: 2;
+  max-width: 950px;
+  margin: 150px auto 0;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.hero-title {
+  font-size: 4.2rem;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  margin-top: 22px;
+  font-size: 1.2rem;
+  color: #b7c0d1;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* =========================
+   CTA BUTTON
+========================= */
+
+.hero-btn {
+  margin-top: 45px;
+  padding: 16px 46px;
+  font-size: 1.1rem;
+
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+
+  color: white;
+  font-weight: 600;
+
+  background: linear-gradient(135deg, #ec4899, #4f8cff);
+  box-shadow: 0 15px 40px rgba(79, 140, 255, 0.25);
+
+  transition: 0.25s ease;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 50px rgba(236, 72, 153, 0.25);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.8rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero {
+    margin-top: 110px;
+  }
 }
