@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function LandingPage() {
+export default function Landing() {
   const goLogin = () => window.location.href = "/login";
   const goSignup = () => window.location.href = "/signup";
 
