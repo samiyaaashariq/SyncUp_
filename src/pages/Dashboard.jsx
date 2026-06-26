@@ -1,36 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardV2.css";
+
+import { db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+} from "firebase/firestore";
 
 export default function DashboardV2() {
   const navigate = useNavigate();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const [projects] = useState([
-    {
-      id: 1,
-      name: "Northern Airlines Booking System",
-      description:
-        "Real-time flight booking platform with AI recommendations.",
-      status: "Active",
-      applicants: 12,
-      members: 5,
-      creator: "Samiya",
-      tags: ["AI", "Web", "Startup"],
-    },
-    {
-      id: 2,
-      name: "CampusVerse",
-      description:
-        "Student collaboration platform for projects and networking.",
-      status: "Recruiting",
-      applicants: 21,
-      members: 7,
-      creator: "Ayesha",
-      tags: ["Community", "React", "Firebase"],
-    },
-  ]);
+  const [projects, setProjects] = useState([]);
+
+  const [projectName, setProjectName] = useState("");
+  const [projectDesc, setProjectDesc] = useState("");
 
   const recommendedProjects = [
     "AI Resume Analyzer",
@@ -40,101 +27,88 @@ export default function DashboardV2() {
   ];
 
   const teammates = [
-    {
-      name: "Sarah Khan",
-      role: "UI/UX Designer",
-      match: "89%",
-    },
-    {
-      name: "Ali Ahmed",
-      role: "Frontend Developer",
-      match: "94%",
-    },
+    { name: "Sarah Khan", role: "UI/UX Designer", match: "89%" },
+    { name: "Ali Ahmed", role: "Frontend Developer", match: "94%" },
   ];
+
+  // 🔥 REAL-TIME FIREBASE FETCH
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "projects"), (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setProjects(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 🔥 CREATE PROJECT
+  const handleCreateProject = async () => {
+    if (!projectName || !projectDesc) return;
+
+    await addDoc(collection(db, "projects"), {
+      name: projectName,
+      description: projectDesc,
+      status: "Recruiting",
+      applicants: 0,
+      members: 1,
+      creator: "Samiya",
+      tags: ["Startup"],
+      createdAt: Date.now(),
+    });
+
+    setProjectName("");
+    setProjectDesc("");
+    setShowCreateModal(false);
+  };
 
   return (
     <div className="dashboard-container">
 
       {/* SIDEBAR */}
-
       <aside className="sidebar">
-
-        <div className="logo">
-          SyncUp
-        </div>
+        <div className="logo">SyncUp</div>
 
         <div className="sidebar-menu">
+          <button className="menu-btn">Dashboard</button>
+          <button className="menu-btn">Explore Projects</button>
+          <button className="menu-btn">Team Finder</button>
 
-          <button className="menu-btn">
-            Dashboard
-          </button>
-
-          <button className="menu-btn">
-            Explore Projects
-          </button>
-
-          <button className="menu-btn">
-            Team Finder
-          </button>
-
-          <button
-            className="menu-btn"
-            onClick={() => navigate("/chat")}
-          >
+          <button className="menu-btn" onClick={() => navigate("/chat")}>
             Messages
           </button>
 
-          <button
-            className="menu-btn"
-            onClick={() => navigate("/notifications")}
-          >
+          <button className="menu-btn" onClick={() => navigate("/notifications")}>
             Notifications
           </button>
 
-          <button
-            className="menu-btn"
-            onClick={() => navigate("/ai-copilot")}
-          >
+          <button className="menu-btn" onClick={() => navigate("/ai-copilot")}>
             AI Copilot
           </button>
 
-          <button
-            className="menu-btn"
-            onClick={() => navigate("/profile")}
-          >
+          <button className="menu-btn" onClick={() => navigate("/profile")}>
             Profile
           </button>
-
         </div>
-
       </aside>
 
       {/* MAIN */}
-
       <main className="main-content">
 
-        {/* TOP NAVBAR */}
-
+        {/* TOPBAR */}
         <div className="topbar">
-
           <div>
-
-            <h1 className="welcome-title">
-              Welcome back, Samiya 👋
-            </h1>
-
+            <h1 className="welcome-title">Welcome back 👋</h1>
             <p className="welcome-subtitle">
               Build startups. Find teammates. Ship products.
             </p>
-
           </div>
 
           <div className="topbar-actions">
-
-            <input
-              className="search-box"
-              placeholder="Search projects..."
-            />
+            <input className="search-box" placeholder="Search projects..." />
 
             <button
               className="create-btn"
@@ -142,324 +116,134 @@ export default function DashboardV2() {
             >
               + Create Project
             </button>
-
           </div>
-
         </div>
 
         {/* STATS */}
-
         <div className="stats-grid">
 
           <div className="stat-card">
             <h3>Projects</h3>
-            <p>8</p>
+            <p>{projects.length}</p>
           </div>
 
           <div className="stat-card">
             <h3>Applications</h3>
-            <p>24</p>
+            <p>{projects.reduce((acc, p) => acc + (p.applicants || 0), 0)}</p>
           </div>
 
           <div className="stat-card">
             <h3>Teams</h3>
-            <p>6</p>
+            <p>{projects.reduce((acc, p) => acc + (p.members || 0), 0)}</p>
           </div>
 
           <div className="stat-card">
             <h3>Communities</h3>
             <p>14</p>
           </div>
-
         </div>
-        {/* RECOMMENDED PROJECTS */}
 
+        {/* RECOMMENDED */}
         <div className="section">
-
-          <div className="section-header">
-            <h2>🔥 Recommended For You</h2>
-          </div>
+          <h2>🔥 Recommended For You</h2>
 
           <div className="recommended-grid">
-
-            {recommendedProjects.map((project, index) => (
-              <div key={index} className="recommended-card">
-
-                <h3>{project}</h3>
-
-                <p>
-                  Recommended based on your interests and startup activity.
-                </p>
-
-                <button className="explore-btn">
-                  Explore →
-                </button>
-
+            {recommendedProjects.map((p, i) => (
+              <div key={i} className="recommended-card">
+                <h3>{p}</h3>
+                <p>Based on your startup activity.</p>
+                <button className="explore-btn">Explore →</button>
               </div>
             ))}
-
           </div>
-
         </div>
 
         {/* PROJECTS */}
-
         <div className="section">
-
-          <div className="section-header">
-
-            <h2>🚀 Startup Projects</h2>
-
-            <button className="browse-btn">
-              Browse All
-            </button>
-
-          </div>
+          <h2>🚀 Startup Projects</h2>
 
           <div className="projects-grid">
-
             {projects.map((project) => (
-
               <div key={project.id} className="project-card">
 
-                <div className="project-top">
-
-                  <div>
-                    <h3>{project.name}</h3>
-
-                    <p className="creator">
-                      Created by {project.creator}
-                    </p>
-                  </div>
-
-                  <span className="status-badge">
-                    {project.status}
-                  </span>
-
-                </div>
+                <h3>{project.name}</h3>
 
                 <p className="project-description">
                   {project.description}
                 </p>
 
                 <div className="tags">
-
-                  {project.tags.map((tag, index) => (
-                    <span key={index} className="tag">
-                      {tag}
-                    </span>
+                  {(project.tags || []).map((t, i) => (
+                    <span key={i} className="tag">{t}</span>
                   ))}
-
                 </div>
 
                 <div className="metrics">
-
-                  <div className="metric">
-                    <span>👥</span>
-                    <strong>{project.members}</strong>
-                    <p>Members</p>
-                  </div>
-
-                  <div className="metric">
-                    <span>📩</span>
-                    <strong>{project.applicants}</strong>
-                    <p>Applicants</p>
-                  </div>
-
-                  <div className="metric">
-                    <span>🚀</span>
-                    <strong>75%</strong>
-                    <p>Progress</p>
-                  </div>
-
+                  <p>👥 {project.members || 0} Members</p>
+                  <p>📩 {project.applicants || 0} Applicants</p>
                 </div>
 
                 <div className="project-actions">
-
                   <button
                     className="primary-btn"
                     onClick={() => navigate(`/project/${project.id}`)}
                   >
-                    View Project
+                    View
                   </button>
-
-                  <button
-                    className="secondary-btn"
-                    onClick={() => navigate(`/manage/${project.id}`)}
-                  >
-                    Manage
-                  </button>
-
-                  <button
-                    className="secondary-btn"
-                    onClick={() => navigate(`/members/${project.id}`)}
-                  >
-                    Members
-                  </button>
-
                 </div>
 
               </div>
-
             ))}
-
           </div>
-
         </div>
+
         {/* TEAM FINDER */}
-
         <div className="section">
-
-          <div className="section-header">
-            <h2>🤝 Team Finder</h2>
-          </div>
+          <h2>🤝 Team Finder</h2>
 
           <div className="team-grid">
+            {teammates.map((m, i) => (
+              <div key={i} className="team-card">
+                <h3>{m.name}</h3>
+                <p>{m.role}</p>
+                <p>{m.match} match</p>
 
-            {teammates.map((member, index) => (
-              <div key={index} className="team-card">
-
-                <div className="team-header">
-                  <div>
-                    <h3>{member.name}</h3>
-                    <p>{member.role}</p>
-                  </div>
-
-                  <div className="match-badge">
-                    {member.match}
-                  </div>
-                </div>
-
-                <div className="team-buttons">
-                  <button className="primary-btn">
-                    Connect
-                  </button>
-
-                  <button
-                    className="secondary-btn"
-                    onClick={() => navigate("/chat")}
-                  >
-                    Message
-                  </button>
-                </div>
-
+                <button className="primary-btn">Connect</button>
               </div>
             ))}
-
           </div>
-
-        </div>
-
-        {/* COMMUNITIES + ACTIVITY */}
-
-        <div className="bottom-grid">
-
-          <div className="community-card">
-
-            <h2>🌍 Communities</h2>
-
-            <div className="community-tags">
-
-              <span>AI</span>
-              <span>Cybersecurity</span>
-              <span>Web Dev</span>
-              <span>Startups</span>
-              <span>AR/VR</span>
-              <span>Design</span>
-              <span>Machine Learning</span>
-              <span>Robotics</span>
-
-            </div>
-
-          </div>
-
-          <div className="activity-card">
-
-            <h2>📈 Activity Feed</h2>
-
-            <div className="activity-item">
-              Sarah joined CampusVerse.
-            </div>
-
-            <div className="activity-item">
-              3 new applications received.
-            </div>
-
-            <div className="activity-item">
-              AI Resume Analyzer reached milestone 2.
-            </div>
-
-            <div className="activity-item">
-              Hackathon registration now open.
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* QUICK ACCESS */}
-
-        <div className="quick-grid">
-
-          <div
-            className="quick-card"
-            onClick={() => navigate("/ai-copilot")}
-          >
-            <h3>🚀 AI Co-Founder</h3>
-            <p>
-              Generate startup ideas, roadmaps and MVP plans.
-            </p>
-          </div>
-
-          <div
-            className="quick-card"
-            onClick={() => navigate("/notifications")}
-          >
-            <h3>🔔 Notifications</h3>
-            <p>
-              Review invitations, applications and updates.
-            </p>
-          </div>
-
-          <div
-            className="quick-card"
-            onClick={() => navigate("/chat")}
-          >
-            <h3>💬 Team Chat</h3>
-            <p>
-              Collaborate with your team in real-time.
-            </p>
-          </div>
-
         </div>
 
       </main>
 
-      {/* CREATE PROJECT MODAL */}
-
+      {/* CREATE MODAL */}
       {showCreateModal && (
-
         <div className="modal-overlay">
-
           <div className="modal">
 
-            <h2>Create New Project</h2>
+            <h2>Create Project</h2>
 
             <input
-              type="text"
               placeholder="Project Name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
               className="modal-input"
             />
 
             <textarea
               placeholder="Project Description"
+              value={projectDesc}
+              onChange={(e) => setProjectDesc(e.target.value)}
               className="modal-textarea"
             />
 
             <div className="modal-actions">
 
-              <button className="primary-btn">
-                Create Project
+              <button
+                className="primary-btn"
+                onClick={handleCreateProject}
+              >
+                Create
               </button>
 
               <button
@@ -472,9 +256,7 @@ export default function DashboardV2() {
             </div>
 
           </div>
-
         </div>
-
       )}
 
     </div>
