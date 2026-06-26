@@ -1,18 +1,13 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function LandingPage() {
-  const navigate = useNavigate();
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const goLogin = () => {
+    window.location.href = "/login";
+  };
 
-  useEffect(() => {
-    const handleScroll = () => setScrollPosition(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const goLogin = () => navigate("/login");
-  const goSignup = () => navigate("/signup");
+  const goSignup = () => {
+    window.location.href = "/signup";
+  };
 
   return (
     <div className="bg-[#050505] text-white overflow-x-hidden">
@@ -20,9 +15,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#67e8f9] to-[#ec4899] flex items-center justify-center text-black font-bold">
-              S
-            </div>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#67e8f9] to-[#ec4899] flex items-center justify-center text-black font-bold">S</div>
             <span className="text-3xl font-bold tracking-tighter">SyncUp</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm">
@@ -30,49 +23,30 @@ export default function LandingPage() {
             <a href="#how" className="hover:text-[#67e8f9] transition">How it Works</a>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={goLogin} className="px-6 py-2.5 hover:text-[#67e8f9] transition">
-              Log in
-            </button>
-            <button onClick={goSignup} className="px-8 py-2.5 bg-white text-black rounded-full font-semibold hover:bg-[#67e8f9] transition">
-              Start Building
-            </button>
+            <button onClick={goLogin} className="px-6 py-2.5 hover:text-[#67e8f9] transition">Log in</button>
+            <button onClick={goSignup} className="px-8 py-2.5 bg-white text-black rounded-full font-semibold hover:bg-[#67e8f9] transition">Start Building</button>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section
-        className="min-h-screen relative flex items-center justify-center pt-16"
-        style={{ background: "radial-gradient(circle at 50% 30%, rgba(103,232,249,0.18) 0%, transparent 70%)" }}
-      >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(circle at 70% ${70 + scrollPosition * 0.05}%, rgba(236,72,153,0.15), transparent)` }}
-        />
-        <div className="relative z-10 text-center px-6 max-w-4xl">
+      <section className="min-h-screen flex items-center justify-center pt-16" style={{ background: "radial-gradient(circle at 50% 30%, rgba(103,232,249,0.18) 0%, transparent 70%)" }}>
+        <div className="text-center px-6 max-w-4xl">
           <div className="mb-6 inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 text-sm">
             <span className="text-lime-400">●</span> NOW LIVE FOR BUILDERS
           </div>
           <h1 className="text-7xl md:text-[5.8rem] leading-none font-bold tracking-[-3px] mb-8">
             BUILD<br />
-            <span className="bg-gradient-to-r from-[#67e8f9] via-[#ec4899] to-[#a3e635] bg-clip-text text-transparent">
-              TOGETHER
-            </span>
+            <span className="bg-gradient-to-r from-[#67e8f9] via-[#ec4899] to-[#a3e635] bg-clip-text text-transparent">TOGETHER</span>
           </h1>
           <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto mb-12">
             The premium collaboration platform where students and builders discover real projects, match with perfect teammates, and ship portfolio-worthy products.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={goSignup}
-              className="px-12 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-[#67e8f9] to-[#ec4899] text-black hover:scale-105 active:scale-95 transition-all"
-            >
+            <button onClick={goSignup} className="px-12 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-[#67e8f9] to-[#ec4899] text-black hover:scale-105 active:scale-95 transition-all">
               Start Building Now
             </button>
-            <button
-              onClick={goLogin}
-              className="px-12 py-6 text-lg font-semibold rounded-2xl border border-white/30 hover:border-white transition-all"
-            >
+            <button onClick={goLogin} className="px-12 py-6 text-lg font-semibold rounded-2xl border border-white/30 hover:border-white transition-all">
               I already have an account
             </button>
           </div>
@@ -128,9 +102,7 @@ export default function LandingPage() {
 
       {/* Final CTA */}
       <section className="py-32 text-center border-t border-white/10 px-6">
-        <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-          Ready to start your next big project?
-        </h2>
+        <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">Ready to start your next big project?</h2>
         <p className="text-2xl text-white/70 mb-12">Join thousands of builders already shipping.</p>
         <button
           onClick={goSignup}
