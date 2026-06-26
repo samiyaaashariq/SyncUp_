@@ -1,11 +1,11 @@
 /* =========================
-   GLOBAL
+   GLOBAL (MODERN PRODUCT UI)
 ========================= */
 
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #0b0f19;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: #0e1117;
   color: #e6e6e6;
 }
 
@@ -20,44 +20,50 @@ body {
 }
 
 /* =========================
-   SIDEBAR
+   SIDEBAR (SUBTLE + CLEAN)
 ========================= */
 
 .sidebar {
   width: 240px;
-  background: #0f1629;
+  background: #111522;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1f2a44;
+  border-right: 1px solid #1e2433;
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: bold;
-  color: #7c5cff;
+  font-size: 20px;
+  font-weight: 600;
+  color: #4f8cff;
   margin-bottom: 30px;
+  letter-spacing: 0.3px;
 }
+
+/* =========================
+   MENU
+========================= */
 
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .menu-btn {
   background: transparent;
   border: none;
-  color: #b5b5b5;
+  color: #aab2c0;
   text-align: left;
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
+  font-size: 14px;
 }
 
 .menu-btn:hover {
-  background: #1b2440;
+  background: #1a2130;
   color: #ffffff;
 }
 
@@ -67,7 +73,7 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 25px;
+  padding: 28px;
   overflow-y: auto;
 }
 
@@ -84,12 +90,14 @@ body {
 
 .welcome-title {
   font-size: 24px;
-  margin: 0;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .welcome-subtitle {
   color: #9aa4b2;
   font-size: 14px;
+  margin-top: 4px;
 }
 
 /* =========================
@@ -102,21 +110,32 @@ body {
 }
 
 .search-box {
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #2a3550;
-  background: #0f1629;
+  border: 1px solid #2a3244;
+  background: #0f1420;
   color: white;
   outline: none;
+  font-size: 14px;
+}
+
+.search-box:focus {
+  border-color: #4f8cff;
 }
 
 .create-btn {
-  background: linear-gradient(135deg, #7c5cff, #5b8cff);
+  background: #4f8cff;
   border: none;
   padding: 10px 14px;
   border-radius: 8px;
   color: white;
   cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.create-btn:hover {
+  background: #3c78e0;
 }
 
 /* =========================
@@ -126,25 +145,28 @@ body {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
+  gap: 14px;
+  margin-bottom: 28px;
 }
 
 .stat-card {
-  background: #0f1629;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #1f2a44;
+  background: #111522;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #1e2433;
 }
 
 .stat-card h3 {
-  font-size: 14px;
+  font-size: 13px;
   color: #9aa4b2;
+  font-weight: 500;
 }
 
 .stat-card p {
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 600;
+  margin-top: 6px;
+  color: #ffffff;
 }
 
 /* =========================
@@ -152,11 +174,14 @@ body {
 ========================= */
 
 .section {
-  margin-bottom: 35px;
+  margin-bottom: 32px;
 }
 
 .section h2 {
-  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #ffffff;
 }
 
 /* =========================
@@ -166,67 +191,83 @@ body {
 .recommended-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
+  gap: 14px;
 }
 
 .recommended-card {
-  background: #0f1629;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #1f2a44;
+  background: #111522;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #1e2433;
 }
 
-.explore-btn {
-  margin-top: 10px;
-  background: transparent;
-  border: 1px solid #2a3550;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
+.recommended-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.recommended-card p {
+  font-size: 13px;
+  color: #9aa4b2;
+  margin-top: 6px;
 }
 
 /* =========================
-   PROJECTS
+   PROJECT CARDS
 ========================= */
 
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  gap: 14px;
 }
 
 .project-card {
-  background: #0f1629;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #1f2a44;
-  transition: 0.2s;
+  background: #111522;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #1e2433;
+  transition: 0.2s ease;
 }
 
 .project-card:hover {
   transform: translateY(-2px);
+  border-color: #2b3550;
+}
+
+.project-card h3 {
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .project-description {
-  color: #9aa4b2;
   font-size: 13px;
+  color: #9aa4b2;
+  margin-top: 6px;
 }
+
+/* =========================
+   TAGS
+========================= */
 
 .tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
-  flex-wrap: wrap;
 }
 
 .tag {
-  background: #1b2440;
-  padding: 4px 8px;
+  background: #1a2130;
+  color: #cfd6e4;
   font-size: 12px;
+  padding: 4px 8px;
   border-radius: 6px;
-  color: #c7d2fe;
 }
+
+/* =========================
+   METRICS
+========================= */
 
 .metrics {
   display: flex;
@@ -241,21 +282,27 @@ body {
 ========================= */
 
 .primary-btn {
-  background: #7c5cff;
+  background: #4f8cff;
   border: none;
   padding: 8px 12px;
   border-radius: 8px;
   color: white;
   cursor: pointer;
+  font-size: 13px;
+}
+
+.primary-btn:hover {
+  background: #3c78e0;
 }
 
 .secondary-btn {
   background: transparent;
-  border: 1px solid #2a3550;
+  border: 1px solid #2a3244;
   padding: 8px 12px;
   border-radius: 8px;
   color: white;
   cursor: pointer;
+  font-size: 13px;
 }
 
 /* =========================
@@ -265,14 +312,14 @@ body {
 .team-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  gap: 14px;
 }
 
 .team-card {
-  background: #0f1629;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #1f2a44;
+  background: #111522;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #1e2433;
 }
 
 /* =========================
@@ -281,10 +328,7 @@ body {
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.6);
   display: flex;
   justify-content: center;
@@ -292,11 +336,11 @@ body {
 }
 
 .modal {
-  background: #0f1629;
+  background: #111522;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   width: 400px;
-  border: 1px solid #1f2a44;
+  border: 1px solid #1e2433;
 }
 
 .modal-input,
@@ -305,8 +349,8 @@ body {
   margin-top: 10px;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #2a3550;
-  background: #0b0f19;
+  border: 1px solid #2a3244;
+  background: #0f1420;
   color: white;
 }
 
