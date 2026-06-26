@@ -64,7 +64,7 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute user={user}><Profile /></ProtectedRoute>
         } />
-        <Route path="/chatbox" element={<ChatBox />} />
+        
         <Route path="/profile/:uid" element={
           <ProtectedRoute user={user}><Profile /></ProtectedRoute>
         } />
