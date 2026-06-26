@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DashboardV2.css";
-import { collection, addDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
 
-import { db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-} from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 
 export default function DashboardV2() {
   const navigate = useNavigate();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-
   const [projects, setProjects] = useState([]);
-
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
 
@@ -40,7 +32,6 @@ export default function DashboardV2() {
         id: doc.id,
         ...doc.data(),
       }));
-
       setProjects(data);
     });
 
@@ -67,30 +58,32 @@ export default function DashboardV2() {
     setShowCreateModal(false);
   };
 
+  // 🔥 APPLY FUNCTION (FIXED LOCATION)
+  const handleApply = async (projectId) => {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Please login first");
+        return;
+      }
+
+      await addDoc(collection(db, "applications"), {
+        projectId: projectId,
+        userEmail: user.email,
+        status: "pending",
+        createdAt: Date.now(),
+      });
+
+      alert("Application sent!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to apply");
+    }
+  };
+
   return (
     <div className="dashboard-container">
-      const handleApply = async (projectId) => {
-  try {
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert("Please login first");
-      return;
-    }
-
-    await addDoc(collection(db, "applications"), {
-      projectId: projectId,
-      userEmail: user.email,
-      status: "pending",
-      createdAt: Date.now()
-    });
-
-    alert("Application sent!");
-  } catch (err) {
-    console.error(err);
-    alert("Failed to apply");
-  }
-};
 
       {/* SIDEBAR */}
       <aside className="sidebar">
@@ -143,45 +136,6 @@ export default function DashboardV2() {
           </div>
         </div>
 
-        {/* STATS */}
-        <div className="stats-grid">
-
-          <div className="stat-card">
-            <h3>Projects</h3>
-            <p>{projects.length}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Applications</h3>
-            <p>{projects.reduce((acc, p) => acc + (p.applicants || 0), 0)}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Teams</h3>
-            <p>{projects.reduce((acc, p) => acc + (p.members || 0), 0)}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Communities</h3>
-            <p>14</p>
-          </div>
-        </div>
-
-        {/* RECOMMENDED */}
-        <div className="section">
-          <h2>🔥 Recommended For You</h2>
-
-          <div className="recommended-grid">
-            {recommendedProjects.map((p, i) => (
-              <div key={i} className="recommended-card">
-                <h3>{p}</h3>
-                <p>Based on your startup activity.</p>
-                <button className="explore-btn">Explore →</button>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* PROJECTS */}
         <div className="section">
           <h2>🚀 Startup Projects</h2>
@@ -214,31 +168,15 @@ export default function DashboardV2() {
                   >
                     View
                   </button>
+
                   <button
-  className="secondary-btn"
-  onClick={() => handleApply(project.id)}
->
-  Apply to Join
-</button>
+                    className="secondary-btn"
+                    onClick={() => handleApply(project.id)}
+                  >
+                    Apply to Join
+                  </button>
                 </div>
 
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* TEAM FINDER */}
-        <div className="section">
-          <h2>🤝 Team Finder</h2>
-
-          <div className="team-grid">
-            {teammates.map((m, i) => (
-              <div key={i} className="team-card">
-                <h3>{m.name}</h3>
-                <p>{m.role}</p>
-                <p>{m.match} match</p>
-
-                <button className="primary-btn">Connect</button>
               </div>
             ))}
           </div>
