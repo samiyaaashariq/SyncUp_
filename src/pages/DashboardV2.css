@@ -464,5 +464,47 @@ textarea::placeholder{
     font-size:26px;
 
 }
+   .dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1c, #1a2338);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(15,23,42,0.98);
+  border-right: 1px solid rgba(103,232,249,0.2);
+  padding: 20px;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  transition: all 0.3s;
+  z-index: 20;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 260px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+/* Add more styles for cards, buttons, responsive grid, etc. as needed */
 
 }
