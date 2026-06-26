@@ -8,9 +8,8 @@ export default function AIProjectCopilot() {
   const [generatedProject, setGeneratedProject] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const user = auth.currentUser;
 
-  const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg";
+  const GEMINI_API_KEY = "AQ.Ab8RN6IklzoYeAaFo4NE01dxtOS51WEOUIY8hcdenN3O2bfeCg"; // Keep your key
 
   const generateProject = async () => {
     if (!idea.trim()) return;
@@ -25,17 +24,16 @@ export default function AIProjectCopilot() {
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: `You are SyncUp AI Project Copilot.
-
+                text: `You are SyncUp AI Project Copilot. 
 User Idea: "${idea}"
 
 Generate a professional, exciting project brief in this exact format:
 
 **🚀 Project Title**
-(A catchy, professional title)
+(A catchy title)
 
 **📝 Description**
-(2-3 strong paragraphs)
+(2-3 inspiring paragraphs)
 
 **🛠 Recommended Tech Stack**
 - Frontend:
@@ -48,7 +46,7 @@ Generate a professional, exciting project brief in this exact format:
 - Feature 2
 - etc.
 
-**👥 Ideal Team Roles** (4-5 roles with why needed)
+**👥 Ideal Team Roles** (4-5 roles)
 
 **📅 Suggested Roadmap**
 1. Week 1-2: ...
@@ -62,17 +60,16 @@ Make it realistic and inspiring for students. Use emojis.`
       );
 
       const data = await res.json();
-      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate project.";
+      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate.";
 
       setGeneratedProject({
         title: idea.slice(0, 60) + (idea.length > 60 ? "..." : ""),
         fullBrief: aiText,
         idea: idea,
-        createdBy: user?.email,
-        members: [user?.uid],
+        createdBy: auth.currentUser?.email,
+        members: [auth.currentUser?.uid],
         status: "planning"
       });
-
     } catch (err) {
       console.error(err);
       alert("AI generation failed. Please try again.");
@@ -83,127 +80,51 @@ Make it realistic and inspiring for students. Use emojis.`
 
   const saveProject = async () => {
     if (!generatedProject) return;
-
     try {
       const docRef = await addDoc(collection(db, "projects"), {
         ...generatedProject,
         createdAt: serverTimestamp(),
       });
-
-      alert("✅ Project Created Successfully!");
+      alert("Project saved successfully!");
       navigate(`/project/${docRef.id}`);
     } catch (e) {
-      console.error(e);
       alert("Failed to save project.");
     }
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0a, #001a14, #002b24)",
-      color: "#e0f2f1",
-      padding: "40px 20px",
-      fontFamily: "Inter, sans-serif"
-    }}>
-      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-        <h1 style={{
-          fontSize: "3rem",
-          textAlign: "center",
-          background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          marginBottom: "10px"
-        }}>
-          AI Project Copilot 🌌
-        </h1>
-        <p style={{ textAlign: "center", color: "#80cbc4", fontSize: "1.2rem" }}>
-          Describe your idea → AI builds complete project plan
-        </p>
+    <div style={styles.container}>
+      <div style={styles.glow} />
 
-        <div style={{ marginTop: "40px" }}>
-          <textarea
-            value={idea}
-            onChange={(e) => setIdea(e.target.value)}
-            placeholder="I want to build a platform where students can find teammates for hackathons..."
-            style={{
-              width: "100%",
-              minHeight: "160px",
-              padding: "20px",
-              fontSize: "1.1rem",
-              background: "#0f172a",
-              border: "1px solid #334155",
-              borderRadius: "16px",
-              color: "#e0f2f1",
-              resize: "vertical"
-            }}
-          />
+      <div style={styles.content}>
+        <h1 style={styles.title}>AI Project Copilot 🌌</h1>
+        <p style={styles.subtitle}>Describe your idea. AI builds a complete professional project plan.</p>
 
-          <button
-            onClick={generateProject}
-            disabled={loading || !idea.trim()}
-            style={{
-              marginTop: "20px",
-              padding: "16px 40px",
-              background: "linear-gradient(90deg, #00ff9f, #00b8d4)",
-              color: "#0a0a0a",
-              border: "none",
-              borderRadius: "50px",
-              fontSize: "1.15rem",
-              fontWeight: "700",
-              cursor: loading ? "not-allowed" : "pointer",
-              width: "100%"
-            }}
-          >
-            {loading ? "Generating Project Brief..." : "Generate Project with AI"}
-          </button>
-        </div>
+        <textarea
+          value={idea}
+          onChange={(e) => setIdea(e.target.value)}
+          placeholder="I want to build a platform where students can find teammates for hackathons..."
+          style={styles.textarea}
+        />
+
+        <button
+          onClick={generateProject}
+          disabled={loading || !idea.trim()}
+          style={styles.generateBtn}
+        >
+          {loading ? "Generating Magic..." : "✨ Generate Project with AI"}
+        </button>
 
         {generatedProject && (
-          <div style={{
-            marginTop: "50px",
-            background: "rgba(15, 23, 42, 0.95)",
-            padding: "30px",
-            borderRadius: "16px",
-            border: "1px solid #334155"
-          }}>
-            <h2 style={{ color: "#00ff9f" }}>AI Generated Project</h2>
-            <div style={{ 
-              whiteSpace: "pre-wrap", 
-              lineHeight: "1.8", 
-              marginTop: "20px",
-              background: "#0f172a",
-              padding: "25px",
-              borderRadius: "12px"
-            }}>
-              {generatedProject.fullBrief}
-            </div>
+          <div style={styles.result}>
+            <h2 style={styles.resultTitle}>AI Generated Project</h2>
+            <div style={styles.brief}>{generatedProject.fullBrief}</div>
 
-            <div style={{ marginTop: "30px", display: "flex", gap: "15px", flexWrap: "wrap" }}>
-              <button
-                onClick={saveProject}
-                style={{
-                  padding: "16px 36px",
-                  background: "#00ff9f",
-                  color: "#0a0a0a",
-                  border: "none",
-                  borderRadius: "50px",
-                  fontWeight: "700"
-                }}
-              >
-                ✅ Save Project & Continue
+            <div style={styles.actions}>
+              <button onClick={saveProject} style={styles.saveBtn}>
+                ✅ Save & Continue to Project
               </button>
-
-              <button
-                onClick={() => setGeneratedProject(null)}
-                style={{
-                  padding: "16px 36px",
-                  background: "transparent",
-                  color: "#80cbc4",
-                  border: "2px solid #334155",
-                  borderRadius: "50px"
-                }}
-              >
+              <button onClick={() => setGeneratedProject(null)} style={styles.newBtn}>
                 Generate Another Idea
               </button>
             </div>
@@ -213,3 +134,109 @@ Make it realistic and inspiring for students. Use emojis.`
     </div>
   );
 }
+
+/* ====================== PREMIUM STYLES ====================== */
+const styles = {
+  container: {
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "Inter, system-ui, sans-serif",
+    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)",
+    color: "#fff",
+    padding: "40px 20px",
+    position: "relative",
+    overflow: "hidden",
+  },
+  glow: {
+    position: "absolute",
+    inset: 0,
+    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.15), transparent 60%), 
+                 radial-gradient(circle at 80% 30%, rgba(79,140,255,0.12), transparent 70%)`,
+    zIndex: 0,
+  },
+  content: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    position: "relative",
+    zIndex: 1,
+  },
+  title: {
+    fontSize: "2.8rem",
+    textAlign: "center",
+    background: "linear-gradient(90deg, #ec4899, #4f8cff)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    marginBottom: "12px",
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#b7c0d1",
+    fontSize: "1.25rem",
+    marginBottom: "40px",
+  },
+  textarea: {
+    width: "100%",
+    minHeight: "180px",
+    padding: "22px",
+    fontSize: "1.1rem",
+    background: "rgba(15,23,42,0.85)",
+    border: "1px solid rgba(79,140,255,0.3)",
+    borderRadius: "20px",
+    color: "#fff",
+    resize: "vertical",
+    marginBottom: "24px",
+  },
+  generateBtn: {
+    width: "100%",
+    padding: "18px",
+    fontSize: "1.2rem",
+    fontWeight: 600,
+    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "999px",
+    cursor: "pointer",
+    marginBottom: "40px",
+  },
+  result: {
+    background: "rgba(15,23,42,0.9)",
+    border: "1px solid rgba(79,140,255,0.25)",
+    borderRadius: "22px",
+    padding: "36px",
+  },
+  resultTitle: {
+    color: "#ec4899",
+    marginBottom: "20px",
+  },
+  brief: {
+    whiteSpace: "pre-wrap",
+    lineHeight: "1.8",
+    background: "rgba(0,0,0,0.3)",
+    padding: "28px",
+    borderRadius: "16px",
+    fontSize: "15px",
+    marginBottom: "32px",
+  },
+  actions: {
+    display: "flex",
+    gap: "16px",
+    flexWrap: "wrap",
+  },
+  saveBtn: {
+    padding: "16px 36px",
+    background: "#ec4899",
+    color: "white",
+    border: "none",
+    borderRadius: "999px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  newBtn: {
+    padding: "16px 36px",
+    background: "transparent",
+    color: "#b7c0d1",
+    border: "1px solid rgba(255,255,255,0.3)",
+    borderRadius: "999px",
+    cursor: "pointer",
+  },
+};
