@@ -1,16 +1,16 @@
 /* =========================
-   GLOBAL (MODERN PRODUCT UI)
+   GLOBAL BACKGROUND (AURORA BLUE)
 ========================= */
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: #0e1117;
-  color: #e6e6e6;
+  font-family: "Inter", system-ui, sans-serif;
+  background: linear-gradient(135deg, #d9ecff 0%, #b9d8ff 40%, #1c2b4a 100%);
+  color: #0f172a;
 }
 
 /* =========================
-   LAYOUT
+   MAIN LAYOUT
 ========================= */
 
 .dashboard-container {
@@ -20,55 +20,50 @@ body {
 }
 
 /* =========================
-   SIDEBAR (SUBTLE + CLEAN)
+   SIDEBAR (SOFT DARK PANEL)
 ========================= */
 
 .sidebar {
   width: 240px;
-  background: #111522;
+  background: rgba(10, 18, 40, 0.85);
+  backdrop-filter: blur(12px);
   padding: 20px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1e2433;
+  border-right: 1px solid rgba(255,255,255,0.1);
 }
 
 .logo {
   font-size: 20px;
-  font-weight: 600;
-  color: #4f8cff;
+  font-weight: 700;
+  color: #7dd3fc; /* soft neon blue */
   margin-bottom: 30px;
-  letter-spacing: 0.3px;
+  text-shadow: 0 0 8px rgba(125, 211, 252, 0.4);
 }
 
 /* =========================
    MENU
 ========================= */
 
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .menu-btn {
   background: transparent;
   border: none;
-  color: #aab2c0;
+  color: #cbd5e1;
   text-align: left;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.2s ease;
-  font-size: 14px;
+  transition: 0.2s;
 }
 
 .menu-btn:hover {
-  background: #1a2130;
+  background: rgba(125, 211, 252, 0.15);
   color: #ffffff;
+  transform: translateX(3px);
 }
 
 /* =========================
-   MAIN
+   MAIN AREA
 ========================= */
 
 .main-content {
@@ -81,188 +76,120 @@ body {
    TOPBAR
 ========================= */
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
 .welcome-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
 }
 
 .welcome-subtitle {
-  color: #9aa4b2;
+  color: #334155;
   font-size: 14px;
-  margin-top: 4px;
 }
 
 /* =========================
    SEARCH + BUTTON
 ========================= */
 
-.topbar-actions {
-  display: flex;
-  gap: 10px;
-}
-
 .search-box {
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #2a3244;
-  background: #0f1420;
-  color: white;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  background: rgba(255,255,255,0.6);
+  color: #0f172a;
   outline: none;
-  font-size: 14px;
+  backdrop-filter: blur(8px);
 }
 
 .search-box:focus {
-  border-color: #4f8cff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
 .create-btn {
-  background: #4f8cff;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
   border: none;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.create-btn:hover {
-  background: #3c78e0;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
 }
 
 /* =========================
-   STATS
+   STATS (GLASS CARDS)
 ========================= */
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
 .stat-card {
-  background: #111522;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
   padding: 16px;
-  border-radius: 10px;
-  border: 1px solid #1e2433;
 }
 
 .stat-card h3 {
   font-size: 13px;
-  color: #9aa4b2;
-  font-weight: 500;
+  color: #334155;
 }
 
 .stat-card p {
-  font-size: 20px;
-  font-weight: 600;
-  margin-top: 6px;
-  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 /* =========================
-   SECTION
+   SECTION HEADINGS
 ========================= */
-
-.section {
-  margin-bottom: 32px;
-}
 
 .section h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  color: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
 }
 
 /* =========================
-   RECOMMENDED
+   PROJECT CARDS (DARK BUBBLES)
 ========================= */
-
-.recommended-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.recommended-card {
-  background: #111522;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #1e2433;
-}
-
-.recommended-card h3 {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.recommended-card p {
-  font-size: 13px;
-  color: #9aa4b2;
-  margin-top: 6px;
-}
-
-/* =========================
-   PROJECT CARDS
-========================= */
-
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
 
 .project-card {
-  background: #111522;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 18px;
   padding: 16px;
-  border-radius: 10px;
-  border: 1px solid #1e2433;
-  transition: 0.2s ease;
+  color: white;
+  backdrop-filter: blur(12px);
+  transition: 0.25s;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
 .project-card:hover {
-  transform: translateY(-2px);
-  border-color: #2b3550;
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.25);
 }
 
 .project-card h3 {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .project-description {
   font-size: 13px;
-  color: #9aa4b2;
-  margin-top: 6px;
+  color: #cbd5e1;
 }
 
 /* =========================
-   TAGS
+   TAGS (NEON TOUCH)
 ========================= */
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
 .tag {
-  background: #1a2130;
-  color: #cfd6e4;
-  font-size: 12px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 /* =========================
@@ -270,77 +197,82 @@ body {
 ========================= */
 
 .metrics {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  color: #cbd5e1;
   font-size: 13px;
-  color: #9aa4b2;
 }
 
 /* =========================
-   BUTTONS
+   BUTTONS (SUBTLE NEON)
 ========================= */
 
 .primary-btn {
-  background: #4f8cff;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
   border: none;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   cursor: pointer;
-  font-size: 13px;
+  transition: 0.2s;
 }
 
 .primary-btn:hover {
-  background: #3c78e0;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
 .secondary-btn {
-  background: transparent;
-  border: 1px solid #2a3244;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
   padding: 8px 12px;
-  border-radius: 8px;
-  color: white;
+  border-radius: 10px;
+  color: #0f172a;
   cursor: pointer;
-  font-size: 13px;
 }
 
 /* =========================
-   TEAM
+   RECOMMENDED CARDS
 ========================= */
 
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.team-card {
-  background: #111522;
+.recommended-card {
+  background: rgba(255,255,255,0.4);
+  border-radius: 14px;
   padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #1e2433;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
 /* =========================
-   MODAL
+   TEAM CARDS (MATCH STYLE)
+========================= */
+
+.team-card {
+  background: rgba(15, 23, 42, 0.92);
+  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+/* =========================
+   MODAL (GLASS + DARK)
 ========================= */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.4);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .modal {
-  background: #111522;
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 14px;
   padding: 20px;
-  border-radius: 10px;
   width: 400px;
-  border: 1px solid #1e2433;
+  color: white;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  backdrop-filter: blur(12px);
 }
 
 .modal-input,
@@ -348,20 +280,8 @@ body {
   width: 100%;
   margin-top: 10px;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #2a3244;
-  background: #0f1420;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
   color: white;
-}
-
-.modal-textarea {
-  height: 100px;
-  resize: none;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
 }
