@@ -10,6 +10,8 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import ChatBox from "./pages/ChatBox"; // adjust path if needed
+
 import Profile from "./pages/Profile";
 import ProjectDetails from "./pages/ProjectDetails";
 import ProjectChat from "./pages/ProjectChat";
@@ -75,8 +77,7 @@ function App() {
         <Route path="/discover" element={<ProtectedRoute user={user}><ProjectDiscovery /></ProtectedRoute>} />
         <Route path="/team-match" element={<ProtectedRoute user={user}><TeamMatcher /></ProtectedRoute>} />
       
-        <Route path="/messages" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
-
+         <Route path="/messages" element={<ProtectedRoute user={user}><ChatBox /></ProtectedRoute>} />
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
