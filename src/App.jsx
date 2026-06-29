@@ -74,6 +74,8 @@ function App() {
         {/* New Routes */}
         <Route path="/discover" element={<ProtectedRoute user={user}><ProjectDiscovery /></ProtectedRoute>} />
         <Route path="/team-match" element={<ProtectedRoute user={user}><TeamMatcher /></ProtectedRoute>} />
+      
+        <Route path="/messages" element={<ProtectedRoute user={user}><ProjectChat /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
