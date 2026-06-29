@@ -50,7 +50,7 @@ export default function DashboardV2() {
           <button className="menu-btn active" onClick={() => { window.scrollTo({top:0, behavior:'smooth'}); setSidebarOpen(false); }}>🏠 Dashboard</button>
           <button className="menu-btn" onClick={() => { projectsRef.current?.scrollIntoView({behavior:'smooth'}); setSidebarOpen(false); }}>🔍 Discover Projects</button>
           <button className="menu-btn" onClick={() => { teamRef.current?.scrollIntoView({behavior:'smooth'}); setSidebarOpen(false); }}>👥 Team Finder</button>
-          <button className="menu-btn" onClick={() => navigate("/chatbox")}>💬 Messages</button>
+         <button className="menu-btn" onClick={() => navigate("/messages")}>💬 Messages</button>
           <button className="menu-btn" onClick={() => navigate("/ai-copilot")}>🤖 AI Copilot</button>
           <button className="menu-btn" onClick={() => navigate("/profile")}>👤 Profile</button>
         </nav>
