@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+     
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     } finally {
