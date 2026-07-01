@@ -53,8 +53,8 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
-        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
+        <Route path="/login" element={user ? <Navigate to="/login" /> : <Login />} />
+        <Route path="/signup" element={user ? <Navigate to="/signup" /> : <Signup />} />
 
         {/* Protected Routes */}
         <Route path="/home" element={<ProtectedRoute user={user}><Home /></ProtectedRoute>} />
