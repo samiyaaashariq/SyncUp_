@@ -1,252 +1,121 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { auth, db } from "../firebase";
-import { sendNotification } from "../notifications";
-import {
-  collection,
-  onSnapshot,
-  doc,
-  updateDoc,
-  setDoc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import { useParams, useNavigate } from "react-router-dom";
+import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 export default function ProjectMembers() {
   const { id } = useParams();
-
-  const [members, setMembers] = useState([]);
-  const [applications, setApplications] = useState([]);
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = auth.currentUser;
+  const currentUser = auth.currentUser;
 
-  const isOwner = project?.createdBy === user?.email;
-
-  /* ================= GET PROJECT ================= */
   useEffect(() => {
     const fetchProject = async () => {
-      const ref = doc(db, "projects", id);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        setProject(snap.data());
+      try {
+        const ref = doc(db, "projects", id);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setProject({ id: snap.id, ...snap.data() });
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchProject();
   }, [id]);
 
-  /* ================= GET MEMBERS ================= */
-  useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "projects", id, "members"),
-      (snap) => {
-        setMembers(
-          snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          }))
-        );
-      }
-    );
+  const isCreator = project && currentUser && project.creator === currentUser.email;
 
-    return () => unsub();
-  }, [id]);
-
-  /* ================= GET APPLICATIONS ================= */
-  useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "projects", id, "applications"),
-      (snap) => {
-        setApplications(
-          snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          }))
-        );
-      }
-    );
-
-    return () => unsub();
-  }, [id]);
-
-  /* ================= ACCEPT USER ================= */
-  const acceptUser = async (appId, email) => {
-    if (!isOwner) return;
-
-    const ref = doc(db, "projects", id, "applications", appId);
-
-    await updateDoc(ref, {
-      status: "accepted",
-    });
-
-    await setDoc(doc(db, "projects", id, "members", email), {
-      email,
-      role: "member",
-      joinedAt: new Date(),
-    });
-
-    // 🔔 NOTIFICATION
-    await sendNotification({
-      to: email,
-      text: `You were accepted into project: ${project.title}`,
-      type: "accepted",
-      projectId: id,
-    });
+  const handleRemove = async (uid) => {
+    if (!window.confirm("Remove this member from the project?")) return;
+    try {
+      const ref = doc(db, "projects", id);
+      await updateDoc(ref, { members: arrayRemove(uid) });
+      setProject((prev) => ({
+        ...prev,
+        members: prev.members.filter((m) => m !== uid),
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to remove member.");
+    }
   };
 
-  /* ================= REJECT USER ================= */
-  const rejectUser = async (appId, email) => {
-    if (!isOwner) return;
+  if (loading) return <div style={styles.container}><p style={styles.muted}>Loading...</p></div>;
+  if (!project) return <div style={styles.container}><p style={styles.muted}>Project not found.</p></div>;
 
-    const ref = doc(db, "projects", id, "applications", appId);
-
-    await updateDoc(ref, {
-      status: "rejected",
-    });
-
-    // 🔔 NOTIFICATION
-    await sendNotification({
-      to: email,
-      text: `Your application was rejected from: ${project.title}`,
-      type: "rejected",
-      projectId: id,
-    });
-  };
-
-  /* ================= KICK MEMBER ================= */
-  const kickUser = async (email) => {
-    if (!isOwner) return;
-
-    await deleteDoc(doc(db, "projects", id, "members", email));
-
-    // 🔔 NOTIFICATION
-    await sendNotification({
-      to: email,
-      text: `You were removed from project: ${project.title}`,
-      type: "kicked",
-      projectId: id,
-    });
-  };
+  const members = project.members || [];
 
   return (
-    <div style={styles.page}>
-      <h2 style={styles.title}>👑 Project Control Panel</h2>
+    <div style={styles.container}>
+      <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>← Back</button>
 
-      {/* ================= MEMBERS ================= */}
-      <h3 style={styles.section}>👥 Members</h3>
+      <div style={styles.card}>
+        <h1 style={styles.title}>Team Members</h1>
+        <p style={styles.subtitle}>Creator: {project.creator}</p>
 
-      {members.length === 0 ? (
-        <p style={{ color: "#94a3b8" }}>No members yet</p>
-      ) : (
-        members.map((m) => (
-          <div key={m.id} style={styles.card}>
-            <p>👤 {m.email}</p>
-            <p style={{ color: "#94a3b8" }}>{m.role}</p>
-
-            {isOwner && (
-              <button
-                onClick={() => kickUser(m.email)}
-                style={styles.kickBtn}
-              >
-                ❌ Kick
-              </button>
-            )}
-          </div>
-        ))
-      )}
-
-      {/* ================= APPLICATIONS ================= */}
-      <h3 style={styles.section}>📩 Applications</h3>
-
-      {applications.length === 0 ? (
-        <p style={{ color: "#94a3b8" }}>No applications yet</p>
-      ) : (
-        applications.map((a) => (
-          <div key={a.id} style={styles.card}>
-            <p>👤 {a.applicant}</p>
-            <p>Status: {a.status}</p>
-
-            {a.status === "pending" && isOwner && (
-              <div style={styles.row}>
-                <button
-                  onClick={() => acceptUser(a.id, a.applicant)}
-                  style={styles.accept}
-                >
-                  ✅ Accept
-                </button>
-
-                <button
-                  onClick={() => rejectUser(a.id, a.applicant)}
-                  style={styles.reject}
-                >
-                  ❌ Reject
-                </button>
+        {members.length === 0 ? (
+          <p style={styles.muted}>No members have joined yet.</p>
+        ) : (
+          <div style={styles.list}>
+            {members.map((uid) => (
+              <div key={uid} style={styles.memberRow}>
+                <span style={styles.uid}>{uid}</span>
+                {isCreator && (
+                  <button style={styles.removeBtn} onClick={() => handleRemove(uid)}>
+                    Remove
+                  </button>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-/* ================= STYLES ================= */
 const styles = {
-  page: {
-    padding: "20px",
-    minHeight: "100vh",
-    background: "#0b1120",
-    color: "#fff",
-  },
-
-  title: {
-    color: "#22d3ee",
+  container: { padding: "30px 20px", maxWidth: "700px", margin: "0 auto", color: "#fff" },
+  muted: { color: "#94a3b8" },
+  backBtn: {
+    background: "transparent",
+    border: "1px solid rgba(103,232,249,0.3)",
+    color: "#67e8f9",
+    padding: "8px 16px",
+    borderRadius: "10px",
+    cursor: "pointer",
     marginBottom: "20px",
   },
-
-  section: {
-    color: "#38bdf8",
-    marginTop: "20px",
-  },
-
   card: {
-    padding: "15px",
-    border: "1px solid #22d3ee",
-    borderRadius: "10px",
-    marginBottom: "10px",
-    background: "#111827",
+    background: "rgba(15,23,42,0.95)",
+    border: "1px solid rgba(103,232,249,0.3)",
+    borderRadius: "20px",
+    padding: "30px",
   },
-
-  row: {
+  title: { color: "#c084fc", marginBottom: "8px" },
+  subtitle: { color: "#94a3b8", marginBottom: "24px" },
+  list: { display: "flex", flexDirection: "column", gap: "10px" },
+  memberRow: {
     display: "flex",
-    gap: "10px",
-    marginTop: "10px",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "rgba(103,232,249,0.08)",
+    padding: "12px 16px",
+    borderRadius: "12px",
   },
-
-  accept: {
-    padding: "8px",
-    background: "#22c55e",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-  },
-
-  reject: {
-    padding: "8px",
-    background: "#ef4444",
-    border: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-  },
-
-  kickBtn: {
-    marginTop: "10px",
-    padding: "6px",
-    background: "#ef4444",
-    border: "none",
-    borderRadius: "6px",
-    color: "#fff",
+  uid: { color: "#67e8f9", fontFamily: "monospace", fontSize: "0.9rem" },
+  removeBtn: {
+    background: "transparent",
+    color: "#f87171",
+    border: "1px solid #f87171",
+    padding: "6px 14px",
+    borderRadius: "999px",
+    fontSize: "0.85rem",
+    cursor: "pointer",
   },
 };
