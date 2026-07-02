@@ -228,8 +228,7 @@ export default function ProjectDetails() {
       <style>{cssBlock}</style>
 
       <div className="pdContainer">
-        <button className="pdBackBtn" onClick={() => navigate(-1)}>← Back</button>
-
+        <<button className="pdBackBtn" onClick={() => navigate("/dashboard")}>← Back</button>
         <div className="pdHero">
           <div className="heroBlob heroBlobA" />
           <div className="heroBlob heroBlobB" />
