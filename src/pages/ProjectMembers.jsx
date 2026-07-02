@@ -52,8 +52,9 @@ export default function ProjectMembers() {
 
   return (
     <div style={styles.container}>
-      <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>← Back</button>
-
+      <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>
+  ← Back
+</button>
       <div style={styles.card}>
         <h1 style={styles.title}>Team Members</h1>
         <p style={styles.subtitle}>Creator: {project.creator}</p>
