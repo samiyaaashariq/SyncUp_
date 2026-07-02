@@ -77,8 +77,8 @@ export default function ProjectManage() {
           <h2 style={{ color: "#f87171" }}>🚫 Access Denied</h2>
           <p style={styles.muted}>Only the project creator can manage this project.</p>
           <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>
-            ← Back to Project
-          </button>
+  ← Back
+</button>
         </div>
       </div>
     );
