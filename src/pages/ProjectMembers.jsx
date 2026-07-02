@@ -37,7 +37,7 @@ export default function ProjectMembers() {
       await updateDoc(ref, { members: arrayRemove(uid) });
       setProject((prev) => ({
         ...prev,
-        members: prev.members.filter((m) => m !== uid),
+        members: (Array.isArray(prev.members) ? prev.members : []).filter((m) => m !== uid),
       }));
     } catch (err) {
       console.error(err);
@@ -48,7 +48,7 @@ export default function ProjectMembers() {
   if (loading) return <div style={styles.container}><p style={styles.muted}>Loading...</p></div>;
   if (!project) return <div style={styles.container}><p style={styles.muted}>Project not found.</p></div>;
 
-  const members = project.members || [];
+  const members = Array.isArray(project.members) ? project.members : [];
 
   return (
     <div style={styles.container}>
