@@ -33,7 +33,7 @@ export default function ProjectDiscovery() {
   const isMember = (project) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return false;
-    const inMembers = project.members?.includes(currentUser.uid);
+    const inMembers = Array.isArray(project.members) && project.members.includes(currentUser.uid);
     const isCreator = project.creator === currentUser.email;
     return inMembers || isCreator;
   };
@@ -48,7 +48,7 @@ export default function ProjectDiscovery() {
       setProjects((prev) =>
         prev.map((p) =>
           p.id === project.id
-            ? { ...p, members: [...(p.members || []), currentUser.uid] }
+            ? { ...p, members: [...(Array.isArray(p.members) ? p.members : []), currentUser.uid] }
             : p
         )
       );
