@@ -40,7 +40,8 @@ export default function ProjectChat() {
         const data = { id: snap.id, ...snap.data() };
         setProject(data);
         const isMember =
-          data.members?.includes(currentUser.uid) || data.creator === currentUser.email;
+          (Array.isArray(data.members) && data.members.includes(currentUser.uid)) ||
+          data.creator === currentUser.email;
         setHasAccess(isMember);
       } catch (err) {
         console.error(err);
