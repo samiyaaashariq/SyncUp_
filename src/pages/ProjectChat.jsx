@@ -1,232 +1,202 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase";
 import {
+  doc,
+  getDoc,
   collection,
   addDoc,
-  onSnapshot,
   query,
   orderBy,
+  onSnapshot,
   serverTimestamp,
-  doc,
-  updateDoc,
 } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 export default function ProjectChat() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [project, setProject] = useState(null);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const endRef = useRef(null);
+  const [text, setText] = useState("");
+  const bottomRef = useRef(null);
 
-  const user = auth.currentUser;
+  const currentUser = auth.currentUser;
 
   useEffect(() => {
-    if (!user || !id) {
-      navigate("/dashboard");
-      return;
-    }
+    const checkAccess = async () => {
+      if (!currentUser) {
+        navigate("/login");
+        return;
+      }
+      try {
+        const ref = doc(db, "projects", id);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          setCheckingAccess(false);
+          return;
+        }
+        const data = { id: snap.id, ...snap.data() };
+        setProject(data);
+        const isMember =
+          data.members?.includes(currentUser.uid) || data.creator === currentUser.email;
+        setHasAccess(isMember);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+    checkAccess();
+  }, [id, currentUser, navigate]);
 
+  useEffect(() => {
+    if (!hasAccess) return;
     const q = query(
       collection(db, "projects", id, "messages"),
-      orderBy("createdAt")
+      orderBy("createdAt", "asc")
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
+      setMessages(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-
     return () => unsubscribe();
-  }, [id, user, navigate]);
+  }, [hasAccess, id]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !user) return;
-
-    await addDoc(collection(db, "projects", id, "messages"), {
-      text: input.trim(),
-      sender: user.email,
-      createdAt: serverTimestamp(),
-      reactions: {},
-    });
-
-    setInput("");
+    if (!text.trim()) return;
+    try {
+      await addDoc(collection(db, "projects", id, "messages"), {
+        text: text.trim(),
+        senderId: currentUser.uid,
+        senderEmail: currentUser.email,
+        createdAt: serverTimestamp(),
+      });
+      setText("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const addReaction = async (messageId, emoji) => {
-    const msgRef = doc(db, "projects", id, "messages", messageId);
-    const msg = messages.find(m => m.id === messageId);
+  if (checkingAccess) {
+    return <div style={styles.container}><p style={styles.muted}>Checking access...</p></div>;
+  }
 
-    const currentReactions = msg.reactions || {};
-    const currentCount = currentReactions[emoji] || 0;
-
-    await updateDoc(msgRef, {
-      [`reactions.${emoji}`]: currentCount + 1,
-    });
-  };
-
-  if (loading) return <div style={styles.loading}>Loading chat...</div>;
+  if (!hasAccess) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.deniedCard}>
+          <h2 style={{ color: "#f87171" }}>🚫 Access Denied</h2>
+          <p style={styles.muted}>Only project members can access this chat room.</p>
+          <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>
+            ← Back to Project
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
-      <div style={styles.glow} />
-
       <div style={styles.header}>
-        <button onClick={() => navigate("/dashboard")} style={styles.backBtn}>← Back</button>
-        <h1 style={styles.title}>💬 Project Chat</h1>
+        <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>← Back</button>
+        <h2 style={styles.title}>{project?.title} — Chat</h2>
       </div>
 
-      <div style={styles.chatBox}>
+      <div style={styles.messagesBox}>
+        {messages.length === 0 && <p style={styles.muted}>No messages yet. Say hi 👋</p>}
         {messages.map((msg) => (
           <div
             key={msg.id}
             style={{
-              ...styles.message,
-              alignSelf: msg.sender === user.email ? "flex-end" : "flex-start",
-              background: msg.sender === user.email ? "#ec4899" : "rgba(79,140,255,0.2)",
+              ...styles.messageBubble,
+              alignSelf: msg.senderId === currentUser.uid ? "flex-end" : "flex-start",
+              background:
+                msg.senderId === currentUser.uid
+                  ? "linear-gradient(135deg, #ec4899, #c084fc)"
+                  : "rgba(103,232,249,0.1)",
             }}
           >
-            <small style={styles.sender}>{msg.sender}</small>
-            {msg.text}
-
-            {/* Reactions */}
-            <div style={styles.reactions}>
-              {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
-                <span key={emoji} style={styles.reaction} onClick={() => addReaction(msg.id, emoji)}>
-                  {emoji} {count}
-                </span>
-              ))}
-              <span style={styles.addReaction} onClick={() => {
-                const emoji = prompt("Enter emoji (❤️, 👍, 😂, 🎉, 👏)");
-                if (emoji) addReaction(msg.id, emoji);
-              }}>+</span>
-            </div>
+            <p style={styles.sender}>{msg.senderEmail}</p>
+            <p style={styles.messageText}>{msg.text}</p>
           </div>
         ))}
-
-        <div ref={endRef} />
+        <div ref={bottomRef} />
       </div>
 
-      <div style={styles.inputArea}>
+      <div style={styles.inputRow}>
         <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Type a message..."
           style={styles.input}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Type a message..."
         />
-        <button onClick={sendMessage} style={styles.sendBtn}>Send</button>
+        <button style={styles.sendBtn} onClick={sendMessage}>Send</button>
       </div>
     </div>
   );
 }
 
-/* ====================== STYLES ====================== */
 const styles = {
-  container: {
-    minHeight: "100vh",
-    width: "100%",
-    fontFamily: "Inter, system-ui, sans-serif",
-    background: "linear-gradient(135deg, #0b1020 0%, #0f172a 45%, #050814 100%)",
-    color: "#fff",
-    padding: "40px 20px",
-    position: "relative",
-  },
-  glow: {
-    position: "absolute",
-    inset: 0,
-    background: `radial-gradient(circle at 20% 20%, rgba(236,72,153,0.15), transparent 60%), 
-                 radial-gradient(circle at 80% 30%, rgba(79,140,255,0.12), transparent 70%)`,
-    zIndex: 0,
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-    marginBottom: "32px",
-  },
+  container: { padding: "20px", maxWidth: "800px", margin: "0 auto", color: "#fff", display: "flex", flexDirection: "column", height: "85vh" },
+  muted: { color: "#94a3b8" },
+  header: { display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" },
+  title: { color: "#c084fc" },
   backBtn: {
-    padding: "10px 18px",
-    background: "rgba(255,255,255,0.1)",
-    border: "1px solid rgba(255,255,255,0.3)",
-    borderRadius: "999px",
-    color: "#fff",
+    background: "transparent",
+    border: "1px solid rgba(103,232,249,0.3)",
+    color: "#67e8f9",
+    padding: "8px 16px",
+    borderRadius: "10px",
     cursor: "pointer",
   },
-  title: {
-    fontSize: "28px",
-    background: "linear-gradient(90deg, #ec4899, #4f8cff)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-  chatBox: {
-    background: "rgba(15,23,42,0.85)",
-    border: "1px solid rgba(79,140,255,0.25)",
+  deniedCard: {
+    background: "rgba(15,23,42,0.95)",
+    border: "1px solid rgba(248,113,113,0.4)",
     borderRadius: "20px",
-    height: "520px",
-    padding: "24px",
+    padding: "40px",
+    textAlign: "center",
+  },
+  messagesBox: {
+    flex: 1,
     overflowY: "auto",
-    marginBottom: "20px",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
+    padding: "16px",
+    background: "rgba(15,23,42,0.6)",
+    borderRadius: "16px",
+    marginBottom: "16px",
   },
-  message: {
+  messageBubble: {
     maxWidth: "70%",
-    padding: "12px 18px",
-    borderRadius: "18px",
+    padding: "10px 14px",
+    borderRadius: "14px",
     color: "#fff",
-    position: "relative",
   },
-  sender: {
-    fontSize: "12px",
-    opacity: 0.7,
-    display: "block",
-    marginBottom: "4px",
-  },
-  reactions: {
-    marginTop: "6px",
-    display: "flex",
-    gap: "6px",
-  },
-  reaction: {
-    background: "rgba(255,255,255,0.15)",
-    padding: "2px 8px",
-    borderRadius: "999px",
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-  addReaction: {
-    background: "rgba(255,255,255,0.15)",
-    padding: "2px 8px",
-    borderRadius: "999px",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
-  inputArea: {
-    display: "flex",
-    gap: "12px",
-  },
+  sender: { fontSize: "0.75rem", color: "#e2e8f0", marginBottom: "4px", opacity: 0.8 },
+  messageText: { margin: 0 },
+  inputRow: { display: "flex", gap: "10px" },
   input: {
     flex: 1,
-    padding: "16px",
-    borderRadius: "999px",
-    border: "1px solid rgba(79,140,255,0.3)",
-    background: "rgba(15,23,42,0.8)",
+    padding: "14px",
+    background: "rgba(15,23,42,0.9)",
+    border: "1px solid #67e8f9",
+    borderRadius: "12px",
     color: "#fff",
-    fontSize: "15px",
+    fontSize: "1rem",
   },
   sendBtn: {
-    padding: "16px 32px",
-    background: "linear-gradient(135deg, #ec4899, #4f8cff)",
-    color: "white",
+    padding: "14px 24px",
+    background: "linear-gradient(135deg, #ec4899, #c084fc)",
+    color: "#fff",
     border: "none",
-    borderRadius: "999px",
+    borderRadius: "12px",
     fontWeight: 600,
     cursor: "pointer",
   },
