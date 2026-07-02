@@ -18,7 +18,7 @@ export default function AIProjectCopilot() {
   const chatEndRef = useRef(null);
 
   // ←←← Replace with your real Gemini API key ←←←
-  const GEMINI_API_KEY = "AQ.Ab8RN6LaUGyRFxBA7-JtHN-3AaLBeRAbWeNA7pwYI5jxksWy8A";
+  const GEMINI_API_KEY = "AQ.Ab8RN6IHb5u2NxidxT99lxdaGY1T_XlzgMa3cTds1bczy1IUcw";
 
   const systemPrompt = (userIdea, extraContext = "") => `
 You are SyncUp AI Project Copilot — an elite startup mentor for student developers and indie hackers.
