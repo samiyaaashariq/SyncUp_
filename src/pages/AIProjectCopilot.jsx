@@ -9,15 +9,12 @@ export default function AIProjectCopilot() {
   const [chatHistory, setChatHistory] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState("full");
-  const [copied, setCopied] = useState(false);
-  const [score, setScore] = useState(null);
+  const [activeTab, setActiveTab] = useState("brief");
   const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
 
-  // Your Gemini API Key
   const GEMINI_API_KEY = "AQ.Ab8RN6IYPTjsPBGm_Igbw5J_K0snpfZ3E4e269Ysm-ZRk1nEwg";
 
   const callGemini = async (prompt) => {
@@ -28,60 +25,41 @@ export default function AIProjectCopilot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { 
-            temperature: 0.85, 
-            maxOutputTokens: 1800, 
-            topP: 0.95 
-          },
+          generationConfig: { temperature: 0.85, maxOutputTokens: 2000 }
         })
       }
     );
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(`API Error ${res.status}: ${errData?.error?.message || "Check API key / quota"}`);
-    }
-
+    if (!res.ok) throw new Error("API Error - Check your key or quota");
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text;
   };
 
-  const systemPrompt = (userIdea, extra = "") => `
-You are SyncUp AI Project Copilot — a world-class mentor for student builders and indie hackers.
-
-User Idea: "${userIdea}"
-${extra ? `Refinement: ${extra}` : ""}
-
-Create a complete, exciting, portfolio-worthy project plan in clean Markdown with emojis.`;
-
   const generateProject = async () => {
-    if (!idea.trim()) return alert("Please enter an idea!");
+    if (!idea.trim()) return alert("Enter an idea!");
 
     setLoading(true);
     setErrorMsg("");
     try {
-      const aiText = await callGemini(systemPrompt(idea));
+      const prompt = `Create a complete startup project plan for: "${idea}".
+Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, Team Roles, and sample code structure. Use Markdown.`;
+
+      const aiText = await callGemini(prompt);
 
       const newProject = {
-        title: idea.slice(0, 85),
+        title: idea.slice(0, 80),
         fullBrief: aiText,
         idea: idea,
-        createdBy: auth.currentUser?.email || "anonymous",
+        createdBy: auth.currentUser?.email,
         members: [auth.currentUser?.uid],
         status: "planning",
         aiGenerated: true,
-        generatedAt: new Date().toISOString(),
       };
 
       setGeneratedProject(newProject);
-      setScore(85);
       setChatHistory([{ role: "assistant", content: aiText }]);
-      
-      setTimeout(() => document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" }), 200);
     } catch (err) {
-      console.error(err);
       setErrorMsg(err.message);
-      alert("Generation failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -89,53 +67,41 @@ Create a complete, exciting, portfolio-worthy project plan in clean Markdown wit
 
   const sendChatMessage = async () => {
     if (!chatInput.trim() || !generatedProject) return;
-
     const userMsg = { role: "user", content: chatInput };
     setChatHistory(prev => [...prev, userMsg]);
-    const tempInput = chatInput;
+    const temp = chatInput;
     setChatInput("");
     setLoading(true);
 
     try {
-      const prompt = `Current Project Idea: ${generatedProject.idea}\n\nBrief:\n${generatedProject.fullBrief}\n\nUser Question: ${tempInput}\nAnswer in detail.`;
-      const reply = await callGemini(prompt);
+      const reply = await callGemini(`Project: ${generatedProject.idea}\nBrief: ${generatedProject.fullBrief}\nQuestion: ${temp}`);
       setChatHistory(prev => [...prev, { role: "assistant", content: reply }]);
-    } catch (err) {
-      setChatHistory(prev => [...prev, { role: "assistant", content: "⚠️ Failed to get response." }]);
+    } catch (e) {
+      setChatHistory(prev => [...prev, { role: "assistant", content: "Error getting response" }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  };
-
   const saveProject = async () => {
     if (!generatedProject) return;
-    try {
-      const docRef = await addDoc(collection(db, "projects"), {
-        ...generatedProject,
-        createdAt: serverTimestamp(),
-        chatHistory,
-      });
-      alert("🎉 Project saved successfully!");
-      navigate(`/project/${docRef.id}`);
-    } catch (e) {
-      alert("Failed to save project.");
-    }
+    const docRef = await addDoc(collection(db, "projects"), {
+      ...generatedProject,
+      createdAt: serverTimestamp(),
+      chatHistory
+    });
+    alert("Project Saved!");
+    navigate(`/project/${docRef.id}`);
   };
 
   const exportMarkdown = () => {
     if (!generatedProject) return;
     const md = `# ${generatedProject.title}\n\n${generatedProject.fullBrief}`;
-    const blob = new Blob([md], { type: "text/markdown" });
+    const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `${generatedProject.title.replace(/\s+/g, '-')}.md`;
+    a.download = 'project-plan.md';
     a.click();
   };
 
@@ -147,72 +113,52 @@ Create a complete, exciting, portfolio-worthy project plan in clean Markdown wit
     <div style={styles.container}>
       <div style={styles.glow} />
       <div style={styles.content}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>AI Project Copilot 🌌</h1>
-          <p style={styles.subtitle}>Professional startup-grade project plans powered by Gemini</p>
-        </div>
+        <h1 style={styles.title}>AI Project Copilot 🌌</h1>
+        <p style={styles.subtitle}>Full startup project generator with roadmap, code & more</p>
 
-        {errorMsg && <div style={styles.errorBox}>{errorMsg}</div>}
+        {errorMsg && <div style={styles.error}>{errorMsg}</div>}
 
         <textarea
           value={idea}
-          onChange={(e) => setIdea(e.target.value)}
-          placeholder="I want to build a platform where students can find teammates for hackathons..."
+          onChange={e => setIdea(e.target.value)}
+          placeholder="Describe your idea..."
           style={styles.textarea}
         />
 
-        <button
-          onClick={generateProject}
-          disabled={loading || !idea.trim()}
-          style={styles.generateBtn}
-        >
-          {loading ? "✨ Generating with Gemini..." : "🚀 Generate Full Project Plan"}
+        <button onClick={generateProject} disabled={loading || !idea.trim()} style={styles.generateBtn}>
+          {loading ? "Generating Full Plan..." : "🚀 Generate Complete Project"}
         </button>
-
-        {/* Examples */}
-        <div style={styles.examples}>
-          <p style={{ color: '#64748b', marginBottom: 8 }}>Quick Start Ideas:</p>
-          {["Hackathon teammate matcher with AI recommendations", "AI-powered campus lost & found", "Real-time collaborative study platform"].map((ex, i) => (
-            <button key={i} onClick={() => setIdea(ex)} style={styles.exampleTag}>{ex}</button>
-          ))}
-        </div>
 
         {generatedProject && (
           <div id="result-section" style={styles.result}>
-            <div style={styles.resultHeader}>
-              <h2 style={styles.resultTitle}>{generatedProject.title}</h2>
-              <div style={styles.score}>Project Score: <strong>{score}/100</strong> 🔥</div>
+            <h2>{generatedProject.title}</h2>
+
+            <div style={styles.tabs}>
+              {["brief", "roadmap", "features", "chat"].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} style={{...styles.tabBtn, background: activeTab === tab ? "#67e8f9" : "transparent", color: activeTab === tab ? "#0f172a" : "#fff"}}>
+                  {tab.toUpperCase()}
+                </button>
+              ))}
             </div>
 
-            <div style={styles.brief} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />
+            {activeTab === "brief" && <div style={styles.brief} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />}
 
-            {/* AI Chat */}
-            <div style={styles.chatContainer}>
-              <h3 style={{ color: "#c084fc" }}>💬 Talk to AI Copilot</h3>
-              <div style={styles.chatWindow}>
-                {chatHistory.map((msg, i) => (
-                  <div key={i} style={msg.role === "user" ? styles.userMsg : styles.assistantMsg}>
-                    {msg.content}
-                  </div>
-                ))}
-                <div ref={chatEndRef} />
+            {activeTab === "chat" && (
+              <div style={styles.chatContainer}>
+                <div style={styles.chatWindow}>
+                  {chatHistory.map((m, i) => <div key={i} style={m.role === "user" ? styles.userMsg : styles.assistantMsg}>{m.content}</div>)}
+                  <div ref={chatEndRef} />
+                </div>
+                <div style={styles.chatInputArea}>
+                  <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === "Enter" && sendChatMessage()} placeholder="Ask for code, changes, etc..." style={styles.chatInput} />
+                  <button onClick={sendChatMessage} style={styles.sendBtn}>Send</button>
+                </div>
               </div>
-              <div style={styles.chatInputArea}>
-                <input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && sendChatMessage()}
-                  placeholder="Ask for changes, tech stack, roadmap..."
-                  style={styles.chatInput}
-                />
-                <button onClick={sendChatMessage} disabled={loading} style={styles.sendBtn}>Send</button>
-              </div>
-            </div>
+            )}
 
             <div style={styles.actions}>
-              <button onClick={saveProject} style={styles.saveBtn}>✅ Save to SyncUp</button>
-              <button onClick={exportMarkdown} style={styles.copyBtn}>📥 Export Markdown</button>
-              <button onClick={() => window.location.reload()} style={styles.newBtn}>New Idea</button>
+              <button onClick={saveProject} style={styles.saveBtn}>Save Project</button>
+              <button onClick={exportMarkdown} style={styles.copyBtn}>Export MD</button>
             </div>
           </div>
         )}
@@ -222,31 +168,26 @@ Create a complete, exciting, portfolio-worthy project plan in clean Markdown wit
 }
 
 const styles = {
-  container: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1c 0%, #1a2338 50%, #05070f 100%)", color: "#fff", padding: "40px 20px", position: "relative", fontFamily: "Inter, system-ui, sans-serif" },
-  glow: { position: "absolute", inset: 0, background: `radial-gradient(circle at 30% 20%, rgba(103,232,249,0.22), transparent 60%), radial-gradient(circle at 70% 70%, rgba(168,85,247,0.18), transparent 70%)`, zIndex: 0 },
-  content: { maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 1 },
-  header: { textAlign: "center", marginBottom: "40px" },
-  title: { fontSize: "3.2rem", fontWeight: 800, background: "linear-gradient(90deg, #67e8f9, #c084fc, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 8 },
-  subtitle: { color: "#94a3b8", fontSize: "1.3rem" },
-  textarea: { width: "100%", minHeight: "180px", padding: "28px", fontSize: "1.2rem", background: "rgba(15,23,42,0.95)", border: "2px solid rgba(103,232,249,0.5)", borderRadius: "24px", color: "#e2e8f0", resize: "vertical", marginBottom: "20px" },
-  generateBtn: { width: "100%", padding: "20px", fontSize: "1.3rem", fontWeight: 700, background: "linear-gradient(135deg, #c084fc, #67e8f9)", border: "none", borderRadius: "9999px", cursor: "pointer", boxShadow: "0 10px 30px rgba(103,232,249,0.4)", marginBottom: "30px" },
-  examples: { margin: "30px 0" },
-  exampleTag: { padding: "10px 20px", background: "rgba(30,41,59,0.9)", border: "1px solid rgba(103,232,249,0.4)", borderRadius: "9999px", color: "#bae6fd", cursor: "pointer", margin: "4px 6px 4px 0" },
-  result: { background: "rgba(15,23,42,0.97)", border: "1px solid rgba(168,85,247,0.5)", borderRadius: "28px", padding: "40px", marginTop: "30px" },
-  resultHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 },
-  resultTitle: { color: "#c084fc", fontSize: "2.1rem", margin: 0 },
-  score: { color: "#4ade80", fontSize: "1.1rem", marginTop: 6 },
-  brief: { whiteSpace: "pre-wrap", lineHeight: "1.85", background: "rgba(2,6,23,0.9)", padding: "36px", borderRadius: "20px", fontSize: "1.05rem", borderLeft: "6px solid #67e8f9", margin: "30px 0" },
-  chatContainer: { marginTop: "40px" },
-  chatWindow: { height: "380px", overflowY: "auto", background: "rgba(0,0,0,0.4)", borderRadius: "16px", padding: "20px", marginBottom: "16px", border: "1px solid rgba(103,232,249,0.2)" },
-  userMsg: { background: "#1e2937", padding: "14px 18px", borderRadius: "18px 18px 4px 18px", marginBottom: 12, maxWidth: "85%", marginLeft: "auto" },
-  assistantMsg: { background: "rgba(103,232,249,0.1)", padding: "14px 18px", borderRadius: "18px 18px 18px 4px", marginBottom: 12, maxWidth: "85%" },
-  chatInputArea: { display: "flex", gap: 12 },
-  chatInput: { flex: 1, padding: "16px 20px", background: "rgba(15,23,42,0.9)", border: "1px solid #67e8f9", borderRadius: "9999px", color: "#fff" },
-  sendBtn: { padding: "16px 32px", background: "linear-gradient(135deg, #67e8f9, #c084fc)", color: "#0f172a", border: "none", borderRadius: "9999px", fontWeight: 600, cursor: "pointer" },
-  actions: { display: "flex", gap: "16px", marginTop: "40px", flexWrap: "wrap" },
-  saveBtn: { padding: "18px 48px", background: "linear-gradient(135deg, #ec4899, #c026d3)", color: "white", border: "none", borderRadius: "9999px", fontWeight: 700, cursor: "pointer", fontSize: "1.1rem" },
-  copyBtn: { padding: "10px 24px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "9999px", cursor: "pointer" },
-  newBtn: { padding: "18px 40px", background: "transparent", color: "#94a3b8", border: "1px solid rgba(148,163,184,0.7)", borderRadius: "9999px", cursor: "pointer" },
-  errorBox: { color: "#f87171", background: "rgba(248,113,113,0.15)", padding: "14px", borderRadius: "12px", marginBottom: "20px", borderLeft: "4px solid #f87171" }
+  container: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1c, #1a2338)", color: "#fff", padding: "40px 20px" },
+  glow: { position: "absolute", inset: 0, background: "radial-gradient(circle, rgba(103,232,249,0.2), transparent)", zIndex: 0 },
+  content: { maxWidth: "1100px", margin: "0 auto", zIndex: 1 },
+  title: { fontSize: "3.2rem", textAlign: "center", background: "linear-gradient(90deg, #67e8f9, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
+  subtitle: { textAlign: "center", color: "#94a3b8" },
+  textarea: { width: "100%", minHeight: "160px", padding: "24px", fontSize: "1.1rem", background: "#1e2937", border: "2px solid #67e8f9", borderRadius: "20px" },
+  generateBtn: { width: "100%", padding: "20px", fontSize: "1.4rem", background: "linear-gradient(135deg, #c084fc, #67e8f9)", border: "none", borderRadius: "999px", margin: "25px 0" },
+  result: { background: "#1e2937", padding: "30px", borderRadius: "20px", marginTop: "30px" },
+  tabs: { display: "flex", gap: 10, margin: "20px 0" },
+  tabBtn: { padding: "10px 20px", borderRadius: "999px", border: "none", cursor: "pointer" },
+  brief: { lineHeight: "1.8", padding: "25px", background: "#0f172a", borderRadius: "16px" },
+  chatContainer: { marginTop: "20px" },
+  chatWindow: { height: "400px", overflowY: "auto", background: "#0f172a", padding: "20px", borderRadius: "16px" },
+  userMsg: { background: "#334155", padding: "12px", borderRadius: "12px", margin: "8px 0", maxWidth: "80%", marginLeft: "auto" },
+  assistantMsg: { background: "#1e40af", padding: "12px", borderRadius: "12px", margin: "8px 0", maxWidth: "80%" },
+  chatInputArea: { display: "flex", gap: 10, marginTop: 15 },
+  chatInput: { flex: 1, padding: "14px", borderRadius: "999px", background: "#1e2937", border: "1px solid #67e8f9" },
+  sendBtn: { padding: "14px 28px", background: "#67e8f9", color: "#0f172a", border: "none", borderRadius: "999px" },
+  actions: { marginTop: "30px", display: "flex", gap: 15 },
+  saveBtn: { padding: "16px 40px", background: "#ec4899", color: "white", border: "none", borderRadius: "999px" },
+  copyBtn: { padding: "16px 32px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "999px" },
+  error: { color: "red", background: "#450a0a", padding: "15px", borderRadius: "12px" }
 };
