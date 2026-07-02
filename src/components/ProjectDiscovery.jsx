@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import { collection, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function ProjectDiscovery() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [joiningId, setJoiningId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -27,10 +30,39 @@ export default function ProjectDiscovery() {
     p.description?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const isMember = (project) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return false;
+    const inMembers = project.members?.includes(currentUser.uid);
+    const isCreator = project.creator === currentUser.email;
+    return inMembers || isCreator;
+  };
+
+  const handleJoin = async (project) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return navigate("/login");
+    setJoiningId(project.id);
+    try {
+      const ref = doc(db, "projects", project.id);
+      await updateDoc(ref, { members: arrayUnion(currentUser.uid) });
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === project.id
+            ? { ...p, members: [...(p.members || []), currentUser.uid] }
+            : p
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to join project.");
+    } finally {
+      setJoiningId(null);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Explore Projects</h1>
-
       <input
         type="text"
         placeholder="Search projects..."
@@ -38,7 +70,6 @@ export default function ProjectDiscovery() {
         onChange={(e) => setSearch(e.target.value)}
         style={styles.search}
       />
-
       {loading ? (
         <p>Loading projects...</p>
       ) : (
@@ -46,20 +77,54 @@ export default function ProjectDiscovery() {
           {filteredProjects.length === 0 ? (
             <p>No projects found.</p>
           ) : (
-            filteredProjects.map(project => (
-              <div key={project.id} style={styles.card}>
-                <h3 style={styles.cardTitle}>{project.title}</h3>
-                <p style={styles.desc}>{project.fullBrief?.substring(0, 120)}...</p>
-                
-                <div style={styles.tags}>
-                  {project.tags?.map((tag, i) => <span key={i} style={styles.tag}>{tag}</span>) || "No tags"}
-                </div>
+            filteredProjects.map(project => {
+              const memberAccess = isMember(project);
+              return (
+                <div key={project.id} style={styles.card}>
+                  <h3 style={styles.cardTitle}>{project.title}</h3>
+                  <p style={styles.desc}>{project.fullBrief?.substring(0, 120)}...</p>
 
-                <button style={styles.joinBtn} onClick={() => alert("Joined project! (connect logic coming soon)")}>
-                  Join Project
-                </button>
-              </div>
-            ))
+                  <div style={styles.tags}>
+                    {project.tags?.map((tag, i) => <span key={i} style={styles.tag}>{tag}</span>) || "No tags"}
+                  </div>
+
+                  <button
+                    style={styles.joinBtn}
+                    onClick={() => handleJoin(project)}
+                    disabled={memberAccess || joiningId === project.id}
+                  >
+                    {memberAccess ? "✅ Joined" : joiningId === project.id ? "Joining..." : "Join Project"}
+                  </button>
+
+                  <div style={styles.actionsRow}>
+                    <button style={styles.actionBtn} onClick={() => navigate(`/project/${project.id}`)}>
+                      Details
+                    </button>
+
+                    <button
+                      style={{
+                        ...styles.actionBtn,
+                        opacity: memberAccess ? 1 : 0.4,
+                        cursor: memberAccess ? "pointer" : "not-allowed",
+                      }}
+                      disabled={!memberAccess}
+                      title={!memberAccess ? "Only project members can access chat" : ""}
+                      onClick={() => memberAccess && navigate(`/project/${project.id}/chat`)}
+                    >
+                      💬 Chat
+                    </button>
+
+                    <button style={styles.actionBtn} onClick={() => navigate(`/project/${project.id}/manage`)}>
+                      ⚙️ Manage
+                    </button>
+
+                    <button style={styles.actionBtn} onClick={() => navigate(`/project/${project.id}/members`)}>
+                      👥 Members
+                    </button>
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       )}
@@ -98,6 +163,22 @@ const styles = {
     color: "#fff",
     border: "none",
     borderRadius: "999px",
+    fontWeight: 600,
+    cursor: "pointer",
+    marginBottom: "12px",
+  },
+  actionsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "8px",
+  },
+  actionBtn: {
+    padding: "10px 6px",
+    background: "rgba(103,232,249,0.1)",
+    color: "#67e8f9",
+    border: "1px solid rgba(103,232,249,0.3)",
+    borderRadius: "10px",
+    fontSize: "0.85rem",
     fontWeight: 600,
     cursor: "pointer",
   },
