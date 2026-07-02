@@ -9,16 +9,19 @@ export default function AIProjectCopilot() {
   const [chatHistory, setChatHistory] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState("full"); // full, tech, roadmap, features
+  const [mode, setMode] = useState("full");
   const [copied, setCopied] = useState(false);
   const [score, setScore] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
   const textareaRef = useRef(null);
   const chatEndRef = useRef(null);
 
-  // ←←← Replace with your real Gemini API key ←←←
+ 
   const GEMINI_API_KEY = "AQ.Ab8RN6IHb5u2NxidxT99lxdaGY1T_XlzgMa3cTds1bczy1IUcw";
+
+  const currentModel = "gemini-2.5-flash"; // Updated for 2026
 
   const systemPrompt = (userIdea, extraContext = "") => `
 You are SyncUp AI Project Copilot — an elite startup mentor for student developers and indie hackers.
@@ -30,7 +33,31 @@ Generate extremely high-quality, realistic, and exciting project plans suitable 
 
 Always respond in clean Markdown with proper headings and emojis.`;
 
-  const generateProject = async (isRefine = false, customPrompt = "") => {
+  const callGemini = async (prompt) => {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.82, maxOutputTokens: 1600, topP: 0.95 },
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+      throw new Error(`API Error ${res.status}: ${errorText || res.statusText}`);
+    }
+
+    const data = await res.json();
+    const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!aiText) throw new Error("Empty response from Gemini");
+    return aiText;
+  };
+
+  const generateProject = async (isRefine = false) => {
     const currentIdea = isRefine ? (generatedProject?.idea || idea) : idea;
     if (!currentIdea.trim()) {
       alert("Please enter an idea first!");
@@ -38,26 +65,10 @@ Always respond in clean Markdown with proper headings and emojis.`;
     }
 
     setLoading(true);
+    setErrorMsg("");
     try {
-      const prompt = customPrompt || systemPrompt(currentIdea, isRefine ? chatInput : "");
-
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.82, maxOutputTokens: 1500, topP: 0.95 },
-          })
-        }
-      );
-
-      if (!res.ok) throw new Error(`API Error: ${res.status}`);
-      const data = await res.json();
-      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (!aiText) throw new Error("Empty response from AI");
+      const prompt = systemPrompt(currentIdea, isRefine ? chatInput : "");
+      const aiText = await callGemini(prompt);
 
       const newProject = {
         title: currentIdea.slice(0, 80) + (currentIdea.length > 80 ? "..." : ""),
@@ -78,6 +89,7 @@ Always respond in clean Markdown with proper headings and emojis.`;
       setTimeout(() => document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" }), 200);
     } catch (err) {
       console.error(err);
+      setErrorMsg(err.message);
       alert(`Generation failed: ${err.message}`);
     } finally {
       setLoading(false);
@@ -94,28 +106,13 @@ Always respond in clean Markdown with proper headings and emojis.`;
     setLoading(true);
 
     try {
-      const context = generatedProject.fullBrief;
-      const prompt = `You are helping refine this project: "${generatedProject.idea}"\n\nCurrent Brief:\n${context}\n\nUser Question: ${currentInput}\n\nGive a helpful, detailed response.`;
-
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 1000 },
-          })
-        }
-      );
-
-      const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
+      const prompt = `You are helping refine this project: "${generatedProject.idea}"\n\nCurrent Brief:\n${generatedProject.fullBrief}\n\nUser Question: ${currentInput}\n\nGive a helpful, detailed response.`;
+      const reply = await callGemini(prompt);
 
       setChatHistory(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (err) {
       console.error(err);
-      setChatHistory(prev => [...prev, { role: "assistant", content: "⚠️ Failed to get response. Please try again." }]);
+      setChatHistory(prev => [...prev, { role: "assistant", content: "⚠️ " + err.message }]);
     } finally {
       setLoading(false);
     }
@@ -161,7 +158,6 @@ Always respond in clean Markdown with proper headings and emojis.`;
     a.click();
   };
 
-  // Auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
@@ -169,14 +165,18 @@ Always respond in clean Markdown with proper headings and emojis.`;
   return (
     <div style={styles.container}>
       <div style={styles.glow} />
-
       <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={styles.title}>AI Project Copilot <span style={{ fontSize: "2rem" }}>🌌</span></h1>
           <p style={styles.subtitle}>Turn your idea into a complete, ready-to-build startup project in seconds.</p>
         </div>
 
-        {/* Idea Input */}
+        {errorMsg && (
+          <div style={{ color: "#f87171", background: "rgba(248,113,113,0.15)", padding: "14px", borderRadius: "12px", marginBottom: "20px", borderLeft: "4px solid #f87171" }}>
+            {errorMsg}
+          </div>
+        )}
+
         <textarea
           ref={textareaRef}
           value={idea}
@@ -202,10 +202,9 @@ Always respond in clean Markdown with proper headings and emojis.`;
           disabled={loading || !idea.trim()}
           style={styles.generateBtn}
         >
-          {loading ? "✨ Thinking..." : "🚀 Generate Project Plan"}
+          {loading ? "✨ Thinking with Gemini..." : "🚀 Generate Project Plan"}
         </button>
 
-        {/* Quick Examples */}
         <div style={styles.examples}>
           <p style={{ color: '#64748b', marginBottom: 8 }}>Try these ideas:</p>
           {[
@@ -220,7 +219,6 @@ Always respond in clean Markdown with proper headings and emojis.`;
           ))}
         </div>
 
-        {/* Results Section */}
         {generatedProject && (
           <div id="result-section" style={styles.result}>
             <div style={styles.resultHeader}>
@@ -238,7 +236,6 @@ Always respond in clean Markdown with proper headings and emojis.`;
 
             <div style={styles.brief} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />
 
-            {/* AI Chat Copilot */}
             <div style={styles.chatContainer}>
               <h3 style={{ color: "#c084fc", marginBottom: 12 }}>💬 Ask your AI Copilot</h3>
               <div style={styles.chatWindow}>
@@ -262,10 +259,9 @@ Always respond in clean Markdown with proper headings and emojis.`;
               </div>
             </div>
 
-            {/* Actions */}
             <div style={styles.actions}>
               <button onClick={saveProject} style={styles.saveBtn}>✅ Save to SyncUp</button>
-              <button onClick={() => { setGeneratedProject(null); setChatHistory([]); }} style={styles.newBtn}>
+              <button onClick={() => { setGeneratedProject(null); setChatHistory([]); setErrorMsg(""); }} style={styles.newBtn}>
                 New Idea
               </button>
             </div>
@@ -374,8 +370,21 @@ const styles = {
     marginBottom: "16px",
     border: "1px solid rgba(103,232,249,0.2)",
   },
-  userMsg: { background: "#1e2937", padding: "14px 18px", borderRadius: "18px 18px 4px 18px", marginBottom: 12, maxWidth: "85%", alignSelf: "flex-end", marginLeft: "auto" },
-  assistantMsg: { background: "rgba(103,232,249,0.1)", padding: "14px 18px", borderRadius: "18px 18px 18px 4px", marginBottom: 12, maxWidth: "85%" },
+  userMsg: { 
+    background: "#1e2937", 
+    padding: "14px 18px", 
+    borderRadius: "18px 18px 4px 18px", 
+    marginBottom: 12, 
+    maxWidth: "85%", 
+    marginLeft: "auto" 
+  },
+  assistantMsg: { 
+    background: "rgba(103,232,249,0.1)", 
+    padding: "14px 18px", 
+    borderRadius: "18px 18px 18px 4px", 
+    marginBottom: 12, 
+    maxWidth: "85%" 
+  },
   chatInputArea: { display: "flex", gap: 12 },
   chatInput: {
     flex: 1,
