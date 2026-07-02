@@ -94,8 +94,8 @@ export default function ProjectChat() {
           <h2 style={{ color: "#f87171" }}>🚫 Access Denied</h2>
           <p style={styles.muted}>Only project members can access this chat room.</p>
           <button style={styles.backBtn} onClick={() => navigate(`/project/${id}`)}>
-            ← Back to Project
-          </button>
+  ← Back to Project
+</button>
         </div>
       </div>
     );
