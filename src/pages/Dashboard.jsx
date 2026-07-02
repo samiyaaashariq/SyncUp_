@@ -30,10 +30,12 @@ export default function DashboardV2() {
   const handleCreateProject = async () => {
     if (!projectName || !projectDesc) return;
     await addDoc(collection(db, "projects"), {
-      name: projectName,
+      title: projectName,
+      fullBrief: projectDesc,
       description: projectDesc,
       status: "Recruiting",
       creator: auth.currentUser?.email || "You",
+      members: auth.currentUser ? [auth.currentUser.uid] : [],
       createdAt: Date.now(),
     });
     setProjectName("");
@@ -75,7 +77,7 @@ export default function DashboardV2() {
         {/* Recommended */}
         <RecommendedProjects />
 
-        {/* Discover Projects */}
+        {/* Discover Projects — now includes Details / Chat / Manage / Members on every card */}
         <div ref={projectsRef} className="section">
           <h2 className="section-title">Discover Projects</h2>
           <ProjectDiscovery />
