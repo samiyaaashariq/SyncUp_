@@ -30,19 +30,25 @@ export default function AIProjectCopilot() {
       }
     );
 
-    if (!res.ok) throw new Error("API Error - Check your key or quota");
+    if (!res.ok) throw new Error("API Error 401 - Key issue");
     const data = await res.json();
     return data?.candidates?.[0]?.content?.parts?.[0]?.text;
   };
 
   const generateProject = async () => {
-    if (!idea.trim()) return alert("Enter an idea!");
+    if (!idea.trim()) return alert("Please describe your idea");
 
     setLoading(true);
     setErrorMsg("");
     try {
-      const prompt = `Create a complete startup project plan for: "${idea}".
-Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, Team Roles, and sample code structure. Use Markdown.`;
+      const prompt = `Create a complete professional project for: "${idea}".
+Sections: 
+- Title
+- Description
+- Tech Stack
+- 10 Core Features
+- 8 Week Roadmap
+- Sample Code Structure`;
 
       const aiText = await callGemini(prompt);
 
@@ -74,10 +80,10 @@ Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, T
     setLoading(true);
 
     try {
-      const reply = await callGemini(`Project: ${generatedProject.idea}\nBrief: ${generatedProject.fullBrief}\nQuestion: ${temp}`);
+      const reply = await callGemini(`Project Idea: ${generatedProject.idea}\n\n${generatedProject.fullBrief}\n\nQuestion: ${temp}`);
       setChatHistory(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (e) {
-      setChatHistory(prev => [...prev, { role: "assistant", content: "Error getting response" }]);
+      setChatHistory(prev => [...prev, { role: "assistant", content: "Sorry, error occurred." }]);
     } finally {
       setLoading(false);
     }
@@ -90,18 +96,18 @@ Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, T
       createdAt: serverTimestamp(),
       chatHistory
     });
-    alert("Project Saved!");
+    alert("Project Saved Successfully!");
     navigate(`/project/${docRef.id}`);
   };
 
   const exportMarkdown = () => {
     if (!generatedProject) return;
     const md = `# ${generatedProject.title}\n\n${generatedProject.fullBrief}`;
-    const blob = new Blob([md], { type: 'text/markdown' });
+    const blob = new Blob([md], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'project-plan.md';
+    a.download = "full-project-plan.md";
     a.click();
   };
 
@@ -113,52 +119,62 @@ Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, T
     <div style={styles.container}>
       <div style={styles.glow} />
       <div style={styles.content}>
-        <h1 style={styles.title}>AI Project Copilot 🌌</h1>
-        <p style={styles.subtitle}>Full startup project generator with roadmap, code & more</p>
+        <h1 style={styles.title}>AI Project Copilot <span style={{fontSize:"2.8rem"}}>🌌</span></h1>
+        <p style={styles.subtitle}>Full-featured AI that generates roadmap, features, code & more</p>
 
         {errorMsg && <div style={styles.error}>{errorMsg}</div>}
 
         <textarea
           value={idea}
-          onChange={e => setIdea(e.target.value)}
-          placeholder="Describe your idea..."
+          onChange={(e) => setIdea(e.target.value)}
+          placeholder="Describe your startup idea in detail..."
           style={styles.textarea}
         />
 
         <button onClick={generateProject} disabled={loading || !idea.trim()} style={styles.generateBtn}>
-          {loading ? "Generating Full Plan..." : "🚀 Generate Complete Project"}
+          {loading ? "Creating Full Project Plan..." : "🚀 Generate Complete Project"}
         </button>
 
         {generatedProject && (
           <div id="result-section" style={styles.result}>
-            <h2>{generatedProject.title}</h2>
+            <h2 style={{ color: "#c084fc" }}>{generatedProject.title}</h2>
 
-            <div style={styles.tabs}>
-              {["brief", "roadmap", "features", "chat"].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} style={{...styles.tabBtn, background: activeTab === tab ? "#67e8f9" : "transparent", color: activeTab === tab ? "#0f172a" : "#fff"}}>
-                  {tab.toUpperCase()}
+            <div style={styles.tabContainer}>
+              {["brief", "roadmap", "features", "chat"].map(t => (
+                <button key={t} onClick={() => setActiveTab(t)} style={{...styles.tab, background: activeTab === t ? "#67e8f9" : "transparent", color: activeTab === t ? "#0f172a" : "#fff"}}>
+                  {t.toUpperCase()}
                 </button>
               ))}
             </div>
 
-            {activeTab === "brief" && <div style={styles.brief} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />}
+            {activeTab === "brief" && <div style={styles.contentArea} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />}
 
             {activeTab === "chat" && (
-              <div style={styles.chatContainer}>
+              <div>
                 <div style={styles.chatWindow}>
-                  {chatHistory.map((m, i) => <div key={i} style={m.role === "user" ? styles.userMsg : styles.assistantMsg}>{m.content}</div>)}
+                  {chatHistory.map((msg, i) => (
+                    <div key={i} style={msg.role === "user" ? styles.userBubble : styles.aiBubble}>
+                      {msg.content}
+                    </div>
+                  ))}
                   <div ref={chatEndRef} />
                 </div>
-                <div style={styles.chatInputArea}>
-                  <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === "Enter" && sendChatMessage()} placeholder="Ask for code, changes, etc..." style={styles.chatInput} />
-                  <button onClick={sendChatMessage} style={styles.sendBtn}>Send</button>
+                <div style={styles.chatInputRow}>
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && sendChatMessage()}
+                    placeholder="Ask for code snippet, changes, tech alternatives..."
+                    style={styles.chatInput}
+                  />
+                  <button onClick={sendChatMessage} style={styles.sendButton}>Send</button>
                 </div>
               </div>
             )}
 
-            <div style={styles.actions}>
-              <button onClick={saveProject} style={styles.saveBtn}>Save Project</button>
-              <button onClick={exportMarkdown} style={styles.copyBtn}>Export MD</button>
+            <div style={styles.actionBar}>
+              <button onClick={saveProject} style={styles.saveButton}>💾 Save to SyncUp</button>
+              <button onClick={exportMarkdown} style={styles.exportButton}>📤 Export Markdown</button>
             </div>
           </div>
         )}
@@ -168,26 +184,25 @@ Include: Title, Description, Tech Stack, Core Features (8-10), 8-week Roadmap, T
 }
 
 const styles = {
-  container: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1c, #1a2338)", color: "#fff", padding: "40px 20px" },
-  glow: { position: "absolute", inset: 0, background: "radial-gradient(circle, rgba(103,232,249,0.2), transparent)", zIndex: 0 },
+  container: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1c, #1a2338)", color: "#fff", padding: "40px 20px", fontFamily: "Inter, sans-serif" },
+  glow: { position: "absolute", inset: 0, background: "radial-gradient(circle at 40% 30%, rgba(103,232,249,0.25), transparent)", zIndex: 0 },
   content: { maxWidth: "1100px", margin: "0 auto", zIndex: 1 },
-  title: { fontSize: "3.2rem", textAlign: "center", background: "linear-gradient(90deg, #67e8f9, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
-  subtitle: { textAlign: "center", color: "#94a3b8" },
-  textarea: { width: "100%", minHeight: "160px", padding: "24px", fontSize: "1.1rem", background: "#1e2937", border: "2px solid #67e8f9", borderRadius: "20px" },
-  generateBtn: { width: "100%", padding: "20px", fontSize: "1.4rem", background: "linear-gradient(135deg, #c084fc, #67e8f9)", border: "none", borderRadius: "999px", margin: "25px 0" },
-  result: { background: "#1e2937", padding: "30px", borderRadius: "20px", marginTop: "30px" },
-  tabs: { display: "flex", gap: 10, margin: "20px 0" },
-  tabBtn: { padding: "10px 20px", borderRadius: "999px", border: "none", cursor: "pointer" },
-  brief: { lineHeight: "1.8", padding: "25px", background: "#0f172a", borderRadius: "16px" },
-  chatContainer: { marginTop: "20px" },
-  chatWindow: { height: "400px", overflowY: "auto", background: "#0f172a", padding: "20px", borderRadius: "16px" },
-  userMsg: { background: "#334155", padding: "12px", borderRadius: "12px", margin: "8px 0", maxWidth: "80%", marginLeft: "auto" },
-  assistantMsg: { background: "#1e40af", padding: "12px", borderRadius: "12px", margin: "8px 0", maxWidth: "80%" },
-  chatInputArea: { display: "flex", gap: 10, marginTop: 15 },
-  chatInput: { flex: 1, padding: "14px", borderRadius: "999px", background: "#1e2937", border: "1px solid #67e8f9" },
-  sendBtn: { padding: "14px 28px", background: "#67e8f9", color: "#0f172a", border: "none", borderRadius: "999px" },
-  actions: { marginTop: "30px", display: "flex", gap: 15 },
-  saveBtn: { padding: "16px 40px", background: "#ec4899", color: "white", border: "none", borderRadius: "999px" },
-  copyBtn: { padding: "16px 32px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "999px" },
-  error: { color: "red", background: "#450a0a", padding: "15px", borderRadius: "12px" }
+  title: { fontSize: "3.5rem", textAlign: "center", marginBottom: 10, background: "linear-gradient(90deg, #67e8f9, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
+  subtitle: { textAlign: "center", color: "#94a3b8", fontSize: "1.4rem" },
+  textarea: { width: "100%", minHeight: "180px", padding: "24px", fontSize: "1.15rem", background: "#1e2937", border: "2px solid #67e8f9", borderRadius: "20px", color: "#e2e8f0", marginBottom: "20px" },
+  generateBtn: { width: "100%", padding: "22px", fontSize: "1.4rem", background: "linear-gradient(135deg, #c084fc, #67e8f9)", border: "none", borderRadius: "9999px", cursor: "pointer", fontWeight: 700 },
+  result: { background: "#1e2937", padding: "40px", borderRadius: "24px", marginTop: "30px", border: "1px solid #334155" },
+  tabContainer: { display: "flex", gap: 12, margin: "25px 0", flexWrap: "wrap" },
+  tab: { padding: "12px 28px", borderRadius: "999px", border: "none", cursor: "pointer", fontWeight: 600 },
+  contentArea: { lineHeight: "1.85", padding: "30px", background: "#0f172a", borderRadius: "18px", fontSize: "1.05rem" },
+  chatWindow: { height: "420px", overflowY: "auto", background: "#0f172a", padding: "20px", borderRadius: "16px", marginBottom: "15px" },
+  userBubble: { background: "#334155", padding: "14px 20px", borderRadius: "18px 18px 4px 18px", maxWidth: "75%", marginLeft: "auto", marginBottom: 12 },
+  aiBubble: { background: "rgba(103,232,249,0.15)", padding: "14px 20px", borderRadius: "18px 18px 18px 4px", maxWidth: "75%", marginBottom: 12 },
+  chatInputRow: { display: "flex", gap: 12 },
+  chatInput: { flex: 1, padding: "16px", background: "#1e2937", border: "1px solid #67e8f9", borderRadius: "999px", color: "#fff" },
+  sendButton: { padding: "16px 36px", background: "#67e8f9", color: "#0f172a", border: "none", borderRadius: "999px", fontWeight: 600 },
+  actionBar: { marginTop: "40px", display: "flex", gap: 16, flexWrap: "wrap" },
+  saveButton: { padding: "18px 48px", background: "#ec4899", color: "white", border: "none", borderRadius: "999px", fontWeight: 700 },
+  exportButton: { padding: "18px 40px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "999px" },
+  error: { color: "#fda4af", background: "#450a0a", padding: "16px", borderRadius: "12px", marginBottom: "20px" }
 };
