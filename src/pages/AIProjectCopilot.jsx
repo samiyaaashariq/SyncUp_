@@ -15,82 +15,71 @@ export default function AIProjectCopilot() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
-  const textareaRef = useRef(null);
   const chatEndRef = useRef(null);
 
- 
-  const GEMINI_API_KEY = "AQ.Ab8RN6IHb5u2NxidxT99lxdaGY1T_XlzgMa3cTds1bczy1IUcw";
-
-  const currentModel = "gemini-2.5-flash"; // Updated for 2026
-
-  const systemPrompt = (userIdea, extraContext = "") => `
-You are SyncUp AI Project Copilot — an elite startup mentor for student developers and indie hackers.
-
-User Idea: "${userIdea}"
-${extraContext ? `Additional Context: ${extraContext}` : ""}
-
-Generate extremely high-quality, realistic, and exciting project plans suitable for portfolios, hackathons, and startup MVPs.
-
-Always respond in clean Markdown with proper headings and emojis.`;
+  // ←←← Paste your AQ key here ←←←
+  const GEMINI_API_KEY = "AQ.Ab8RN6IYPTjsPBGm_Igbw5J_K0snpfZ3E4e269Ysm-ZRk1nEwg";
 
   const callGemini = async (prompt) => {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.82, maxOutputTokens: 1600, topP: 0.95 },
+          generationConfig: { temperature: 0.85, maxOutputTokens: 1600, topP: 0.95 },
         })
       }
     );
 
     if (!res.ok) {
-      const errorText = await res.text().catch(() => "");
-      throw new Error(`API Error ${res.status}: ${errorText || res.statusText}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`API Error ${res.status}: ${errorData?.error?.message || res.statusText}`);
     }
 
     const data = await res.json();
     const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!aiText) throw new Error("Empty response from Gemini");
+    if (!aiText) throw new Error("No response from Gemini. Try again.");
     return aiText;
   };
 
-  const generateProject = async (isRefine = false) => {
-    const currentIdea = isRefine ? (generatedProject?.idea || idea) : idea;
-    if (!currentIdea.trim()) {
+  const systemPrompt = (userIdea, extraContext = "") => `
+You are SyncUp AI Project Copilot — an elite startup mentor.
+User Idea: "${userIdea}"
+${extraContext ? `Refinement: ${extraContext}` : ""}
+Generate a detailed, exciting project plan in clean Markdown with emojis.`;
+
+  const generateProject = async () => {
+    if (!idea.trim()) {
       alert("Please enter an idea first!");
       return;
     }
-
     setLoading(true);
     setErrorMsg("");
     try {
-      const prompt = systemPrompt(currentIdea, isRefine ? chatInput : "");
+      const prompt = systemPrompt(idea);
       const aiText = await callGemini(prompt);
 
       const newProject = {
-        title: currentIdea.slice(0, 80) + (currentIdea.length > 80 ? "..." : ""),
+        title: idea.slice(0, 80) + (idea.length > 80 ? "..." : ""),
         fullBrief: aiText,
-        idea: currentIdea,
+        idea: idea,
         createdBy: auth.currentUser?.email || "anonymous",
         members: [auth.currentUser?.uid],
         status: "planning",
         aiGenerated: true,
         generatedAt: new Date().toISOString(),
-        mode,
       };
 
       setGeneratedProject(newProject);
-      setScore(calculateProjectScore(aiText));
+      setScore(82);
       setChatHistory([{ role: "assistant", content: aiText }]);
-      
-      setTimeout(() => document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" }), 200);
+      setTimeout(() => document.getElementById("result-section")?.scrollIntoView({ behavior: "smooth" }), 300);
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message);
-      alert(`Generation failed: ${err.message}`);
+      alert("Generation failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -101,29 +90,19 @@ Always respond in clean Markdown with proper headings and emojis.`;
 
     const userMsg = { role: "user", content: chatInput };
     setChatHistory(prev => [...prev, userMsg]);
-    const currentInput = chatInput;
+    const tempInput = chatInput;
     setChatInput("");
     setLoading(true);
 
     try {
-      const prompt = `You are helping refine this project: "${generatedProject.idea}"\n\nCurrent Brief:\n${generatedProject.fullBrief}\n\nUser Question: ${currentInput}\n\nGive a helpful, detailed response.`;
+      const prompt = `Project: ${generatedProject.idea}\nBrief: ${generatedProject.fullBrief}\nQuestion: ${tempInput}\nAnswer helpfully.`;
       const reply = await callGemini(prompt);
-
       setChatHistory(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (err) {
-      console.error(err);
       setChatHistory(prev => [...prev, { role: "assistant", content: "⚠️ " + err.message }]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateProjectScore = (brief) => {
-    let score = 75;
-    if (brief.includes("MVP") || brief.includes("scal")) score += 8;
-    if (brief.includes("authentication") || brief.includes("user")) score += 7;
-    if (brief.toLowerCase().includes("ai") || brief.toLowerCase().includes("ml")) score += 10;
-    return Math.min(98, score);
   };
 
   const copyToClipboard = (text) => {
@@ -138,12 +117,12 @@ Always respond in clean Markdown with proper headings and emojis.`;
       const docRef = await addDoc(collection(db, "projects"), {
         ...generatedProject,
         createdAt: serverTimestamp(),
-        chatHistory: chatHistory,
+        chatHistory,
       });
-      alert("🎉 Project saved successfully!");
+      alert("Project saved successfully!");
       navigate(`/project/${docRef.id}`);
     } catch (e) {
-      alert("Failed to save to database.");
+      alert("Failed to save.");
     }
   };
 
@@ -154,7 +133,7 @@ Always respond in clean Markdown with proper headings and emojis.`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${generatedProject.title.replace(/\s+/g, '-')}.md`;
+    a.download = "project-plan.md";
     a.click();
   };
 
@@ -167,103 +146,32 @@ Always respond in clean Markdown with proper headings and emojis.`;
       <div style={styles.glow} />
       <div style={styles.content}>
         <div style={styles.header}>
-          <h1 style={styles.title}>AI Project Copilot <span style={{ fontSize: "2rem" }}>🌌</span></h1>
-          <p style={styles.subtitle}>Turn your idea into a complete, ready-to-build startup project in seconds.</p>
+          <h1 style={styles.title}>AI Project Copilot 🌌</h1>
+          <p style={styles.subtitle}>Turn your idea into a full project plan</p>
         </div>
 
-        {errorMsg && (
-          <div style={{ color: "#f87171", background: "rgba(248,113,113,0.15)", padding: "14px", borderRadius: "12px", marginBottom: "20px", borderLeft: "4px solid #f87171" }}>
-            {errorMsg}
-          </div>
-        )}
+        {errorMsg && <div style={styles.errorBox}>{errorMsg}</div>}
 
         <textarea
-          ref={textareaRef}
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          placeholder="I want to build a platform where students can find teammates for hackathons and collaborate in real-time..."
+          placeholder="Describe your project idea here..."
           style={styles.textarea}
         />
 
-        <div style={styles.modeSelector}>
-          {["full", "tech", "roadmap", "features"].map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              style={{ ...styles.modeBtn, background: mode === m ? "#67e8f9" : "transparent", color: mode === m ? "#0f172a" : "#67e8f9" }}
-            >
-              {m === "full" ? "Full Plan" : m.charAt(0).toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={() => generateProject(false)}
-          disabled={loading || !idea.trim()}
-          style={styles.generateBtn}
-        >
-          {loading ? "✨ Thinking with Gemini..." : "🚀 Generate Project Plan"}
+        <button onClick={generateProject} disabled={loading || !idea.trim()} style={styles.generateBtn}>
+          {loading ? "Generating..." : "🚀 Generate Project"}
         </button>
-
-        <div style={styles.examples}>
-          <p style={{ color: '#64748b', marginBottom: 8 }}>Try these ideas:</p>
-          {[
-            "Hackathon teammate matcher with AI recommendations",
-            "AI-powered campus lost & found with QR codes",
-            "Real-time collaborative whiteboard for students",
-            "Student freelance marketplace with skill matching"
-          ].map((ex, i) => (
-            <button key={i} onClick={() => setIdea(ex)} style={styles.exampleTag}>
-              {ex}
-            </button>
-          ))}
-        </div>
 
         {generatedProject && (
           <div id="result-section" style={styles.result}>
-            <div style={styles.resultHeader}>
-              <div>
-                <h2 style={styles.resultTitle}>{generatedProject.title}</h2>
-                <div style={styles.score}>Project Score: <strong>{score}/100</strong> 🔥</div>
-              </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={() => copyToClipboard(generatedProject.fullBrief)} style={styles.copyBtn}>
-                  📋 {copied ? "Copied!" : "Copy"}
-                </button>
-                <button onClick={exportMarkdown} style={styles.copyBtn}>⬇️ Export MD</button>
-              </div>
-            </div>
-
+            <h2 style={styles.resultTitle}>{generatedProject.title}</h2>
             <div style={styles.brief} dangerouslySetInnerHTML={{ __html: generatedProject.fullBrief.replace(/\n/g, '<br>') }} />
 
-            <div style={styles.chatContainer}>
-              <h3 style={{ color: "#c084fc", marginBottom: 12 }}>💬 Ask your AI Copilot</h3>
-              <div style={styles.chatWindow}>
-                {chatHistory.map((msg, i) => (
-                  <div key={i} style={msg.role === "user" ? styles.userMsg : styles.assistantMsg}>
-                    {msg.content}
-                  </div>
-                ))}
-                <div ref={chatEndRef} />
-              </div>
-
-              <div style={styles.chatInputArea}>
-                <input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && sendChatMessage()}
-                  placeholder="Ask anything... (e.g., add authentication, tech alternatives, monetization ideas)"
-                  style={styles.chatInput}
-                />
-                <button onClick={sendChatMessage} disabled={loading} style={styles.sendBtn}>Send</button>
-              </div>
-            </div>
-
             <div style={styles.actions}>
-              <button onClick={saveProject} style={styles.saveBtn}>✅ Save to SyncUp</button>
-              <button onClick={() => { setGeneratedProject(null); setChatHistory([]); setErrorMsg(""); }} style={styles.newBtn}>
-                New Idea
-              </button>
+              <button onClick={saveProject} style={styles.saveBtn}>Save to SyncUp</button>
+              <button onClick={exportMarkdown} style={styles.copyBtn}>Export Markdown</button>
+              <button onClick={() => window.location.reload()} style={styles.newBtn}>New Idea</button>
             </div>
           </div>
         )}
@@ -273,161 +181,20 @@ Always respond in clean Markdown with proper headings and emojis.`;
 }
 
 const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #0a0f1c 0%, #1a2338 50%, #05070f 100%)",
-    color: "#fff",
-    padding: "40px 20px",
-    position: "relative",
-    fontFamily: "Inter, system-ui, sans-serif",
-  },
-  glow: {
-    position: "absolute",
-    inset: 0,
-    background: `radial-gradient(circle at 30% 20%, rgba(103,232,249,0.22), transparent 60%), radial-gradient(circle at 70% 70%, rgba(168,85,247,0.18), transparent 70%)`,
-    zIndex: 0,
-  },
+  container: { minHeight: "100vh", background: "linear-gradient(135deg, #0a0f1c, #1a2338)", color: "#fff", padding: "40px 20px" },
+  glow: { position: "absolute", inset: 0, background: "radial-gradient(circle, rgba(103,232,249,0.15), transparent)", zIndex: 0 },
   content: { maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 1 },
   header: { textAlign: "center", marginBottom: "40px" },
-  title: {
-    fontSize: "3.2rem",
-    fontWeight: 800,
-    background: "linear-gradient(90deg, #67e8f9, #c084fc, #ec4899)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    marginBottom: 8,
-  },
+  title: { fontSize: "3rem", background: "linear-gradient(90deg, #67e8f9, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
   subtitle: { color: "#94a3b8", fontSize: "1.3rem" },
-  textarea: {
-    width: "100%",
-    minHeight: "180px",
-    padding: "28px",
-    fontSize: "1.2rem",
-    background: "rgba(15,23,42,0.95)",
-    border: "2px solid rgba(103,232,249,0.5)",
-    borderRadius: "24px",
-    color: "#e2e8f0",
-    resize: "vertical",
-    marginBottom: "20px",
-  },
-  modeSelector: { display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" },
-  modeBtn: {
-    padding: "10px 20px",
-    borderRadius: "9999px",
-    border: "1px solid #67e8f9",
-    cursor: "pointer",
-    transition: "all 0.2s",
-  },
-  generateBtn: {
-    width: "100%",
-    padding: "20px",
-    fontSize: "1.3rem",
-    fontWeight: 700,
-    background: "linear-gradient(135deg, #c084fc, #67e8f9)",
-    border: "none",
-    borderRadius: "9999px",
-    cursor: "pointer",
-    boxShadow: "0 10px 30px rgba(103,232,249,0.4)",
-    marginBottom: "30px",
-  },
-  examples: { margin: "30px 0" },
-  exampleTag: {
-    padding: "10px 20px",
-    background: "rgba(30,41,59,0.9)",
-    border: "1px solid rgba(103,232,249,0.4)",
-    borderRadius: "9999px",
-    color: "#bae6fd",
-    cursor: "pointer",
-    margin: "4px 6px 4px 0",
-  },
-  result: {
-    background: "rgba(15,23,42,0.97)",
-    border: "1px solid rgba(168,85,247,0.5)",
-    borderRadius: "28px",
-    padding: "40px",
-    marginTop: "30px",
-  },
-  resultHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 },
-  resultTitle: { color: "#c084fc", fontSize: "2.1rem", margin: 0 },
-  score: { color: "#4ade80", fontSize: "1.1rem", marginTop: 6 },
-  brief: {
-    whiteSpace: "pre-wrap",
-    lineHeight: "1.85",
-    background: "rgba(2,6,23,0.9)",
-    padding: "36px",
-    borderRadius: "20px",
-    fontSize: "1.05rem",
-    borderLeft: "6px solid #67e8f9",
-    margin: "30px 0",
-  },
-  chatContainer: { marginTop: "40px" },
-  chatWindow: {
-    height: "380px",
-    overflowY: "auto",
-    background: "rgba(0,0,0,0.4)",
-    borderRadius: "16px",
-    padding: "20px",
-    marginBottom: "16px",
-    border: "1px solid rgba(103,232,249,0.2)",
-  },
-  userMsg: { 
-    background: "#1e2937", 
-    padding: "14px 18px", 
-    borderRadius: "18px 18px 4px 18px", 
-    marginBottom: 12, 
-    maxWidth: "85%", 
-    marginLeft: "auto" 
-  },
-  assistantMsg: { 
-    background: "rgba(103,232,249,0.1)", 
-    padding: "14px 18px", 
-    borderRadius: "18px 18px 18px 4px", 
-    marginBottom: 12, 
-    maxWidth: "85%" 
-  },
-  chatInputArea: { display: "flex", gap: 12 },
-  chatInput: {
-    flex: 1,
-    padding: "16px 20px",
-    background: "rgba(15,23,42,0.9)",
-    border: "1px solid #67e8f9",
-    borderRadius: "9999px",
-    color: "#fff",
-  },
-  sendBtn: {
-    padding: "16px 32px",
-    background: "linear-gradient(135deg, #67e8f9, #c084fc)",
-    color: "#0f172a",
-    border: "none",
-    borderRadius: "9999px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  actions: { display: "flex", gap: "16px", marginTop: "40px", flexWrap: "wrap" },
-  saveBtn: {
-    padding: "18px 48px",
-    background: "linear-gradient(135deg, #ec4899, #c026d3)",
-    color: "white",
-    border: "none",
-    borderRadius: "9999px",
-    fontWeight: 700,
-    cursor: "pointer",
-    fontSize: "1.1rem",
-  },
-  newBtn: {
-    padding: "18px 40px",
-    background: "transparent",
-    color: "#94a3b8",
-    border: "1px solid rgba(148,163,184,0.7)",
-    borderRadius: "9999px",
-    cursor: "pointer",
-  },
-  copyBtn: {
-    padding: "10px 24px",
-    background: "transparent",
-    border: "1px solid #67e8f9",
-    color: "#67e8f9",
-    borderRadius: "9999px",
-    cursor: "pointer",
-  },
+  textarea: { width: "100%", minHeight: "180px", padding: "20px", fontSize: "1.1rem", background: "#1e2937", border: "2px solid #67e8f9", borderRadius: "16px", color: "#fff" },
+  generateBtn: { width: "100%", padding: "18px", fontSize: "1.3rem", background: "linear-gradient(135deg, #67e8f9, #c084fc)", border: "none", borderRadius: "999px", cursor: "pointer", margin: "20px 0" },
+  result: { background: "#1e2937", padding: "30px", borderRadius: "20px", marginTop: "30px" },
+  resultTitle: { color: "#67e8f9", marginBottom: "20px" },
+  brief: { lineHeight: "1.8", background: "#0f172a", padding: "25px", borderRadius: "16px", whiteSpace: "pre-wrap" },
+  actions: { marginTop: "30px", display: "flex", gap: "15px", flexWrap: "wrap" },
+  saveBtn: { padding: "14px 32px", background: "#ec4899", color: "white", border: "none", borderRadius: "999px", cursor: "pointer" },
+  copyBtn: { padding: "14px 32px", background: "transparent", border: "1px solid #67e8f9", color: "#67e8f9", borderRadius: "999px", cursor: "pointer" },
+  newBtn: { padding: "14px 32px", background: "transparent", border: "1px solid #94a3b8", color: "#94a3b8", borderRadius: "999px", cursor: "pointer" },
+  errorBox: { color: "#fda4af", background: "rgba(248,113,113,0.1)", padding: "15px", borderRadius: "12px", marginBottom: "20px" }
 };
